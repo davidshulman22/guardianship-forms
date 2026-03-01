@@ -5,7 +5,7 @@
 const SUPABASE_URL = 'https://xcjrpfkexdxggkaswefh.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_j16AIqi-9mDFWyWFxMZCAQ_geY3ks09';
 
-let supabase;
+let db;
 let currentUser = null;
 let currentClient = null;
 let formsConfig = null;
@@ -23,13 +23,13 @@ let formFieldsSaveTimer = null;
 async function initializeApp() {
     // Initialize Supabase
     const { createClient } = window.supabase;
-    supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // Load forms config
     await loadFormsConfig();
 
     // Check if user is logged in
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await db.auth.getSession();
     if (session) {
         currentUser = session.user;
         showMainApp();
@@ -38,7 +38,7 @@ async function initializeApp() {
     }
 
     // Listen for auth changes
-    supabase.auth.onAuthStateChange((event, session) => {
+    db.auth.onAuthStateChange((event, session) => {
         if (session) {
             currentUser = session.user;
             showMainApp();
@@ -169,7 +169,7 @@ async function handleLogin(e) {
 
     showLoading();
     try {
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await db.auth.signInWithPassword({
             email,
             password
         });
@@ -191,7 +191,7 @@ async function handleLogin(e) {
 async function handleLogout() {
     if (confirm('Are you sure you want to logout?')) {
         showLoading();
-        await supabase.auth.signOut();
+        await db.auth.signOut();
         currentClient = null;
         currentFormId = null;
         showLoading(false);
@@ -205,7 +205,7 @@ async function handleLogout() {
 async function loadClients() {
     try {
         showLoading();
-        const { data, error } = await supabase
+        const { data, error } = await db
             .from('clients')
             .select('*')
             .order('created_at', { ascending: false });
@@ -335,7 +335,7 @@ async function handleNewClientSubmit(e) {
 
     showLoading();
     try {
-        const { data, error } = await supabase
+        const { data, error } = await db
             .from('clients')
             .insert([{ ...clientData, created_by: currentUser.id }])
             .select();
@@ -377,7 +377,7 @@ async function saveCoreFields() {
     });
 
     try {
-        const { error } = await supabase
+        const { error } = await db
             .from('clients')
             .update(updates)
             .eq('id', currentClient.id);
@@ -425,7 +425,7 @@ async function loadFormData(formId) {
     if (!currentClient) return;
 
     try {
-        const { data, error } = await supabase
+        const { data, error } = await db
             .from('form_submissions')
             .select('form_data')
             .eq('client_id', currentClient.id)
@@ -677,7 +677,7 @@ async function saveFormFields() {
     currentFormData = formData;
 
     try {
-        const { data: existingData, error: fetchError } = await supabase
+        const { data: existingData, error: fetchError } = await db
             .from('form_submissions')
             .select('id')
             .eq('client_id', currentClient.id)
@@ -686,13 +686,13 @@ async function saveFormFields() {
 
         if (existingData) {
             // Update
-            await supabase
+            await db
                 .from('form_submissions')
                 .update({ form_data: formData })
                 .eq('id', existingData.id);
         } else {
             // Insert
-            await supabase
+            await db
                 .from('form_submissions')
                 .insert([{
                     client_id: currentClient.id,
