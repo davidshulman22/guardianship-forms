@@ -1,0 +1,81 @@
+{
+  "forms": [
+    {
+      "id": "G2-010",
+      "name": "Petition to Determine Incapacity",
+      "template": "templates/G2-010.docx",
+      "sections": [
+        {
+          "title": "Factual Basis for Incapacity",
+          "fields": [
+            {"name": "factual_basis", "label": "Factual basis for believing AIP is incapacitated", "type": "textarea"}
+          ]
+        },
+        {
+          "title": "Knowledge Witnesses",
+          "fields": [
+            {"name": "knowledge_witnesses", "label": "Persons with knowledge of facts (names and addresses)", "type": "textarea"}
+          ]
+        },
+        {
+          "title": "Rights AIP Cannot Exercise",
+          "fields": [
+            {"name": "right_marry", "label": "To marry", "type": "checkbox"},
+            {"name": "right_vote", "label": "To vote", "type": "checkbox"},
+            {"name": "right_contract", "label": "To contract", "type": "checkbox"},
+            {"name": "right_travel", "label": "To travel", "type": "checkbox"},
+            {"name": "right_sue", "label": "To sue and defend lawsuits", "type": "checkbox"},
+            {"name": "right_drivers_license", "label": "To have a driver's license", "type": "checkbox"},
+            {"name": "right_residency", "label": "To determine residency", "type": "checkbox"},
+            {"name": "right_employment", "label": "To seek or retain employment", "type": "checkbox"},
+            {"name": "right_medical", "label": "To consent to medical/mental health treatment", "type": "checkbox"},
+            {"name": "right_property", "label": "To manage property or make gifts/dispositions", "type": "checkbox"},
+            {"name": "right_govt_benefits", "label": "To apply for government benefits", "type": "checkbox"},
+            {"name": "right_social", "label": "To make decisions about social environment", "type": "checkbox"}
+          ]
+        },
+        {
+          "title": "Guardianship Type",
+          "fields": [
+            {"name": "guardianship_plenary", "label": "Plenary guardianship", "type": "checkbox"},
+            {"name": "guardianship_limited", "label": "Limited guardianship", "type": "checkbox"}
+          ]
+        },
+        {
+          "title": "Alternatives to Guardianship",
+          "fields": [
+            {"name": "alt_trust", "label": "Trust agreements", "type": "checkbox"},
+            {"name": "alt_poa", "label": "Powers of attorney", "type": "checkbox"},
+            {"name": "alt_healthcare_surrogate", "label": "Designations of health care surrogates", "type": "checkbox"},
+            {"name": "alt_advance_directives", "label": "Other advance directives", "type": "checkbox"},
+            {"name": "alt_supported_decision", "label": "Supported decision making agreements", "type": "checkbox"},
+            {"name": "alternatives_explanation", "label": "Why alternatives are inappropriate or insufficient", "type": "textarea"}
+          ]
+        },
+        {
+          "title": "Next of Kin",
+          "fields": [
+            {
+              "name": "next_of_kin",
+              "label": "Next of kin",
+              "type": "repeating_group",
+              "subfields": [
+                {"name": "name", "label": "Name", "type": "text"},
+                {"name": "address", "label": "Address", "type": "text"},
+                {"name": "relationship", "label": "Relationship", "type": "text"}
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Signing Information",
+          "fields": [
+            {"name": "signing_day", "label": "Day", "type": "text"},
+            {"name": "signing_month", "label": "Month", "type": "text"},
+            {"name": "signing_year", "label": "Year", "type": "text"}
+          ]
+        }
+      ]
+    }
+  ]
+}
