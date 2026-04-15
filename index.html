@@ -72,21 +72,81 @@
                             <div id="matterInfo" class="matter-info"></div>
                         </div>
 
-                        <!-- Form Selector -->
-                        <div class="panel-card">
-                            <div class="form-selector">
-                                <label for="formSelect">Select Form</label>
-                                <select id="formSelect">
-                                    <option value="">-- Choose a form --</option>
-                                </select>
+                        <!-- Open Estate Wizard -->
+                        <div id="openEstateWizard" class="panel-card wizard-card">
+                            <div class="wizard-header">
+                                <h3>Open Estate</h3>
+                                <p class="wizard-subtitle">Answer these questions to load the correct forms</p>
                             </div>
+                            <div class="wizard-questions">
+                                <div class="wizard-row">
+                                    <div class="wizard-question">
+                                        <label>Administration</label>
+                                        <div class="wizard-toggle" id="wizAdminType">
+                                            <button type="button" class="wiz-btn" data-value="formal">Formal</button>
+                                            <button type="button" class="wiz-btn" data-value="summary">Summary</button>
+                                        </div>
+                                    </div>
+                                    <div class="wizard-question">
+                                        <label>Will</label>
+                                        <div class="wizard-toggle" id="wizWillType">
+                                            <button type="button" class="wiz-btn" data-value="testate">Testate</button>
+                                            <button type="button" class="wiz-btn" data-value="intestate">Intestate</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="wizard-row">
+                                    <div class="wizard-question">
+                                        <label>Jurisdiction</label>
+                                        <div class="wizard-toggle" id="wizJurisdiction">
+                                            <button type="button" class="wiz-btn" data-value="domiciliary">Domiciliary</button>
+                                            <button type="button" class="wiz-btn" data-value="ancillary">Ancillary</button>
+                                        </div>
+                                    </div>
+                                    <div class="wizard-question" id="wizPetitionerGroup">
+                                        <label>Petitioners</label>
+                                        <div class="wizard-toggle" id="wizPetitioners">
+                                            <button type="button" class="wiz-btn" data-value="single">Single</button>
+                                            <button type="button" class="wiz-btn" data-value="multiple">Multiple</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="wizard-row">
+                                    <div class="wizard-question">
+                                        <label>County</label>
+                                        <select id="wizCounty" class="wiz-select">
+                                            <option value="">Select county...</option>
+                                            <option value="Broward">Broward</option>
+                                            <option value="Palm Beach">Palm Beach</option>
+                                            <option value="Miami-Dade">Miami-Dade</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div class="wizard-question wizard-action">
+                                        <button type="button" id="wizLoadFormsBtn" class="btn btn-primary" disabled>Load Forms</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="wizFormList" class="wizard-form-list"></div>
+                        </div>
+
+                        <!-- Form Selector (advanced/manual) -->
+                        <div class="panel-card">
+                            <details class="form-selector-details">
+                                <summary class="form-selector-toggle">Manual form selection</summary>
+                                <div class="form-selector-multi">
+                                    <div id="formBundles" class="form-bundles"></div>
+                                    <div id="formChecklist" class="form-checklist"></div>
+                                </div>
+                            </details>
                         </div>
 
                         <!-- Form Fields -->
                         <div id="formFieldsSection" class="panel-card" style="display:none;">
+                            <div id="selectedFormsSummary" class="selected-forms-summary"></div>
                             <div id="formFieldsContainer"></div>
                             <div class="form-actions">
-                                <button id="generateDocBtn" class="btn btn-primary btn-full">Generate Document</button>
+                                <button id="generateDocBtn" class="btn btn-primary btn-full">Generate Documents (.zip)</button>
                             </div>
                         </div>
                     </div>

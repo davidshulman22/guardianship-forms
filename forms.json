@@ -4215,6 +4215,232 @@
           ]
         }
       ]
+    },
+    {
+      "id": "BW-0010",
+      "name": "Affidavit Regarding Criminal History (Broward)",
+      "template": "templates/BW-0010.docx",
+      "county": "Broward",
+      "sections": [
+        {
+          "title": "Affiant Information",
+          "fields": [
+            {
+              "name": "affiant_name",
+              "label": "Affiant name (person swearing)",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "title": "Criminal History",
+          "fields": [
+            {
+              "name": "no_felony",
+              "label": "I have NOT been convicted of a felony",
+              "type": "checkbox"
+            },
+            {
+              "name": "has_felony",
+              "label": "I HAVE been convicted of a felony",
+              "type": "checkbox"
+            },
+            {
+              "name": "felony_offenses",
+              "label": "Offense(s)",
+              "type": "text"
+            },
+            {
+              "name": "felony_dates",
+              "label": "Date(s) of conviction",
+              "type": "text"
+            },
+            {
+              "name": "felony_court_case",
+              "label": "Court & case number",
+              "type": "text"
+            },
+            {
+              "name": "felony_state_county",
+              "label": "State & County of the court",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "title": "Notary",
+          "fields": [
+            {
+              "name": "notary_state",
+              "label": "State",
+              "type": "text"
+            },
+            {
+              "name": "notary_county",
+              "label": "County",
+              "type": "text"
+            },
+            {
+              "name": "notary_means",
+              "label": "Means (check or X)",
+              "type": "text"
+            },
+            {
+              "name": "notary_day",
+              "label": "Day",
+              "type": "text"
+            },
+            {
+              "name": "notary_month",
+              "label": "Month",
+              "type": "text"
+            },
+            {
+              "name": "notary_year_short",
+              "label": "Year (last 2 digits)",
+              "type": "text"
+            },
+            {
+              "name": "notary_personally_known",
+              "label": "Personally known",
+              "type": "checkbox"
+            },
+            {
+              "name": "notary_produced_id",
+              "label": "Produced identification",
+              "type": "checkbox"
+            },
+            {
+              "name": "notary_identification",
+              "label": "Type of identification",
+              "type": "text"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "BW-0020",
+      "name": "Mandatory Checklist — Formal Admin Testate (Broward)",
+      "template": "templates/BW-0020.docx",
+      "county": "Broward",
+      "sections": [
+        {
+          "title": "Hearing",
+          "fields": [
+            {
+              "name": "hearing_exparte",
+              "label": "Pursuing on ex-parte, motion, or special set calendar",
+              "type": "checkbox"
+            },
+            {
+              "name": "hearing_no_hearing",
+              "label": "Submitted to Judge without a hearing",
+              "type": "checkbox"
+            }
+          ]
+        },
+        {
+          "title": "Filing Verification",
+          "fields": [
+            {
+              "name": "cl_death_cert",
+              "label": "Death certificate was filed",
+              "type": "checkbox"
+            },
+            {
+              "name": "cl_criminal_history",
+              "label": "Affidavit Regarding Criminal History was filed",
+              "type": "checkbox"
+            },
+            {
+              "name": "cl_residence",
+              "label": "Death cert reflects Broward residence (or property situs in Petition)",
+              "type": "checkbox"
+            },
+            {
+              "name": "cl_petition_verified",
+              "label": "Petition is verified, signed by Petitioner and attorney",
+              "type": "checkbox"
+            },
+            {
+              "name": "cl_interest_address",
+              "label": "Petitioner's interest and address are in the Petition",
+              "type": "checkbox"
+            },
+            {
+              "name": "cl_will_filed",
+              "label": "Will/codicil was e-filed and original deposited with Clerk",
+              "type": "checkbox"
+            },
+            {
+              "name": "cl_lost_will",
+              "label": "OR: Petition to Establish Lost/Destroyed Will was filed",
+              "type": "checkbox"
+            },
+            {
+              "name": "cl_self_proved",
+              "label": "Will is self-proven (or oath of witness filed)",
+              "type": "checkbox"
+            },
+            {
+              "name": "cl_petitioner_qualified",
+              "label": "Petitioner is not a felon and is FL resident (or related if non-FL)",
+              "type": "checkbox"
+            },
+            {
+              "name": "cl_beneficiaries",
+              "label": "Beneficiaries listed with minor birthdates",
+              "type": "checkbox"
+            },
+            {
+              "name": "cl_assets",
+              "label": "Assets and approximate values listed in Petition",
+              "type": "checkbox"
+            },
+            {
+              "name": "cl_preference",
+              "label": "PR has preference of appointment (renunciations filed if needed)",
+              "type": "checkbox"
+            },
+            {
+              "name": "cl_oath_filed",
+              "label": "Oath of PR and designation of resident agent filed",
+              "type": "checkbox"
+            },
+            {
+              "name": "cl_order_filed",
+              "label": "Proposed order filed (4+ lines of text + case no. on sig page)",
+              "type": "checkbox"
+            },
+            {
+              "name": "cl_letters_filed",
+              "label": "Proposed letters filed (4+ lines of text + case no. on sig page)",
+              "type": "checkbox"
+            },
+            {
+              "name": "cl_no_trust",
+              "label": "A trust is NOT a beneficiary of the decedent",
+              "type": "checkbox"
+            },
+            {
+              "name": "cl_trust_beneficiary",
+              "label": "OR: Trust is a beneficiary — disclosure of trust beneficiaries filed",
+              "type": "checkbox"
+            }
+          ]
+        },
+        {
+          "title": "Certification B (if any items unchecked)",
+          "fields": [
+            {
+              "name": "cert_b_missing_items",
+              "label": "List items not checked above",
+              "type": "textarea"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

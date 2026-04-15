@@ -406,8 +406,316 @@ body {
     min-height: 80px;
 }
 
-/* Form Selector */
+/* ============================================
+   OPEN ESTATE WIZARD
+   ============================================ */
 
+.wizard-card {
+    border-left: 4px solid #2563eb;
+}
+
+.wizard-header h3 {
+    color: #1f2937;
+    font-size: 1.1rem;
+    margin-bottom: 0.2rem;
+}
+
+.wizard-subtitle {
+    color: #6b7280;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+}
+
+.wizard-questions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.wizard-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.wizard-question {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.wizard-question > label {
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.wizard-toggle {
+    display: flex;
+    gap: 0;
+    border: 1.5px solid #d1d5db;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.wiz-btn {
+    flex: 1;
+    padding: 0.5rem 0.75rem;
+    border: none;
+    background: white;
+    color: #374151;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.12s;
+    font-family: inherit;
+}
+
+.wiz-btn:not(:last-child) {
+    border-right: 1.5px solid #d1d5db;
+}
+
+.wiz-btn:hover {
+    background: #f3f4f6;
+}
+
+.wiz-btn.active {
+    background: #2563eb;
+    color: white;
+}
+
+.wiz-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.wiz-select {
+    padding: 0.5rem 0.75rem;
+    border: 1.5px solid #d1d5db;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.85rem;
+    background: white;
+    cursor: pointer;
+}
+
+.wiz-select:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.wizard-action {
+    display: flex;
+    align-items: flex-end;
+}
+
+.wizard-action .btn {
+    width: 100%;
+    padding: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.wizard-form-list {
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #e5e7eb;
+    display: none;
+}
+
+.wizard-form-list.visible {
+    display: block;
+}
+
+.wizard-form-list-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+.wizard-form-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.wizard-form-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.55rem;
+    background: #eef2ff;
+    border: 1px solid #c7d2fe;
+    border-radius: 4px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #4338ca;
+}
+
+.wizard-form-tag.local {
+    background: #fef3c7;
+    border-color: #fcd34d;
+    color: #92400e;
+}
+
+.wizard-note {
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    color: #9ca3af;
+    font-style: italic;
+}
+
+/* Manual form selector toggle */
+.form-selector-details {
+    cursor: pointer;
+}
+
+.form-selector-toggle {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #6b7280;
+    padding: 0.25rem 0;
+    list-style: none;
+}
+
+.form-selector-toggle::-webkit-details-marker {
+    display: none;
+}
+
+.form-selector-toggle::before {
+    content: '\25B6';
+    display: inline-block;
+    margin-right: 0.5rem;
+    font-size: 0.7rem;
+    transition: transform 0.2s;
+}
+
+details[open] .form-selector-toggle::before {
+    transform: rotate(90deg);
+}
+
+.form-selector-multi {
+    margin-top: 0.75rem;
+}
+
+/* Form Selector — Multi-select */
+
+.form-selector-multi {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.form-selector-label {
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.95rem;
+}
+
+.form-bundles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.bundle-btn {
+    padding: 0.4rem 0.85rem;
+    border: 1.5px solid #d1d5db;
+    border-radius: 20px;
+    background: white;
+    color: #374151;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+}
+
+.bundle-btn:hover {
+    border-color: #2563eb;
+    color: #2563eb;
+    background: #eef2ff;
+}
+
+.bundle-btn.active {
+    border-color: #2563eb;
+    background: #2563eb;
+    color: white;
+}
+
+.form-checklist {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.form-check-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.45rem 0.5rem;
+    border-radius: 4px;
+    transition: background 0.1s;
+    cursor: pointer;
+}
+
+.form-check-item:hover {
+    background: #f3f4f6;
+}
+
+.form-check-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #2563eb;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.form-check-item label {
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #374151;
+    user-select: none;
+    flex: 1;
+}
+
+.form-check-item label .form-id {
+    font-weight: 600;
+    color: #1f2937;
+    margin-right: 0.35rem;
+}
+
+.selected-forms-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.selected-form-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.25rem 0.6rem;
+    background: #eef2ff;
+    border: 1px solid #c7d2fe;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #4338ca;
+}
+
+/* Legacy single selector (kept for compatibility) */
 .form-selector {
     display: flex;
     flex-direction: column;

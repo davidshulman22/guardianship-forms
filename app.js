@@ -9,9 +9,57 @@ let clients = [];          // Array of client objects
 let currentClient = null;  // Selected client
 let currentMatter = null;  // Selected matter
 let currentFormId = null;
+let selectedFormIds = [];   // Multi-select: array of selected form IDs
 let currentFormData = {};
 let editingClientId = null;
 let editingMatterId = null;
+
+// ============================================
+// FORM BUNDLES — common filing sets
+// ============================================
+
+const formBundles = {
+    probate: [
+        {
+            name: 'Open Estate (testate)',
+            formIds: ['P3-0100', 'P3-0420', 'P3-0600', 'P3-0700', 'P1-0900', 'BW-0010', 'BW-0020']
+        },
+        {
+            name: 'Open Estate (intestate)',
+            formIds: ['P3-0120', 'P3-0440', 'P3-0600', 'P3-0700', 'P1-0900', 'BW-0010']
+        },
+        {
+            name: 'Notice to Creditors',
+            formIds: ['P3-0740']
+        },
+        {
+            name: 'Inventory',
+            formIds: ['P3-0900']
+        },
+        {
+            name: 'Closing (Discharge)',
+            formIds: ['P5-0400', 'P5-0800']
+        },
+        {
+            name: 'Summary Admin (testate)',
+            formIds: ['P2-0204', 'P2-0300', 'P2-0355']
+        },
+        {
+            name: 'Summary Admin (intestate)',
+            formIds: ['P2-0214', 'P2-0310', 'P2-0355']
+        }
+    ],
+    guardianship: [
+        {
+            name: 'Incapacity Petition',
+            formIds: ['G2-010']
+        },
+        {
+            name: 'Emergency Temp Guardian',
+            formIds: ['G3-010']
+        }
+    ]
+};
 
 // ============================================
 // INITIALIZATION
@@ -214,16 +262,17 @@ function setupEventListeners() {
     document.getElementById('backToClientBtn').addEventListener('click', () => {
         currentMatter = null;
         currentFormId = null;
+        selectedFormIds = [];
         currentFormData = {};
         showView('client');
         renderMatterList();
     });
 
-    // Form selector
-    document.getElementById('formSelect').addEventListener('change', handleFormSelect);
-
     // Generate
-    document.getElementById('generateDocBtn').addEventListener('click', generateDocument);
+    document.getElementById('generateDocBtn').addEventListener('click', generateDocuments);
+
+    // Open Estate Wizard
+    setupWizard();
 
     // Modal close buttons (all of them)
     document.querySelectorAll('.modal-close-btn').forEach(btn => {
@@ -289,6 +338,7 @@ function selectClient(client) {
     currentClient = client;
     currentMatter = null;
     currentFormId = null;
+    selectedFormIds = [];
     currentFormData = {};
 
     renderClientList();
@@ -424,6 +474,7 @@ function renderMatterList() {
 function selectMatter(matter) {
     currentMatter = matter;
     currentFormId = null;
+    selectedFormIds = [];
     currentFormData = {};
     renderMatterView();
     showView('matter');
@@ -456,13 +507,15 @@ function renderMatterView() {
         }
     });
 
-    // Populate form selector filtered by matter type
+    // Initialize wizard for this matter
+    initWizardForMatter();
+
+    // Populate form multi-select filtered by matter type
     populateFormSelector();
 
     // Reset form fields
     document.getElementById('formFieldsSection').style.display = 'none';
     document.getElementById('formFieldsContainer').innerHTML = '';
-    document.getElementById('formSelect').value = '';
 }
 
 // ============================================
@@ -534,29 +587,367 @@ function handleMatterFormSubmit(e) {
 }
 
 // ============================================
+// OPEN ESTATE WIZARD
+// ============================================
+
+const wizardFormMatrix = {
+    // Formal Administration — Domiciliary
+    'formal|testate|domiciliary|single': {
+        forms: ['P3-0100', 'P3-0420', 'P3-0600', 'P3-0700', 'P1-0900'],
+        broward: ['BW-0010', 'BW-0020']
+    },
+    'formal|intestate|domiciliary|single': {
+        forms: ['P3-0120', 'P3-0440', 'P3-0600', 'P3-0700', 'P1-0900'],
+        broward: ['BW-0010']
+    },
+    // Formal Admin — multiple petitioners (use same forms, multi-petitioner is rare in formal)
+    'formal|testate|domiciliary|multiple': {
+        forms: ['P3-0100', 'P3-0420', 'P3-0600', 'P3-0700', 'P1-0900'],
+        broward: ['BW-0010', 'BW-0020']
+    },
+    'formal|intestate|domiciliary|multiple': {
+        forms: ['P3-0120', 'P3-0440', 'P3-0600', 'P3-0700', 'P1-0900'],
+        broward: ['BW-0010']
+    },
+
+    // Summary Administration — Domiciliary
+    'summary|testate|domiciliary|single': {
+        forms: ['P2-0204', 'P2-0300', 'P2-0355'],
+        broward: ['BW-0010']
+    },
+    'summary|testate|domiciliary|multiple': {
+        forms: ['P2-0205', 'P2-0300', 'P2-0355'],
+        broward: ['BW-0010']
+    },
+    'summary|intestate|domiciliary|single': {
+        forms: ['P2-0214', 'P2-0310', 'P2-0355'],
+        broward: ['BW-0010']
+    },
+    'summary|intestate|domiciliary|multiple': {
+        forms: ['P2-0215', 'P2-0310', 'P2-0355'],
+        broward: ['BW-0010']
+    },
+
+    // Summary Administration — Ancillary
+    'summary|testate|ancillary|single': {
+        forms: ['P2-0219', 'P2-0320'],
+        broward: ['BW-0010']
+    },
+    'summary|testate|ancillary|multiple': {
+        forms: ['P2-0220', 'P2-0320'],
+        broward: ['BW-0010']
+    },
+    'summary|intestate|ancillary|single': {
+        forms: ['P2-0224', 'P2-0325'],
+        broward: ['BW-0010']
+    },
+    'summary|intestate|ancillary|multiple': {
+        forms: ['P2-0225', 'P2-0325'],
+        broward: ['BW-0010']
+    }
+};
+
+let wizardState = {
+    adminType: null,    // 'formal' | 'summary'
+    willType: null,     // 'testate' | 'intestate'
+    jurisdiction: null, // 'domiciliary' | 'ancillary'
+    petitioners: null,  // 'single' | 'multiple'
+    county: null
+};
+
+function setupWizard() {
+    // Toggle button groups
+    ['wizAdminType', 'wizWillType', 'wizJurisdiction', 'wizPetitioners'].forEach(groupId => {
+        const group = document.getElementById(groupId);
+        if (!group) return;
+        group.querySelectorAll('.wiz-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Toggle: if already active, deselect
+                const wasActive = btn.classList.contains('active');
+                group.querySelectorAll('.wiz-btn').forEach(b => b.classList.remove('active'));
+                if (!wasActive) btn.classList.add('active');
+
+                // Update state
+                const val = wasActive ? null : btn.dataset.value;
+                if (groupId === 'wizAdminType') wizardState.adminType = val;
+                else if (groupId === 'wizWillType') wizardState.willType = val;
+                else if (groupId === 'wizJurisdiction') wizardState.jurisdiction = val;
+                else if (groupId === 'wizPetitioners') wizardState.petitioners = val;
+
+                updateWizardUI();
+            });
+        });
+    });
+
+    // County dropdown
+    document.getElementById('wizCounty').addEventListener('change', (e) => {
+        wizardState.county = e.target.value || null;
+        updateWizardUI();
+    });
+
+    // Load Forms button
+    document.getElementById('wizLoadFormsBtn').addEventListener('click', wizardLoadForms);
+}
+
+function updateWizardUI() {
+    // Show/hide petitioners question (only relevant for summary)
+    const petGroup = document.getElementById('wizPetitionerGroup');
+    if (wizardState.adminType === 'formal') {
+        petGroup.style.opacity = '0.4';
+        // Default to single for formal
+        if (!wizardState.petitioners) {
+            wizardState.petitioners = 'single';
+            document.querySelector('#wizPetitioners .wiz-btn[data-value="single"]').classList.add('active');
+        }
+    } else {
+        petGroup.style.opacity = '1';
+    }
+
+    // Enable/disable Load Forms button
+    const btn = document.getElementById('wizLoadFormsBtn');
+    const ready = wizardState.adminType && wizardState.willType && wizardState.jurisdiction && wizardState.petitioners && wizardState.county;
+    btn.disabled = !ready;
+
+    // Preview which forms will be loaded
+    if (ready) {
+        previewWizardForms();
+    } else {
+        const listEl = document.getElementById('wizFormList');
+        listEl.classList.remove('visible');
+    }
+}
+
+function previewWizardForms() {
+    const key = [wizardState.adminType, wizardState.willType, wizardState.jurisdiction, wizardState.petitioners].join('|');
+    const entry = wizardFormMatrix[key];
+    const listEl = document.getElementById('wizFormList');
+
+    if (!entry) {
+        listEl.innerHTML = '<p class="wizard-note">This combination is not yet available.</p>';
+        listEl.classList.add('visible');
+        document.getElementById('wizLoadFormsBtn').disabled = true;
+        return;
+    }
+
+    let allForms = [...entry.forms];
+    let localForms = [];
+    if (wizardState.county === 'Broward' && entry.broward) {
+        localForms = entry.broward;
+        allForms = allForms.concat(localForms);
+    }
+
+    let html = '<div class="wizard-form-list-title">Forms to generate</div><div class="wizard-form-tags">';
+    allForms.forEach(formId => {
+        const form = formsConfig ? formsConfig.forms.find(f => f.id === formId) : null;
+        const name = form ? form.name : formId;
+        const isLocal = localForms.includes(formId);
+        const shortName = name.length > 50 ? name.substring(0, 47) + '...' : name;
+        html += `<span class="wizard-form-tag${isLocal ? ' local' : ''}" title="${name}">${formId}</span>`;
+    });
+    html += '</div>';
+
+    if (wizardState.willType === 'testate') {
+        html += '<p class="wizard-note">Remember: original will must be deposited with the Clerk. Death certificate must also be filed.</p>';
+    } else {
+        html += '<p class="wizard-note">Remember: death certificate must be filed. Affidavit of Heirs required for intestate.</p>';
+    }
+
+    listEl.innerHTML = html;
+    listEl.classList.add('visible');
+}
+
+function wizardLoadForms() {
+    const key = [wizardState.adminType, wizardState.willType, wizardState.jurisdiction, wizardState.petitioners].join('|');
+    const entry = wizardFormMatrix[key];
+    if (!entry) return;
+
+    let allForms = [...entry.forms];
+    if (wizardState.county === 'Broward' && entry.broward) {
+        allForms = allForms.concat(entry.broward);
+    }
+
+    // Set the selected forms and trigger rendering
+    selectedFormIds = allForms;
+    currentFormId = selectedFormIds[0];
+
+    // Also sync the manual form checklist
+    syncCheckboxes();
+    updateBundleButtons();
+
+    // Merge saved form data
+    currentFormData = {};
+    selectedFormIds.forEach(formId => {
+        if (currentMatter && currentMatter.formData && currentMatter.formData[formId]) {
+            const saved = currentMatter.formData[formId];
+            Object.keys(saved).forEach(k => {
+                const val = saved[k];
+                if (val !== '' && val !== null && val !== undefined && val !== false) {
+                    currentFormData[k] = val;
+                }
+            });
+        }
+    });
+
+    renderMergedFormFields();
+
+    // Scroll to the fields
+    setTimeout(() => {
+        document.getElementById('formFieldsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+
+    showNotification(allForms.length + ' forms loaded', 'success');
+}
+
+function initWizardForMatter() {
+    // Reset wizard state
+    wizardState = {
+        adminType: null,
+        willType: null,
+        jurisdiction: null,
+        petitioners: null,
+        county: currentMatter ? currentMatter.county || null : null
+    };
+
+    // Reset toggle buttons
+    ['wizAdminType', 'wizWillType', 'wizJurisdiction', 'wizPetitioners'].forEach(groupId => {
+        const group = document.getElementById(groupId);
+        if (group) group.querySelectorAll('.wiz-btn').forEach(b => b.classList.remove('active'));
+    });
+
+    // Set county from matter
+    const countySelect = document.getElementById('wizCounty');
+    if (countySelect && currentMatter) {
+        // Try to match the matter county to an option
+        const county = currentMatter.county || '';
+        const option = Array.from(countySelect.options).find(o => o.value.toLowerCase() === county.toLowerCase());
+        if (option) {
+            countySelect.value = option.value;
+            wizardState.county = option.value;
+        } else if (county) {
+            // Add it as a custom option
+            const newOpt = document.createElement('option');
+            newOpt.value = county;
+            newOpt.textContent = county;
+            countySelect.insertBefore(newOpt, countySelect.lastElementChild);
+            countySelect.value = county;
+            wizardState.county = county;
+        }
+    }
+
+    // Hide the form list preview
+    const listEl = document.getElementById('wizFormList');
+    if (listEl) listEl.classList.remove('visible');
+
+    // Disable load button
+    const btn = document.getElementById('wizLoadFormsBtn');
+    if (btn) btn.disabled = true;
+
+    // Only show wizard for probate matters
+    const wizardEl = document.getElementById('openEstateWizard');
+    if (wizardEl) {
+        wizardEl.style.display = (currentMatter && currentMatter.type === 'probate') ? '' : 'none';
+    }
+}
+
+// ============================================
 // FORM SELECTOR & RENDERING
 // ============================================
 
 function populateFormSelector() {
-    const select = document.getElementById('formSelect');
-    select.innerHTML = '<option value="">-- Choose a form --</option>';
-
     if (!formsConfig || !currentMatter) return;
 
-    const prefix = currentMatter.type === 'probate' ? 'P' : 'G';
-    formsConfig.forms
-        .filter(f => f.id.startsWith(prefix))
-        .forEach(form => {
-            const option = document.createElement('option');
-            option.value = form.id;
-            option.textContent = form.id + ' — ' + form.name;
-            select.appendChild(option);
-        });
+    const matterType = currentMatter.type || 'probate';
+    const prefixes = matterType === 'probate' ? ['P', 'BW'] : ['G'];
+    const availableForms = formsConfig.forms.filter(f => prefixes.some(p => f.id.startsWith(p)));
+    const bundles = formBundles[matterType] || [];
+
+    // Render bundle buttons
+    const bundleContainer = document.getElementById('formBundles');
+    bundleContainer.innerHTML = '';
+    bundles.forEach(bundle => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'bundle-btn';
+        btn.textContent = bundle.name;
+        btn.addEventListener('click', () => toggleBundle(bundle));
+        bundleContainer.appendChild(btn);
+    });
+
+    // Render form checklist
+    const checklist = document.getElementById('formChecklist');
+    checklist.innerHTML = '';
+    availableForms.forEach(form => {
+        const item = document.createElement('div');
+        item.className = 'form-check-item';
+
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.id = 'formCheck_' + form.id;
+        cb.value = form.id;
+        cb.checked = selectedFormIds.includes(form.id);
+        cb.addEventListener('change', () => handleFormCheckChange());
+
+        const label = document.createElement('label');
+        label.htmlFor = 'formCheck_' + form.id;
+        label.innerHTML = '<span class="form-id">' + form.id + '</span>' + form.name;
+
+        item.appendChild(cb);
+        item.appendChild(label);
+        checklist.appendChild(item);
+    });
 }
 
-async function handleFormSelect(e) {
-    const formId = e.target.value;
-    if (!formId) {
+function toggleBundle(bundle) {
+    // If all forms in this bundle are already selected, deselect them
+    const allSelected = bundle.formIds.every(id => selectedFormIds.includes(id));
+
+    if (allSelected) {
+        selectedFormIds = selectedFormIds.filter(id => !bundle.formIds.includes(id));
+    } else {
+        bundle.formIds.forEach(id => {
+            if (!selectedFormIds.includes(id)) {
+                selectedFormIds.push(id);
+            }
+        });
+    }
+
+    // Update checkbox states
+    syncCheckboxes();
+    updateBundleButtons();
+    handleFormSelectionChanged();
+}
+
+function handleFormCheckChange() {
+    // Read current checkbox states
+    selectedFormIds = [];
+    document.querySelectorAll('#formChecklist input[type="checkbox"]:checked').forEach(cb => {
+        selectedFormIds.push(cb.value);
+    });
+    updateBundleButtons();
+    handleFormSelectionChanged();
+}
+
+function syncCheckboxes() {
+    document.querySelectorAll('#formChecklist input[type="checkbox"]').forEach(cb => {
+        cb.checked = selectedFormIds.includes(cb.value);
+    });
+}
+
+function updateBundleButtons() {
+    const matterType = currentMatter ? currentMatter.type || 'probate' : 'probate';
+    const bundles = formBundles[matterType] || [];
+    const buttons = document.querySelectorAll('.bundle-btn');
+
+    buttons.forEach((btn, i) => {
+        if (i < bundles.length) {
+            const allSelected = bundles[i].formIds.every(id => selectedFormIds.includes(id));
+            btn.classList.toggle('active', allSelected);
+        }
+    });
+}
+
+function handleFormSelectionChanged() {
+    if (selectedFormIds.length === 0) {
         document.getElementById('formFieldsSection').style.display = 'none';
         document.getElementById('formFieldsContainer').innerHTML = '';
         currentFormId = null;
@@ -564,16 +955,25 @@ async function handleFormSelect(e) {
         return;
     }
 
-    currentFormId = formId;
+    // Use the first selected form as the "primary" for data saving compatibility
+    currentFormId = selectedFormIds[0];
 
-    // Load saved form data for this matter+form
-    if (currentMatter && currentMatter.formData && currentMatter.formData[formId]) {
-        currentFormData = currentMatter.formData[formId];
-    } else {
-        currentFormData = {};
-    }
+    // Merge saved form data from all selected forms
+    currentFormData = {};
+    selectedFormIds.forEach(formId => {
+        if (currentMatter && currentMatter.formData && currentMatter.formData[formId]) {
+            const saved = currentMatter.formData[formId];
+            Object.keys(saved).forEach(key => {
+                // Don't overwrite with empty values
+                const val = saved[key];
+                if (val !== '' && val !== null && val !== undefined && val !== false) {
+                    currentFormData[key] = val;
+                }
+            });
+        }
+    });
 
-    renderFormFields();
+    renderMergedFormFields();
 }
 
 function getAutoPopulateDefaults() {
@@ -623,6 +1023,11 @@ function getAutoPopulateDefaults() {
     if (!defaults.petitioner_names) defaults.petitioner_names = fullName;
     if (!defaults.petitioner_address) defaults.petitioner_address = currentClient.address || '';
 
+    // --- Layer 3b: Auto-derive fields ---
+    if (!defaults.affiant_name) defaults.affiant_name = defaults.petitioner_name || fullName;
+    if (!defaults.notary_state) defaults.notary_state = 'Florida';
+    if (!defaults.notary_county) defaults.notary_county = currentMatter.county || '';
+
     // --- Layer 4: Attorney defaults ---
     if (!defaults.attorney_name) defaults.attorney_name = 'David A. Shulman';
     if (!defaults.attorney_email) defaults.attorney_email = 'david@ginsbergshulman.com';
@@ -635,12 +1040,14 @@ function getAutoPopulateDefaults() {
 }
 
 function renderFormFields() {
-    if (!currentFormId || !formsConfig) return;
+    // Legacy single-form render — now delegates to merged render
+    renderMergedFormFields();
+}
 
-    const form = formsConfig.forms.find(f => f.id === currentFormId);
-    if (!form) return;
+function renderMergedFormFields() {
+    if (!formsConfig || selectedFormIds.length === 0) return;
 
-    // Pre-populate currentFormData with defaults for any empty fields
+    // Pre-populate currentFormData with defaults
     const defaults = getAutoPopulateDefaults();
     Object.keys(defaults).forEach(key => {
         if (!currentFormData[key] && defaults[key]) {
@@ -651,7 +1058,54 @@ function renderFormFields() {
     const container = document.getElementById('formFieldsContainer');
     container.innerHTML = '';
 
-    form.sections.forEach(section => {
+    // Show selected forms summary tags
+    const summary = document.getElementById('selectedFormsSummary');
+    summary.innerHTML = '';
+    selectedFormIds.forEach(formId => {
+        const form = formsConfig.forms.find(f => f.id === formId);
+        if (form) {
+            const tag = document.createElement('span');
+            tag.className = 'selected-form-tag';
+            tag.textContent = form.id;
+            summary.appendChild(tag);
+        }
+    });
+
+    // Collect all sections from all selected forms, deduplicating fields by name
+    const seenFields = new Set();
+    const mergedSections = [];
+
+    selectedFormIds.forEach(formId => {
+        const form = formsConfig.forms.find(f => f.id === formId);
+        if (!form) return;
+
+        form.sections.forEach(section => {
+            const newFields = [];
+            section.fields.forEach(field => {
+                const fieldKey = field.type === 'repeating_group' ? field.name : field.name;
+                if (!seenFields.has(fieldKey)) {
+                    seenFields.add(fieldKey);
+                    newFields.push(field);
+                }
+            });
+
+            if (newFields.length > 0) {
+                // Check if we already have a section with this title
+                const existingSection = mergedSections.find(s => s.title === section.title);
+                if (existingSection) {
+                    existingSection.fields.push(...newFields);
+                } else {
+                    mergedSections.push({
+                        title: section.title,
+                        fields: [...newFields]
+                    });
+                }
+            }
+        });
+    });
+
+    // Render the merged sections
+    mergedSections.forEach(section => {
         const sectionDiv = document.createElement('div');
         sectionDiv.className = 'form-section';
 
@@ -666,6 +1120,14 @@ function renderFormFields() {
 
         container.appendChild(sectionDiv);
     });
+
+    // Update generate button text
+    const genBtn = document.getElementById('generateDocBtn');
+    if (selectedFormIds.length === 1) {
+        genBtn.textContent = 'Generate Document';
+    } else {
+        genBtn.textContent = 'Generate ' + selectedFormIds.length + ' Documents (.zip)';
+    }
 
     document.getElementById('formFieldsSection').style.display = 'block';
 }
@@ -838,9 +1300,15 @@ function collectFormData() {
 }
 
 function saveFormDataToMatter() {
-    if (!currentMatter || !currentFormId) return;
+    if (!currentMatter) return;
     if (!currentMatter.formData) currentMatter.formData = {};
-    currentMatter.formData[currentFormId] = currentFormData;
+
+    // Save the shared data to ALL selected forms (so cross-form sharing works)
+    const formsToSave = selectedFormIds.length > 0 ? selectedFormIds : (currentFormId ? [currentFormId] : []);
+    formsToSave.forEach(formId => {
+        currentMatter.formData[formId] = { ...currentFormData };
+    });
+
     saveClientsToStorage();
 }
 
@@ -848,49 +1316,82 @@ function saveFormDataToMatter() {
 // DOCUMENT GENERATION
 // ============================================
 
-async function generateDocument() {
-    if (!currentClient || !currentMatter || !currentFormId) {
-        showNotification('Please select a form first', 'error');
+async function generateDocuments() {
+    const formsToGenerate = selectedFormIds.length > 0 ? selectedFormIds : (currentFormId ? [currentFormId] : []);
+
+    if (!currentClient || !currentMatter || formsToGenerate.length === 0) {
+        showNotification('Please select at least one form', 'error');
         return;
     }
 
     showLoading();
 
     try {
-        const form = formsConfig.forms.find(f => f.id === currentFormId);
-        if (!form) throw new Error('Form configuration not found');
-
-        const response = await fetch(form.template);
-        if (!response.ok) throw new Error('Failed to fetch template');
-        const arrayBuffer = await response.arrayBuffer();
-
         const templateData = prepareTemplateData();
+        const subjectName = (currentMatter.subjectName || 'Form').replace(/\s+/g, '_');
+        const dateStr = new Date().toISOString().split('T')[0];
 
-        const zip = new window.PizZip(arrayBuffer);
-        const doc = new window.docxtemplater(zip, {
-            paragraphLoop: true,
-            linebreaks: true,
-            nullGetter: function() { return ''; }
-        });
-        doc.setData(templateData);
-        doc.render();
+        if (formsToGenerate.length === 1) {
+            // Single form — download .docx directly (no zip)
+            const form = formsConfig.forms.find(f => f.id === formsToGenerate[0]);
+            if (!form) throw new Error('Form configuration not found');
 
-        const blob = doc.getZip().generate({
-            type: 'blob',
-            mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-        });
+            const blob = await renderSingleDoc(form, templateData);
+            const fileName = subjectName + '_' + form.id + '_' + dateStr + '.docx';
+            window.saveAs(blob, fileName);
+            showNotification('Document generated', 'success');
+        } else {
+            // Multiple forms — bundle into a .zip
+            const zipFile = new window.PizZip();
 
-        const subjectName = currentMatter.subjectName || 'Form';
-        const fileName = subjectName.replace(/\s+/g, '_') + '_' + form.id + '_' + new Date().toISOString().split('T')[0] + '.docx';
-        window.saveAs(blob, fileName);
+            for (const formId of formsToGenerate) {
+                const form = formsConfig.forms.find(f => f.id === formId);
+                if (!form) {
+                    console.warn('Skipping unknown form:', formId);
+                    continue;
+                }
 
-        showNotification('Document generated successfully', 'success');
+                const blob = await renderSingleDoc(form, templateData);
+                const arrayBuf = await blob.arrayBuffer();
+                const fileName = subjectName + '_' + form.id + '_' + dateStr + '.docx';
+                zipFile.file(fileName, arrayBuf);
+            }
+
+            const zipBlob = zipFile.generate({
+                type: 'blob',
+                mimeType: 'application/zip'
+            });
+            const zipName = subjectName + '_' + dateStr + '.zip';
+            window.saveAs(zipBlob, zipName);
+            showNotification(formsToGenerate.length + ' documents generated', 'success');
+        }
+
         showLoading(false);
     } catch (error) {
-        console.error('Error generating document:', error);
-        showNotification('Failed to generate document: ' + error.message, 'error');
+        console.error('Error generating documents:', error);
+        showNotification('Failed to generate documents: ' + error.message, 'error');
         showLoading(false);
     }
+}
+
+async function renderSingleDoc(form, templateData) {
+    const response = await fetch(form.template);
+    if (!response.ok) throw new Error('Failed to fetch template: ' + form.id);
+    const arrayBuffer = await response.arrayBuffer();
+
+    const zip = new window.PizZip(arrayBuffer);
+    const doc = new window.docxtemplater(zip, {
+        paragraphLoop: true,
+        linebreaks: true,
+        nullGetter: function() { return ''; }
+    });
+    doc.setData(templateData);
+    doc.render();
+
+    return doc.getZip().generate({
+        type: 'blob',
+        mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    });
 }
 
 function prepareTemplateData() {
