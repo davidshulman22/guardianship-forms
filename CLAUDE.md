@@ -1,8 +1,22 @@
-# Guardianship Forms — Project Context
+# FLSSI Forms — Project Context
 
 ## What This Is
 
-A static HTML/JS/CSS web app that lets Jill Ginsberg (David's law partner) and non-technical staff select a Florida FLSSI 2025 guardianship court form, fill out a questionnaire, and download a populated `.docx`. No server-side rendering — everything runs in the browser.
+A static HTML/JS/CSS web app for David Shulman (and potentially Jill Ginsberg) to select a Florida FLSSI 2025 court form — guardianship or probate — fill out a questionnaire, and download a populated `.docx`. No server-side rendering — everything runs in the browser.
+
+## Who Uses This
+
+David Shulman is both the builder and the primary end user. He handles probate matters and will use this daily for his own filings. Jill Ginsberg handles guardianship — she may or may not adopt it. UX should be simple (court filing speed matters) but doesn't need to be dumbed down.
+
+## Project Scope
+
+The project covers both **guardianship AND probate** Florida FLSSI forms. There are ~400 total forms across both folders but only a prioritized subset will be converted. David identifies which forms to add next.
+
+## Roadmap
+
+**Phase 1 (current):** Convert the most-used FLSSI forms — tag templates, wire into forms.json, verify. Get the form-filling pipeline working for both probate and guardianship.
+
+**Phase 2 (future):** Full case management system. Probate and guardianship matters are created with persistent memory of people (ward, decedent, PR, guardian, beneficiaries, creditors), addresses, relationships, and case details. Enter once, auto-populate everywhere across all forms for that matter. During Phase 1, track which fields recur across forms — those become the Phase 2 schema.
 
 ## Stack
 
@@ -19,20 +33,27 @@ A static HTML/JS/CSS web app that lets Jill Ginsberg (David's law partner) and n
 ├── app.js              # All application logic
 ├── styles.css          # All styles
 ├── forms.json          # Form configuration (sections, fields, template paths)
+├── config.js           # Supabase credentials (gitignored)
+├── config.example.js   # Template for config.js on new clones
+├── .gitignore          # Ignores config.js, .env, .DS_Store
 ├── supabase-setup.sql  # Schema reference (DO NOT re-run — schema is live)
-├── repair_templates.py # One-time script to fix G3-010.docx and G3-026.docx
+├── repair_templates.py # One-time script that fixed G3-010.docx and G3-026.docx
+├── CLAUDE.md           # This file
 ├── templates/
 │   ├── G2-010.docx     # Petition to Determine Incapacity (fully tagged)
 │   ├── G2-140.docx     # Notice of Designation of Email Addresses (fully tagged)
 │   ├── G3-010.docx     # Emergency Temp Guardian (fully tagged after repair)
 │   ├── G3-025.docx     # Plenary Guardian / Property (fully tagged)
-│   ├── G3-026.docx     # Limited Guardian Person & Property (fully tagged after repair)
-│   └── [originals]     # Untagged FLSSI originals (reference only, names have full titles)
+│   └── G3-026.docx     # Limited Guardian Person & Property (fully tagged after repair)
 ```
 
-## Supabase Schema (DO NOT MODIFY)
+## Supabase
 
 **Project URL**: `https://xcjrpfkexdxggkaswefh.supabase.co`
+
+The Supabase URL and anon key live in `config.js` (gitignored). A template is provided in `config.example.js`. To set up a new clone, copy `config.example.js` to `config.js` and fill in the real values.
+
+**DO NOT recreate or modify the schema — it is live.**
 
 ### `clients` table
 Core fields shared across all forms:
@@ -48,6 +69,11 @@ Core fields shared across all forms:
 - Form-specific field values stored as JSON in `form_data`
 
 Both tables have RLS enabled — all authenticated users have full CRUD.
+
+**Important:** Fields not in the `clients` table schema are form-specific and live in `form_submissions.form_data` as JSON. Do NOT add them to the `clients` table. This includes fields like `petitioner_residence`, `petitioner_phone`, `aip_dob_month/day/year`, `aip_residence`, `aip_incapacity_nature`, `proposed_guardian_*`, `imminent_danger_reason`, etc. The `clients` table only holds fields that are shared across ALL forms. Form-specific fields belong in `forms.json` and get stored in `form_data`.
+
+### Auth
+Three accounts exist (`david@`, `dshulman@`, `jill@ginsbergshulman.com`) — passwords unknown. Email confirmation is enforced. Password reset via Supabase dashboard is needed before full UI testing.
 
 ## forms.json Structure
 
@@ -68,8 +94,7 @@ Both tables have RLS enabled — all authenticated users have full CRUD.
               "label": "Next of kin",
               "type": "repeating_group",
               "subfields": [
-                {"name": "name", "label": "Name", "type": "text"},
-                ...
+                {"name": "name", "label": "Name", "type": "text"}
               ]
             }
           ]
@@ -94,7 +119,16 @@ Field types: `text`, `textarea`, `checkbox`, `repeating_group`.
 
 **Form-specific fields** are defined in `forms.json` sections and stored in `form_submissions.form_data` as JSON. They only appear when that form is selected.
 
-If a template uses a field that matches a core field name (e.g. `{county}`), the core field value is used automatically. Form-specific fields only need entries in `forms.json` if they don't match a core field.
+If a template uses a field that matches a core field name (e.g. `{county}`), the core field value is used automatically.
+
+## Template Repair Notes
+
+When writing repair scripts for new FLSSI forms:
+
+1. **rsid attributes vary per paragraph** — each `<w:p>` has unique rsidR/rsidRPr/rsidRDefault. Never assume consecutive paragraphs share the same values. Verify each one individually.
+2. **Smart apostrophes** — FLSSI forms use U+2019 (`'`) not ASCII `'`. Always check with hex/ord.
+3. **No f-strings for template tags** — Python f-strings treat `"{{county}}"` inside expressions as literal `{{county}}` (double braces), but docxtemplater needs single braces `{county}`. Use `+` concatenation instead.
+4. **repair_templates.py** uses Python stdlib only (zipfile, shutil, os, re) — no pip dependencies. Run with `python3` (macOS).
 
 ## Template Status
 
@@ -110,8 +144,14 @@ If a template uses a field that matches a core field name (e.g. `{county}`), the
 
 Repository: `https://github.com/davidshulman22/guardianship-forms`
 
+(May need renaming now that probate is in scope.)
+
+**Git discipline:** Project lives in Dropbox — that's intentional, don't move it. Git is source of truth, Dropbox syncs whatever Git leaves on disk. Start of session: `git pull`. End of session: commit and push. Claude Code handles this — David doesn't need to run terminal commands.
+
 ## TODOs
 
-- [ ] Move Supabase anon key from hardcoded in `app.js` to `.env` file; add `.env` to `.gitignore`
-- [ ] End-to-end testing of document generation for all 5 forms
-- [ ] Consider adding form-level validation before generation
+- [ ] Reset Supabase auth passwords so the app can be fully UI-tested
+- [ ] Full UI-path E2E test (login → create client → select form → generate → download)
+- [ ] David identifies next batch of FLSSI forms to convert
+- [ ] Consider renaming repo/app title from "Guardianship Forms" to something broader
+- [ ] Phase 2 planning: case management schema for persistent people/roles/addresses
