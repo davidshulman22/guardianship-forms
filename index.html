@@ -3,46 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guardianship Forms</title>
+    <title>GS Court Forms</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div id="app">
-        <!-- Login Screen -->
-        <div id="loginScreen" class="login-screen">
-            <div class="login-container">
-                <h1>Guardianship Forms</h1>
-                <form id="loginForm" class="login-form">
-                    <div class="form-group">
-                        <label for="loginEmail">Email</label>
-                        <input type="email" id="loginEmail" placeholder="Enter your email" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="loginPassword">Password</label>
-                        <input type="password" id="loginPassword" placeholder="Enter your password" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary btn-full">Sign In</button>
-                    <div id="loginError" class="error-message"></div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Main App -->
-        <div id="mainApp" class="main-app" style="display: none;">
+        <div id="mainApp" class="main-app">
             <!-- Header -->
             <header class="header">
                 <div class="header-left">
-                    <h1 class="app-title">Guardianship Forms</h1>
+                    <h1 class="app-title">GS Court Forms</h1>
                 </div>
                 <div class="header-right">
-                    <span id="userEmail" class="user-email"></span>
-                    <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+                    <span id="breadcrumb" class="breadcrumb"></span>
                 </div>
             </header>
 
             <!-- Main Content -->
             <div class="main-content">
-                <!-- Left Sidebar -->
+                <!-- Left Sidebar: Client List (always visible) -->
                 <aside class="sidebar">
                     <div class="sidebar-header">
                         <button id="newClientBtn" class="btn btn-primary btn-full">+ New Client</button>
@@ -53,326 +32,163 @@
                     <div id="clientList" class="client-list"></div>
                 </aside>
 
-                <!-- Center Panel -->
+                <!-- Center Panel: Changes based on navigation state -->
                 <main class="center-panel">
-                    <div id="noClientSelected" class="placeholder">
-                        <p>Select a client to get started</p>
+
+                    <!-- State: No client selected -->
+                    <div id="viewNoClient" class="placeholder">
+                        <p>Select a client or create a new one to get started</p>
                     </div>
 
-                    <div id="clientPanel" class="client-panel" style="display: none;">
-                        <!-- Case Information Section -->
-                        <section class="case-info-section">
-                            <h2>Case Information</h2>
-                            <div class="case-info-fields">
-                                <!-- Case Group -->
-                                <div class="field-group">
-                                    <h3>Case Details</h3>
-                                    <div class="field-row">
-                                        <div class="field">
-                                            <label for="field_county">County</label>
-                                            <input type="text" id="field_county" class="core-field" data-field="county">
-                                        </div>
-                                        <div class="field">
-                                            <label for="field_file_no">File No.</label>
-                                            <input type="text" id="field_file_no" class="core-field" data-field="file_no">
-                                        </div>
-                                        <div class="field">
-                                            <label for="field_division">Division</label>
-                                            <input type="text" id="field_division" class="core-field" data-field="division">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Petitioner Group -->
-                                <div class="field-group">
-                                    <h3>Petitioner Information</h3>
-                                    <div class="field-row">
-                                        <div class="field">
-                                            <label for="field_petitioner_name">Name</label>
-                                            <input type="text" id="field_petitioner_name" class="core-field" data-field="petitioner_name">
-                                        </div>
-                                        <div class="field">
-                                            <label for="field_petitioner_age">Age</label>
-                                            <input type="text" id="field_petitioner_age" class="core-field" data-field="petitioner_age">
-                                        </div>
-                                    </div>
-                                    <div class="field-row">
-                                        <div class="field">
-                                            <label for="field_petitioner_relationship">Relationship to AIP</label>
-                                            <input type="text" id="field_petitioner_relationship" class="core-field" data-field="petitioner_relationship">
-                                        </div>
-                                    </div>
-                                    <div class="field-row">
-                                        <div class="field">
-                                            <label for="field_petitioner_address">Address</label>
-                                            <textarea id="field_petitioner_address" class="core-field" data-field="petitioner_address"></textarea>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- AIP Group -->
-                                <div class="field-group">
-                                    <h3>Alleged Incapacitated Person (AIP) Information</h3>
-                                    <div class="field-row">
-                                        <div class="field">
-                                            <label for="field_aip_name">Name</label>
-                                            <input type="text" id="field_aip_name" class="core-field" data-field="aip_name">
-                                        </div>
-                                        <div class="field">
-                                            <label for="field_aip_age">Age</label>
-                                            <input type="text" id="field_aip_age" class="core-field" data-field="aip_age">
-                                        </div>
-                                    </div>
-                                    <div class="field-row">
-                                        <div class="field">
-                                            <label for="field_aip_county">County</label>
-                                            <input type="text" id="field_aip_county" class="core-field" data-field="aip_county">
-                                        </div>
-                                        <div class="field">
-                                            <label for="field_aip_primary_language">Primary Language</label>
-                                            <input type="text" id="field_aip_primary_language" class="core-field" data-field="aip_primary_language">
-                                        </div>
-                                    </div>
-                                    <div class="field-row">
-                                        <div class="field">
-                                            <label for="field_aip_address">Address</label>
-                                            <textarea id="field_aip_address" class="core-field" data-field="aip_address"></textarea>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Attorney Group -->
-                                <div class="field-group">
-                                    <h3>Attorney Information</h3>
-                                    <div class="field-row">
-                                        <div class="field">
-                                            <label for="field_attorney_name">Name</label>
-                                            <input type="text" id="field_attorney_name" class="core-field" data-field="attorney_name">
-                                        </div>
-                                        <div class="field">
-                                            <label for="field_attorney_bar_no">Bar No.</label>
-                                            <input type="text" id="field_attorney_bar_no" class="core-field" data-field="attorney_bar_no">
-                                        </div>
-                                    </div>
-                                    <div class="field-row">
-                                        <div class="field">
-                                            <label for="field_attorney_email">Email</label>
-                                            <input type="email" id="field_attorney_email" class="core-field" data-field="attorney_email">
-                                        </div>
-                                        <div class="field">
-                                            <label for="field_attorney_phone">Phone</label>
-                                            <input type="tel" id="field_attorney_phone" class="core-field" data-field="attorney_phone">
-                                        </div>
-                                    </div>
-                                    <div class="field-row">
-                                        <div class="field">
-                                            <label for="field_attorney_address">Address</label>
-                                            <textarea id="field_attorney_address" class="core-field" data-field="attorney_address"></textarea>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Physician Group -->
-                                <div class="field-group">
-                                    <h3>Physician Information</h3>
-                                    <div class="field-row">
-                                        <div class="field">
-                                            <label for="field_physician_name">Name</label>
-                                            <input type="text" id="field_physician_name" class="core-field" data-field="physician_name">
-                                        </div>
-                                        <div class="field">
-                                            <label for="field_physician_phone">Phone</label>
-                                            <input type="tel" id="field_physician_phone" class="core-field" data-field="physician_phone">
-                                        </div>
-                                    </div>
-                                    <div class="field-row">
-                                        <div class="field">
-                                            <label for="field_physician_address">Address</label>
-                                            <textarea id="field_physician_address" class="core-field" data-field="physician_address"></textarea>
-                                        </div>
-                                    </div>
-                                </div>
+                    <!-- State: Client selected — show matters -->
+                    <div id="viewClient" style="display:none;">
+                        <div class="panel-card">
+                            <div class="panel-header">
+                                <h2 id="clientHeaderName">Client Name</h2>
+                                <button id="editClientBtn" class="btn btn-secondary btn-sm">Edit</button>
                             </div>
-                        </section>
+                            <div id="clientContactInfo" class="client-contact-info"></div>
+                        </div>
+
+                        <div class="panel-card">
+                            <div class="panel-header">
+                                <h2>Matters</h2>
+                                <button id="newMatterBtn" class="btn btn-primary btn-sm">+ New Matter</button>
+                            </div>
+                            <div id="matterList" class="matter-list">
+                                <p class="empty-state">No matters yet. Click "+ New Matter" to add one.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- State: Matter selected — show forms -->
+                    <div id="viewMatter" style="display:none;">
+                        <div class="panel-card">
+                            <div class="panel-header">
+                                <button id="backToClientBtn" class="btn btn-secondary btn-sm">&larr; Back</button>
+                                <h2 id="matterHeaderName">Matter Name</h2>
+                                <button id="editMatterBtn" class="btn btn-secondary btn-sm">Edit</button>
+                            </div>
+                            <div id="matterInfo" class="matter-info"></div>
+                        </div>
 
                         <!-- Form Selector -->
-                        <section id="formSelectorSection" class="form-selector-section" style="display: none;">
+                        <div class="panel-card">
                             <div class="form-selector">
                                 <label for="formSelect">Select Form</label>
                                 <select id="formSelect">
                                     <option value="">-- Choose a form --</option>
                                 </select>
                             </div>
-                        </section>
+                        </div>
 
-                        <!-- Form-Specific Fields -->
-                        <section id="formFieldsSection" class="form-fields-section" style="display: none;">
+                        <!-- Form Fields -->
+                        <div id="formFieldsSection" class="panel-card" style="display:none;">
                             <div id="formFieldsContainer"></div>
                             <div class="form-actions">
                                 <button id="generateDocBtn" class="btn btn-primary btn-full">Generate Document</button>
                             </div>
-                        </section>
+                        </div>
                     </div>
+
                 </main>
             </div>
         </div>
     </div>
 
     <!-- New Client Modal -->
-    <div id="newClientModal" class="modal" style="display: none;">
+    <div id="newClientModal" class="modal" style="display:none;">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>New Client</h2>
-                <button id="closeModalBtn" class="btn-close">&times;</button>
+                <h2 id="clientModalTitle">New Client</h2>
+                <button class="btn-close modal-close-btn">&times;</button>
             </div>
-            <form id="newClientForm" class="modal-body">
-                <!-- Case Details -->
+            <form id="clientForm" class="modal-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="clientFirstName">First Name</label>
+                        <input type="text" id="clientFirstName">
+                    </div>
+                    <div class="form-group">
+                        <label for="clientLastName">Last Name</label>
+                        <input type="text" id="clientLastName">
+                    </div>
+                </div>
                 <div class="form-group">
-                    <h3>Case Details</h3>
+                    <label for="clientAddress">Address</label>
+                    <textarea id="clientAddress" rows="2"></textarea>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="newCounty">County</label>
-                        <input type="text" id="newCounty" required>
+                        <label for="clientPhone">Phone</label>
+                        <input type="tel" id="clientPhone">
                     </div>
                     <div class="form-group">
-                        <label for="newFileNo">File No.</label>
-                        <input type="text" id="newFileNo" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="newDivision">Division</label>
-                        <input type="text" id="newDivision" required>
+                        <label for="clientEmail">Email</label>
+                        <input type="email" id="clientEmail">
                     </div>
                 </div>
-
-                <!-- Petitioner -->
-                <div class="form-group">
-                    <h3>Petitioner Information</h3>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="newPetitionerName">Name</label>
-                        <input type="text" id="newPetitionerName" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="newPetitionerAge">Age</label>
-                        <input type="text" id="newPetitionerAge">
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="newPetitionerRelationship">Relationship to AIP</label>
-                        <input type="text" id="newPetitionerRelationship">
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="newPetitionerAddress">Address</label>
-                        <textarea id="newPetitionerAddress"></textarea>
-                    </div>
-                </div>
-
-                <!-- AIP -->
-                <div class="form-group">
-                    <h3>Alleged Incapacitated Person (AIP) Information</h3>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="newAIPName">Name</label>
-                        <input type="text" id="newAIPName" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="newAIPAge">Age</label>
-                        <input type="text" id="newAIPAge">
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="newAIPCounty">County</label>
-                        <input type="text" id="newAIPCounty">
-                    </div>
-                    <div class="form-group">
-                        <label for="newAIPLanguage">Primary Language</label>
-                        <input type="text" id="newAIPLanguage">
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="newAIPAddress">Address</label>
-                        <textarea id="newAIPAddress"></textarea>
-                    </div>
-                </div>
-
-                <!-- Attorney -->
-                <div class="form-group">
-                    <h3>Attorney Information</h3>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="newAttorneyName">Name</label>
-                        <input type="text" id="newAttorneyName">
-                    </div>
-                    <div class="form-group">
-                        <label for="newAttorneyBarNo">Bar No.</label>
-                        <input type="text" id="newAttorneyBarNo">
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="newAttorneyEmail">Email</label>
-                        <input type="email" id="newAttorneyEmail">
-                    </div>
-                    <div class="form-group">
-                        <label for="newAttorneyPhone">Phone</label>
-                        <input type="tel" id="newAttorneyPhone">
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="newAttorneyAddress">Address</label>
-                        <textarea id="newAttorneyAddress"></textarea>
-                    </div>
-                </div>
-
-                <!-- Physician -->
-                <div class="form-group">
-                    <h3>Physician Information</h3>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="newPhysicianName">Name</label>
-                        <input type="text" id="newPhysicianName">
-                    </div>
-                    <div class="form-group">
-                        <label for="newPhysicianPhone">Phone</label>
-                        <input type="tel" id="newPhysicianPhone">
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="newPhysicianAddress">Address</label>
-                        <textarea id="newPhysicianAddress"></textarea>
-                    </div>
-                </div>
-
                 <div class="modal-footer">
-                    <button type="button" id="cancelNewClientBtn" class="btn btn-secondary">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Create Client</button>
+                    <button type="button" class="btn btn-secondary modal-close-btn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Client</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- New Matter Modal -->
+    <div id="newMatterModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="matterModalTitle">New Matter</h2>
+                <button class="btn-close modal-close-btn">&times;</button>
+            </div>
+            <form id="matterForm" class="modal-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="matterType">Matter Type</label>
+                        <select id="matterType">
+                            <option value="">-- Select --</option>
+                            <option value="probate">Probate</option>
+                            <option value="guardianship">Guardianship</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="matterCounty">County</label>
+                        <input type="text" id="matterCounty">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="matterSubjectName">Subject Name <span id="matterSubjectHint" class="hint">(decedent or AIP)</span></label>
+                    <input type="text" id="matterSubjectName">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="matterFileNo">File No. <span class="hint">(assigned after filing)</span></label>
+                        <input type="text" id="matterFileNo">
+                    </div>
+                    <div class="form-group">
+                        <label for="matterDivision">Division</label>
+                        <input type="text" id="matterDivision">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary modal-close-btn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Matter</button>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- Notification Toast -->
-    <div id="notification" class="notification" style="display: none;"></div>
+    <div id="notification" class="notification" style="display:none;"></div>
 
     <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+    <div id="loadingOverlay" class="loading-overlay" style="display:none;">
         <div class="spinner"></div>
     </div>
 
     <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/pizzip@3/dist/pizzip.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/pizzip@3/dist/pizzip-utils.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/docxtemplater@3/build/docxtemplater.js"></script>

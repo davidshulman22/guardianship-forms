@@ -770,6 +770,160 @@ body {
 }
 
 /* ============================================
+   PANEL CARDS & MATTER LIST
+   ============================================ */
+
+#viewClient,
+#viewMatter {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.panel-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.panel-header h2 {
+    flex: 1;
+    margin: 0;
+    color: #1f2937;
+    font-size: 1.25rem;
+}
+
+.btn-sm {
+    padding: 0.35rem 0.75rem;
+    font-size: 0.8rem;
+    border-radius: 4px;
+}
+
+.client-contact-info {
+    color: #6b7280;
+    font-size: 0.95rem;
+    line-height: 1.8;
+    padding: 0.25rem 0;
+}
+
+.matter-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.matter-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-left: 4px solid #e5e7eb;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.matter-item:hover {
+    background: #eef2ff;
+    border-left-color: #6366f1;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.matter-item-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: white;
+    flex-shrink: 0;
+    letter-spacing: 0.02em;
+}
+
+.matter-item-icon.probate {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+
+.matter-item-icon.guardianship {
+    background: linear-gradient(135deg, #0891b2, #0e7490);
+}
+
+.matter-item-body {
+    flex: 1;
+}
+
+.matter-item-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #1f2937;
+}
+
+.matter-item-subtitle {
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin-top: 0.15rem;
+}
+
+.matter-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    font-size: 0.95rem;
+}
+
+.matter-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.matter-info-label {
+    font-size: 0.8rem;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+
+.matter-info-value {
+    color: #1f2937;
+}
+
+.empty-state {
+    text-align: center;
+    color: #9ca3af;
+    padding: 2rem 1rem;
+    font-size: 0.95rem;
+}
+
+.breadcrumb {
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+
+.hint {
+    color: #9ca3af;
+    font-weight: 400;
+    font-size: 0.85rem;
+}
+
+/* ============================================
    RESPONSIVE ADJUSTMENTS
    ============================================ */
 
