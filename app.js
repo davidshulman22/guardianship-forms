@@ -61,6 +61,24 @@ const formBundles = {
     ]
 };
 
+// Form sections — categorize probate forms into lifecycle phases
+// Opening forms are handled by the wizard; these define Administration and Closing
+const formSections = {
+    probate: {
+        // Opening form IDs are determined by the wizard matrix — not listed here
+        administration: {
+            label: 'Estate Administration',
+            subtitle: 'Mid-estate filings',
+            formIds: ['P3-0740', 'P3-0900']
+        },
+        closing: {
+            label: 'Close Estate',
+            subtitle: 'Discharge and closing',
+            formIds: ['P5-0400', 'P5-0800']
+        }
+    }
+};
+
 // ============================================
 // INITIALIZATION
 // ============================================
@@ -843,6 +861,18 @@ function wizardLoadForms() {
         allForms = allForms.concat(entry.broward);
     }
 
+    // Save wizard selections to the matter so we can restore them later
+    if (currentMatter) {
+        currentMatter.wizardSelections = {
+            adminType: wizardState.adminType,
+            willType: wizardState.willType,
+            jurisdiction: wizardState.jurisdiction,
+            petitioners: wizardState.petitioners,
+            county: wizardState.county
+        };
+        saveClientsToStorage();
+    }
+
     // Set the selected forms and trigger rendering
     selectedFormIds = allForms;
     currentFormId = selectedFormIds[0];
@@ -876,26 +906,57 @@ function wizardLoadForms() {
 }
 
 function initWizardForMatter() {
+    // Check if this matter already has wizard selections saved
+    // If not, but it has imported data (_shared formData), infer selections
+    if (currentMatter && !currentMatter.wizardSelections && currentMatter.type === 'probate') {
+        const fd = currentMatter.formData && currentMatter.formData._shared;
+        if (fd && Object.keys(fd).length > 0) {
+            const hasWill = !!(fd.will_date || fd.will_year || fd.codicil_dates);
+            const petArr = fd.petitioners;
+            const hasMultiplePetitioners = Array.isArray(petArr) && petArr.length > 1;
+            currentMatter.wizardSelections = {
+                adminType: 'formal',
+                willType: hasWill ? 'testate' : 'intestate',
+                jurisdiction: 'domiciliary',
+                petitioners: hasMultiplePetitioners ? 'multiple' : 'single',
+                county: currentMatter.county || null
+            };
+            saveClientsToStorage();
+        }
+    }
+    const saved = currentMatter && currentMatter.wizardSelections;
+
     // Reset wizard state
     wizardState = {
-        adminType: null,
-        willType: null,
-        jurisdiction: null,
-        petitioners: null,
-        county: currentMatter ? currentMatter.county || null : null
+        adminType: saved ? saved.adminType : null,
+        willType: saved ? saved.willType : null,
+        jurisdiction: saved ? saved.jurisdiction : null,
+        petitioners: saved ? saved.petitioners : null,
+        county: saved ? saved.county : (currentMatter ? currentMatter.county || null : null)
     };
 
-    // Reset toggle buttons
+    // Reset toggle buttons, then restore saved selections
+    const stateMap = {
+        wizAdminType: wizardState.adminType,
+        wizWillType: wizardState.willType,
+        wizJurisdiction: wizardState.jurisdiction,
+        wizPetitioners: wizardState.petitioners
+    };
     ['wizAdminType', 'wizWillType', 'wizJurisdiction', 'wizPetitioners'].forEach(groupId => {
         const group = document.getElementById(groupId);
-        if (group) group.querySelectorAll('.wiz-btn').forEach(b => b.classList.remove('active'));
+        if (!group) return;
+        group.querySelectorAll('.wiz-btn').forEach(b => {
+            b.classList.remove('active');
+            if (stateMap[groupId] && b.dataset.value === stateMap[groupId]) {
+                b.classList.add('active');
+            }
+        });
     });
 
-    // Set county from matter
+    // Set county from saved selections or matter
     const countySelect = document.getElementById('wizCounty');
     if (countySelect && currentMatter) {
-        // Try to match the matter county to an option
-        const county = currentMatter.county || '';
+        const county = wizardState.county || currentMatter.county || '';
         const option = Array.from(countySelect.options).find(o => o.value.toLowerCase() === county.toLowerCase());
         if (option) {
             countySelect.value = option.value;
@@ -923,6 +984,20 @@ function initWizardForMatter() {
     const wizardEl = document.getElementById('openEstateWizard');
     if (wizardEl) {
         wizardEl.style.display = (currentMatter && currentMatter.type === 'probate') ? '' : 'none';
+    }
+
+    // Update wizard header based on whether this is a new or existing estate
+    const titleEl = document.getElementById('wizardTitle');
+    const subtitleEl = document.getElementById('wizardSubtitle');
+    if (saved && saved.adminType && saved.willType && saved.jurisdiction) {
+        if (titleEl) titleEl.textContent = 'Open Estate';
+        if (subtitleEl) subtitleEl.textContent = 'Change selections below if needed';
+        updateWizardUI();
+        // Auto-load the forms so the user doesn't have to click "Load Forms" again
+        setTimeout(() => wizardLoadForms(), 50);
+    } else {
+        if (titleEl) titleEl.textContent = 'Open Estate';
+        if (subtitleEl) subtitleEl.textContent = 'Answer these questions to load the correct forms';
     }
 }
 
@@ -972,6 +1047,73 @@ function populateFormSelector() {
         item.appendChild(label);
         checklist.appendChild(item);
     });
+
+    // Render lifecycle section cards (Administration, Closing)
+    populateFormSections();
+}
+
+function populateFormSections() {
+    const matterType = currentMatter ? currentMatter.type || 'probate' : 'probate';
+    const sections = formSections[matterType];
+
+    const adminEl = document.getElementById('adminSection');
+    const closingEl = document.getElementById('closingSection');
+
+    if (!sections) {
+        if (adminEl) adminEl.style.display = 'none';
+        if (closingEl) closingEl.style.display = 'none';
+        return;
+    }
+
+    // Render each section
+    renderFormSection('adminFormList', sections.administration, adminEl);
+    renderFormSection('closingFormList', sections.closing, closingEl);
+}
+
+function renderFormSection(containerId, section, sectionEl) {
+    if (!section || !sectionEl) return;
+
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    container.innerHTML = '';
+    sectionEl.style.display = '';
+
+    section.formIds.forEach(formId => {
+        const formDef = formsConfig.forms.find(f => f.id === formId);
+        if (!formDef) return;
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'section-form-btn' + (selectedFormIds.includes(formId) ? ' active' : '');
+        btn.dataset.formId = formId;
+        btn.innerHTML = '<span class="section-form-name">' + formDef.name + '</span>' +
+                         '<span class="section-form-id">' + formId + '</span>';
+        btn.addEventListener('click', () => toggleSectionForm(formId));
+        container.appendChild(btn);
+    });
+}
+
+function toggleSectionForm(formId) {
+    const idx = selectedFormIds.indexOf(formId);
+    if (idx >= 0) {
+        selectedFormIds.splice(idx, 1);
+    } else {
+        selectedFormIds.push(formId);
+    }
+
+    // Sync all UI elements
+    syncCheckboxes();
+    updateBundleButtons();
+    updateSectionButtons();
+    handleFormSelectionChanged();
+}
+
+function updateSectionButtons() {
+    document.querySelectorAll('.section-form-btn').forEach(btn => {
+        const formId = btn.dataset.formId;
+        btn.classList.toggle('active', selectedFormIds.includes(formId));
+    });
 }
 
 function toggleBundle(bundle) {
@@ -1001,6 +1143,7 @@ function handleFormCheckChange() {
         selectedFormIds.push(cb.value);
     });
     updateBundleButtons();
+    updateSectionButtons();
     handleFormSelectionChanged();
 }
 
@@ -1008,6 +1151,7 @@ function syncCheckboxes() {
     document.querySelectorAll('#formChecklist input[type="checkbox"]').forEach(cb => {
         cb.checked = selectedFormIds.includes(cb.value);
     });
+    updateSectionButtons();
 }
 
 function updateBundleButtons() {
@@ -1727,6 +1871,30 @@ function confirmClaudeImport() {
                 }
             });
         });
+    }
+
+    // Infer wizard selections from import data if not already set
+    if (!matter.wizardSelections && matter.type === 'probate') {
+        const fd = data.formData || {};
+        const md = data.matter.matterData || {};
+
+        // Allow explicit wizardSelections in the import JSON
+        if (data.wizardSelections) {
+            matter.wizardSelections = data.wizardSelections;
+        } else {
+            // Infer from data
+            const hasWill = !!(fd.will_date || fd.will_year || fd.codicil_dates);
+            const petArr = fd.petitioners;
+            const hasMutiplePetitioners = Array.isArray(petArr) && petArr.length > 1;
+
+            matter.wizardSelections = {
+                adminType: 'formal',       // default to formal; summary is rarer
+                willType: hasWill ? 'testate' : 'intestate',
+                jurisdiction: 'domiciliary', // default; ancillary is rarer
+                petitioners: hasMutiplePetitioners ? 'multiple' : 'single',
+                county: matter.county || null
+            };
+        }
     }
 
     saveClientsToStorage();

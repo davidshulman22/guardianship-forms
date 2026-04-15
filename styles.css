@@ -569,6 +569,76 @@ body {
     font-style: italic;
 }
 
+/* ============================================
+   FORM SECTION CARDS (Administration, Closing)
+   ============================================ */
+
+.section-card {
+    border-left: 4px solid #6b7280;
+}
+
+#adminSection {
+    border-left-color: #059669;
+}
+
+#closingSection {
+    border-left-color: #dc2626;
+}
+
+.section-header h3 {
+    color: #1f2937;
+    font-size: 1.1rem;
+    margin-bottom: 0.2rem;
+}
+
+.section-subtitle {
+    color: #6b7280;
+    font-size: 0.85rem;
+    margin-bottom: 0.75rem;
+}
+
+.section-form-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.section-form-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0.6rem 1rem;
+    background: #f9fafb;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    min-width: 180px;
+}
+
+.section-form-btn:hover {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+}
+
+.section-form-btn.active {
+    background: #eef2ff;
+    border-color: #818cf8;
+    box-shadow: 0 0 0 1px #818cf8;
+}
+
+.section-form-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.section-form-id {
+    font-size: 0.72rem;
+    color: #9ca3af;
+    margin-top: 0.15rem;
+}
+
 /* Manual form selector toggle */
 .form-selector-details {
     cursor: pointer;
