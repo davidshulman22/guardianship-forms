@@ -1,6 +1,6 @@
 # CHAT HANDOFF — RESUME-READY
 **Generated:** 2026-04-15
-**Source:** Claude Code session — homepage dashboard + case management roadmap
+**Source:** Claude Code session — lifecycle sections + wizard persistence
 **Status:** RESUME-READY
 
 ---
@@ -13,30 +13,23 @@ Build a browser-based app for generating Florida court forms (FLSSI 2025 + Browa
 
 # 2. Current State
 
-The app is functional for all Broward County domiciliary probate paths. 41 forms defined in forms.json. **Claude import feature is built and working** — paste JSON from any Claude conversation to create/update a client + matter with all form fields pre-populated. Document filenames now use human-readable form names. **Homepage dashboard** shows recent matters, quick actions, and overview stats — click "GS Court Forms" title to return home from any view. The app runs at `http://localhost:8765` via `python3 -m http.server 8765`.
+The app is functional for all Broward County domiciliary probate paths. 41 forms defined in forms.json. **Claude import feature is built and working.** The matter view is now organized into **three lifecycle sections**: Open Estate (wizard-driven), Estate Administration (Notice to Creditors, Inventory), and Close Estate (Petition/Order of Discharge). Wizard selections persist on the matter — imported or previously-configured matters auto-restore their wizard state and load forms immediately instead of showing a blank "Open Estate" wizard. The app runs at `http://localhost:8765` via `python3 -m http.server 8765`.
 
 ---
 
 # 3. Work Completed (This Session)
 
-- **Claude Import feature** — full implementation:
-  - "Import from Claude" button in sidebar opens a modal with JSON textarea
-  - Paste JSON → auto-preview on paste (validates structure, shows client/matter/field count)
-  - Preview shows whether client/matter already exists (will update) or is new (will create)
-  - Import creates or updates client + matter + populates all form fields via `_shared` formData key
-  - Cross-form sharing picks up `_shared` data automatically through existing Layer 1 in `getAutoPopulateDefaults()`
-  - Client matching by last name + first name; matter matching by subjectName
-- **Import schema reference** (`claude_import_schema.md`) — full field reference for any Claude conversation to generate the right JSON
-- **Real-world example** (`examples/muscara_import.json`) — generated from actual `Muscara_Context.md`, tested end-to-end with 28 fields + 2 petitioners + 10 beneficiaries
-- **Human-readable document filenames** — `Petition_for_Administration` instead of `P3-0100` in both single-doc and zip downloads
+- **Wizard selection persistence** — wizard choices (admin type, will, jurisdiction, petitioners, county) are saved to `matter.wizardSelections` when "Load Forms" is clicked. Re-entering the matter auto-restores selections and auto-loads forms.
+- **Import wizard inference** — Claude import now infers wizard selections from imported data: `will_date`/`will_year` → testate, petitioners array length → single/multiple, defaults to formal + domiciliary. Existing imported matters without `wizardSelections` get inference from `_shared` formData on first view.
+- **Bug fix: imported matters stuck on "Open Estate"** — previously, opening an imported matter showed a blank wizard with no forms loaded. Now it auto-detects the matter has data and restores/infers the wizard state.
+- **Lifecycle section cards** — matter view reorganized into three sections:
+  - **Open Estate** (blue border) — wizard with admin/will/jurisdiction/petitioners/county toggles + "Forms to Generate" tags
+  - **Estate Administration** (green border) — Notice to Creditors (P3-0740), Inventory (P3-0900) as clickable toggle buttons
+  - **Close Estate** (red border) — Petition for Discharge (P5-0400), Order of Discharge (P5-0800)
+  - **All forms** — collapsed `<details>` at bottom with full checklist + bundle buttons as fallback
+- Form section buttons toggle forms into/out of `selectedFormIds`, syncing with the manual checklist and merged questionnaire
+- Wizard header dynamically shows "Change selections below if needed" for configured matters vs. "Answer these questions to load the correct forms" for new matters
 - **Committed and pushed** to `main` on GitHub
-- **Homepage dashboard** — replaces empty placeholder with:
-  - Quick Actions (New Client, Import from Claude)
-  - Recent Matters (last 5, clickable — jumps directly into the matter)
-  - Overview stats (client count, probate count, guardianship count)
-  - "GS Court Forms" title is clickable to navigate home from anywhere
-- **Case management system** added to roadmap as Priority 5
-- **Committed and pushed** homepage to `main` on GitHub
 
 ---
 
@@ -44,12 +37,12 @@ The app is functional for all Broward County domiciliary probate paths. 41 forms
 
 | Decision | Why It Was Made |
 |----------|----------------|
-| Paste-JSON approach (not direct localStorage write) | David's browser and Claude's preview browser have separate localStorage contexts; paste is the reliable cross-context bridge |
-| `_shared` key in formData for imported data | Leverages existing cross-form sharing (Layer 1 iterates all formData keys); no special-casing needed |
-| Auto-preview on paste | Reduces friction — paste JSON, instantly see what will be imported without clicking Preview |
-| Client/matter matching before create | Prevents duplicates; re-importing updated data for an existing matter merges cleanly |
-| Import data wins for empty fields, preserves existing values | Existing manual edits aren't overwritten; only empty/missing fields get filled |
-| Form name in filenames instead of form ID | David's feedback: "I don't know what P3-0100 is. Name it Petition for Administration" |
+| Save `wizardSelections` on the matter object | Eliminates the "stuck on Open Estate" bug — matter remembers its configuration across sessions |
+| Infer wizard selections from import data | Imported matters should auto-configure without manual wizard interaction; will_date presence → testate, petitioners array → single/multiple are reliable signals |
+| Default inference: formal + domiciliary | These are by far the most common cases; summary admin and ancillary are rarer and can be corrected |
+| Three lifecycle sections instead of one long list | Matches the mental model of estate progression: open → administer → close |
+| Keep "All forms" as collapsed fallback | Power-user escape hatch; also needed for summary admin forms not covered by sections |
+| `formSections` config object in app.js | Easy to add/remove/reorder forms per section later when David identifies seldom-used forms |
 
 ---
 
@@ -79,27 +72,30 @@ The app is functional for all Broward County domiciliary probate paths. 41 forms
 
 # 6. Remaining Work
 
-**Priority 1 — Bugs to fix (David noted bugs exist but didn't specify yet):**
-- [ ] Debug and fix issues David encounters with the import flow
+**Priority 1 — Additional import bugs (David has more to report):**
+- [ ] Debug and fix other issues David encounters with the import flow
 - [ ] Test import → wizard → generate → download end-to-end in David's browser
 
-**Priority 2 — Claude direct document generation (v2 vision):**
-- [ ] David wants to say "Draft the petition to establish restricted depository" in a Claude chat/Cowork session and have the .docx generated directly — no browser interaction
-- [ ] Best approach: standalone Node.js script using docxtemplater directly (no browser in loop)
-- [ ] Claude reads context → picks the right form → populates fields → generates .docx → saves to Dropbox
-- [ ] Prerequisite: import feature must be bug-free, template tag audit should be done
+**Priority 2 — Section refinement:**
+- [ ] David will identify seldom/never-used forms to move to their own collapsed section to reduce clutter
+- [ ] Summary admin forms need section treatment (currently only in "All forms" fallback)
 
-**Priority 3 — In-progress matter onboarding:**
+**Priority 3 — Claude direct document generation (v2 vision):**
+- [ ] "Draft the petition" in chat → .docx output, no browser interaction
+- [ ] Best approach: standalone Node.js script using docxtemplater directly
+- [ ] Claude reads context → picks the right form → populates fields → generates .docx → saves to Dropbox
+
+**Priority 4 — In-progress matter onboarding:**
 - [ ] "Quick Add Matter" flow to enter existing matters mid-stream without the opening wizard
 - [ ] David has "a whole bunch" of matters to add
 
-**Priority 4 — From the original roadmap:**
+**Priority 5 — From the original roadmap:**
 - [ ] Ancillary Broward checklists (URLs captured, not built)
 - [ ] Helen Torres chronological walkthrough (verify template chain)
 - [ ] Template tag audit (29 of 30 probate templates un-audited; P3-0100 had 4 missing tags)
 - [ ] Lifecycle bundles beyond opening (Notice to Creditors, Inventory, Closing/Discharge)
 
-**Priority 5 — Case management system:**
+**Priority 6 — Case management system:**
 - [ ] Complete case management layer that tracks assets, key dates, deadlines, todos, and case status per matter
 - [ ] Asset inventory tracking (real property, bank accounts, investments, personal property, etc.)
 - [ ] Date/deadline management (filing deadlines, creditor claim periods, inventory due dates, accounting periods)
@@ -117,20 +113,25 @@ The app is functional for all Broward County domiciliary probate paths. 41 forms
 
 # 7. Known Issues / Risks
 
-**Problems:**
-- David reported bugs with the import flow (not yet specified — needs debugging next session)
+**Fixed this session:**
+- Imported matters no longer stuck on blank "Open Estate" wizard
+
+**Remaining problems:**
+- David reported additional import bugs (not yet specified — needs debugging next session)
 
 **Weak spots:**
 - 29 un-audited probate templates may have missing/mismatched tags
 - Ancillary wizard entries only have BW-0010
 - `seedVersion` was not bumped — existing seed data won't refresh unless bumped
 - localStorage is fragile long-term (browser wipe = data loss)
+- Summary admin forms don't have section cards yet (only in "All forms" fallback)
 
 ---
 
 # 8. Unknowns / Missing Context
 
-- What specific bugs David is seeing with the import
+- What other specific bugs David is seeing with the import
+- Which forms David considers seldom/never-used (for decluttering into a separate section)
 - Whether the "Quick Add Matter" needs batch import or one-at-a-time
 - For v2 direct generation: whether David wants a CLI command, a Cowork skill, or both
 
@@ -138,7 +139,7 @@ The app is functional for all Broward County domiciliary probate paths. 41 forms
 
 # 9. Next Best Action
 
-Debug the import bugs David is seeing, then stabilize the import → generate flow end-to-end.
+Have David test the updated matter view with imported matters, then identify which forms to move to a "seldom used" section. Continue debugging any remaining import bugs.
 
 ---
 
@@ -156,41 +157,50 @@ Debug the import bugs David is seeing, then stabilize the import → generate fl
 
 ### What exists now
 - **41 forms** in forms.json (5 guardianship, 30 FLSSI probate, 6 Broward local)
-- **Claude Import feature** — "Import from Claude" button in sidebar. Paste JSON from any Claude conversation → creates/updates client + matter + all form fields. Auto-preview on paste, validates JSON, shows existing/new status. Import schema in `claude_import_schema.md`, real example in `examples/muscara_import.json`.
-- **Human-readable filenames** — downloads use form names (e.g. `Petition_for_Administration`) not IDs
-- **Open Estate wizard** with county-aware Broward local form routing
-- **Batch generation** — multiple forms → merged questionnaire → .zip download
+- **Three lifecycle sections** in matter view:
+  - **Open Estate** — wizard auto-configures from saved/inferred selections; opening forms load automatically for existing matters
+  - **Estate Administration** — Notice to Creditors, Inventory (clickable toggle buttons)
+  - **Close Estate** — Petition for Discharge, Order of Discharge
+  - **All forms** — collapsed fallback with bundles + full checklist
+- **Claude Import feature** — "Import from Claude" button in sidebar. Paste JSON → auto-preview → creates/updates client + matter + all form fields + infers wizard selections. Schema in `claude_import_schema.md`, example in `examples/muscara_import.json`.
+- **Wizard persistence** — `matter.wizardSelections` saves admin type, will, jurisdiction, petitioners, county. Auto-restored on re-entry.
+- **Human-readable filenames** — downloads use form names not IDs
 - **Cross-form data sharing** — fields entered on one form auto-populate into others
-- **6 Broward local forms** (criminal history affidavit, 4 mandatory checklists, affidavit of heirs)
-- **Multi-petitioner model** for summary admin forms
-- **Test data:** Margaret Torres with 3 matters
-- **Homepage dashboard** — recent matters, quick actions, overview stats; click title to return home
+- **Homepage dashboard** — recent matters, quick actions, overview stats
 - **No login required** — auth disabled for local dev
 
-### How Claude Import works
-1. In any Claude conversation, read a matter context file (e.g. `Muscara_Context.md`)
-2. Generate JSON matching the schema in `claude_import_schema.md`
-3. David pastes JSON into the Import modal → Preview → Import
-4. Client + matter + all form fields created, ready for wizard + document generation
-5. Imported data stored under `_shared` key in formData, picked up by cross-form sharing automatically
+### How the sections work
+- Open Estate wizard saves selections to `matter.wizardSelections` on "Load Forms"
+- Import infers selections: `will_date`→testate, petitioners array→single/multiple, defaults to formal+domiciliary
+- Existing imported matters without selections get inference from `_shared` formData on first view
+- Section form buttons toggle forms into/out of `selectedFormIds`, syncing with manual checklist
+- `formSections` config in app.js defines which forms go in Administration vs Closing — easy to modify
 
 ### What's next (priority order)
-1. **Fix bugs** David found with the import flow (unspecified — debug first)
-2. **Claude direct generation (v2)** — "Draft the petition" in chat → .docx output, no browser. Best path: standalone Node.js script using docxtemplater directly
-3. **Quick Add Matter** — onboard existing mid-stream matters without wizard
-4. **Ancillary Broward checklists** — URLs captured
-5. **Template tag audit** — 29 remaining probate templates un-audited
-6. **Lifecycle bundles** — Notice to Creditors, Inventory, Closing phases
-7. **Case management system** — track assets, dates, deadlines, and todos per matter
+1. **Fix remaining import bugs** David found (unspecified — debug first)
+2. **Declutter sections** — David will identify seldom-used forms to move to collapsed section
+3. **Summary admin section treatment** — currently only in "All forms" fallback
+4. **Claude direct generation (v2)** — "Draft the petition" in chat → .docx output
+5. **Quick Add Matter** — onboard existing mid-stream matters without wizard
+6. **Ancillary Broward checklists** — URLs captured
+7. **Template tag audit** — 29 remaining probate templates un-audited
+8. **Case management system** — track assets, dates, deadlines, and todos per matter
 
 ### Key files
-- `app.js` — all application logic (~1800 lines), includes Claude import, wizard, batch generation
+- `app.js` — all application logic (~1900 lines), includes wizard persistence, sections, import, batch generation
 - `forms.json` — 41 form definitions with all field/section structure
-- `index.html` — single-page app shell with wizard + import modal
-- `styles.css` — all styles
+- `index.html` — single-page app shell with wizard + section cards + import modal
+- `styles.css` — all styles including section card styling
 - `claude_import_schema.md` — field reference for Claude to generate import JSON
-- `examples/muscara_import.json` — real-world import example from Muscara context file
+- `examples/muscara_import.json` — real-world import example
 - `CLAUDE.md` — full project context (read this first)
+
+### Key code locations
+- `formSections` object — defines which forms go in Administration/Closing sections
+- `initWizardForMatter()` — restores/infers wizard selections, auto-loads forms
+- `confirmClaudeImport()` — infers `wizardSelections` from import data
+- `populateFormSections()` / `renderFormSection()` / `toggleSectionForm()` — section card rendering and interaction
+- `wizardLoadForms()` — saves `wizardSelections` to matter
 
 ### Constraints
 - Personal tool, never for sale (FLSSI license restriction)
