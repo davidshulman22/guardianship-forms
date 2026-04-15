@@ -227,8 +227,9 @@ function showView(view) {
     document.getElementById('viewMatter').style.display = 'none';
 
     if (view === 'noClient') {
-        document.getElementById('viewNoClient').style.display = 'flex';
+        document.getElementById('viewNoClient').style.display = 'block';
         document.getElementById('breadcrumb').textContent = '';
+        renderHomepage();
     } else if (view === 'client') {
         document.getElementById('viewClient').style.display = 'block';
         document.getElementById('breadcrumb').textContent = currentClient ? currentClient.firstName + ' ' + currentClient.lastName : '';
@@ -240,11 +241,86 @@ function showView(view) {
     }
 }
 
+function navigateHome() {
+    currentClient = null;
+    currentMatter = null;
+    currentFormId = null;
+    selectedFormIds = [];
+    currentFormData = {};
+    renderClientList();
+    showView('noClient');
+}
+
+function renderHomepage() {
+    // --- Recent Matters ---
+    const recentContainer = document.getElementById('homeRecentMatters');
+    const allMatters = [];
+    clients.forEach(client => {
+        (client.matters || []).forEach(matter => {
+            allMatters.push({ client, matter });
+        });
+    });
+    // Sort by createdAt descending
+    allMatters.sort((a, b) => (b.matter.createdAt || '').localeCompare(a.matter.createdAt || ''));
+    const recent = allMatters.slice(0, 5);
+
+    if (recent.length === 0) {
+        recentContainer.innerHTML = '<p class="empty-state">No matters yet. Create a client and add a matter to get started.</p>';
+    } else {
+        recentContainer.innerHTML = '';
+        recent.forEach(({ client, matter }) => {
+            const div = document.createElement('div');
+            div.className = 'home-matter-item';
+
+            const lastInitial = (matter.subjectName || '?').split(' ').pop().charAt(0).toUpperCase();
+            const iconClass = matter.type || 'probate';
+            const title = matter.type === 'probate'
+                ? 'Estate of ' + (matter.subjectName || 'Unknown')
+                : 'Guardianship — ' + (matter.subjectName || 'Unknown');
+            const clientName = (client.firstName || '') + ' ' + (client.lastName || '');
+            const subtitle = [clientName.trim(), matter.county ? matter.county + ' County' : ''].filter(Boolean).join(' · ');
+
+            div.innerHTML =
+                '<div class="home-matter-icon ' + iconClass + '">' + lastInitial + '</div>' +
+                '<div class="home-matter-body">' +
+                    '<div class="home-matter-title">' + title + '</div>' +
+                    '<div class="home-matter-subtitle">' + subtitle + '</div>' +
+                '</div>';
+
+            div.addEventListener('click', () => {
+                currentClient = client;
+                renderClientList();
+                selectMatter(matter);
+            });
+            recentContainer.appendChild(div);
+        });
+    }
+
+    // --- Stats ---
+    const statsContainer = document.getElementById('homeStats');
+    const totalClients = clients.length;
+    const totalMatters = allMatters.length;
+    const probateCount = allMatters.filter(m => m.matter.type === 'probate').length;
+    const guardianshipCount = allMatters.filter(m => m.matter.type === 'guardianship').length;
+
+    statsContainer.innerHTML =
+        '<div class="home-stat-card"><div class="home-stat-number">' + totalClients + '</div><div class="home-stat-label">Clients</div></div>' +
+        '<div class="home-stat-card"><div class="home-stat-number">' + probateCount + '</div><div class="home-stat-label">Probate Matters</div></div>' +
+        '<div class="home-stat-card"><div class="home-stat-number">' + guardianshipCount + '</div><div class="home-stat-label">Guardianship Matters</div></div>';
+}
+
 // ============================================
 // EVENT LISTENERS
 // ============================================
 
 function setupEventListeners() {
+    // App title — click to go home
+    document.getElementById('appTitleLink').addEventListener('click', navigateHome);
+
+    // Homepage quick action buttons
+    document.getElementById('homeNewClientBtn').addEventListener('click', () => openClientModal());
+    document.getElementById('homeImportBtn').addEventListener('click', openClaudeImportModal);
+
     // Client search
     document.getElementById('clientSearch').addEventListener('input', debounce(filterClients, 300));
 

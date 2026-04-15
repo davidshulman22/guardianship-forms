@@ -12,7 +12,7 @@
             <!-- Header -->
             <header class="header">
                 <div class="header-left">
-                    <h1 class="app-title">GS Court Forms</h1>
+                    <h1 class="app-title" id="appTitleLink" style="cursor:pointer;">GS Court Forms</h1>
                 </div>
                 <div class="header-right">
                     <span id="breadcrumb" class="breadcrumb"></span>
@@ -36,9 +36,34 @@
                 <!-- Center Panel: Changes based on navigation state -->
                 <main class="center-panel">
 
-                    <!-- State: No client selected -->
-                    <div id="viewNoClient" class="placeholder">
-                        <p>Select a client or create a new one to get started</p>
+                    <!-- State: Homepage / Dashboard -->
+                    <div id="viewNoClient" class="homepage">
+                        <!-- Quick Actions -->
+                        <div class="home-section">
+                            <h2 class="home-section-title">Quick Actions</h2>
+                            <div class="home-actions">
+                                <button id="homeNewClientBtn" class="home-action-card">
+                                    <span class="home-action-icon">+</span>
+                                    <span class="home-action-label">New Client</span>
+                                </button>
+                                <button id="homeImportBtn" class="home-action-card">
+                                    <span class="home-action-icon home-action-icon-import">C</span>
+                                    <span class="home-action-label">Import from Claude</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Recent Matters -->
+                        <div class="home-section">
+                            <h2 class="home-section-title">Recent Matters</h2>
+                            <div id="homeRecentMatters" class="home-recent-matters"></div>
+                        </div>
+
+                        <!-- Stats -->
+                        <div class="home-section">
+                            <h2 class="home-section-title">Overview</h2>
+                            <div id="homeStats" class="home-stats"></div>
+                        </div>
                     </div>
 
                     <!-- State: Client selected — show matters -->

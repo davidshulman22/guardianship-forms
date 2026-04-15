@@ -92,6 +92,13 @@ The app is functional for all Broward County domiciliary probate paths. 41 forms
 - [ ] Template tag audit (29 of 30 probate templates un-audited; P3-0100 had 4 missing tags)
 - [ ] Lifecycle bundles beyond opening (Notice to Creditors, Inventory, Closing/Discharge)
 
+**Priority 5 — Case management system:**
+- [ ] Complete case management layer that tracks assets, key dates, deadlines, todos, and case status per matter
+- [ ] Asset inventory tracking (real property, bank accounts, investments, personal property, etc.)
+- [ ] Date/deadline management (filing deadlines, creditor claim periods, inventory due dates, accounting periods)
+- [ ] Todo/task list per matter (what's been done, what's next, what's overdue)
+- [ ] Integrate with existing matter data model — extend, don't replace
+
 **Captured URLs (Broward checklists not yet built):**
 - Formal Ancillary: `http://www.17th.flcourts.org/wp-content/uploads/2017/08/Petition.for_.Formal.Ancillary.Admininistration.pdf`
 - Summary Ancillary: `http://www.17th.flcourts.org/wp-content/uploads/2025/12/Revised-Petition.for_.ANCILLARY.Summary.Administration-12.9.25_forms.pdf`
@@ -166,6 +173,7 @@ Debug the import bugs David is seeing, then stabilize the import → generate fl
 4. **Ancillary Broward checklists** — URLs captured
 5. **Template tag audit** — 29 remaining probate templates un-audited
 6. **Lifecycle bundles** — Notice to Creditors, Inventory, Closing phases
+7. **Case management system** — track assets, dates, deadlines, and todos per matter
 
 ### Key files
 - `app.js` — all application logic (~1350 lines), includes Claude import, wizard, batch generation
