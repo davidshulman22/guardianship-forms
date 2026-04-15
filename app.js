@@ -70,6 +70,7 @@ async function initializeApp() {
     loadClientsFromStorage();
     renderClientList();
     setupEventListeners();
+    setupClaudeImport();
     showView('noClient');
 }
 
@@ -1346,7 +1347,7 @@ async function generateDocuments() {
             if (!form) throw new Error('Form configuration not found');
 
             const blob = await renderSingleDoc(form, templateData);
-            const fileName = subjectName + '_' + form.id + '_' + dateStr + '.docx';
+            const fileName = makeDocFileName(subjectName, form, dateStr);
             window.saveAs(blob, fileName);
             showNotification('Document generated', 'success');
         } else {
@@ -1362,7 +1363,7 @@ async function generateDocuments() {
 
                 const blob = await renderSingleDoc(form, templateData);
                 const arrayBuf = await blob.arrayBuffer();
-                const fileName = subjectName + '_' + form.id + '_' + dateStr + '.docx';
+                const fileName = makeDocFileName(subjectName, form, dateStr);
                 zipFile.file(fileName, arrayBuf);
             }
 
@@ -1445,6 +1446,237 @@ function prepareTemplateData() {
     }
 
     return data;
+}
+
+function makeDocFileName(subjectName, form, dateStr) {
+    // Use the form's human-readable name instead of the ID
+    // e.g. "Lorraine_Ann_Muscara_Petition_for_Administration_2026-04-15.docx"
+    const formName = (form.name || form.id).replace(/[^a-zA-Z0-9 ]/g, '').replace(/\s+/g, '_');
+    return subjectName + '_' + formName + '_' + dateStr + '.docx';
+}
+
+// ============================================
+// CLAUDE IMPORT
+// ============================================
+
+function setupClaudeImport() {
+    document.getElementById('claudeImportBtn').addEventListener('click', openClaudeImportModal);
+    document.getElementById('importPreviewBtn').addEventListener('click', previewClaudeImport);
+    document.getElementById('importConfirmBtn').addEventListener('click', confirmClaudeImport);
+
+    // Auto-preview on paste
+    document.getElementById('claudeImportData').addEventListener('paste', () => {
+        setTimeout(previewClaudeImport, 100);
+    });
+}
+
+function openClaudeImportModal() {
+    document.getElementById('claudeImportData').value = '';
+    document.getElementById('importPreview').style.display = 'none';
+    document.getElementById('importError').style.display = 'none';
+    document.getElementById('importConfirmBtn').disabled = true;
+    document.getElementById('claudeImportModal').style.display = 'flex';
+    document.getElementById('claudeImportData').focus();
+}
+
+let pendingImportData = null;
+
+function previewClaudeImport() {
+    const raw = document.getElementById('claudeImportData').value.trim();
+    const previewEl = document.getElementById('importPreview');
+    const errorEl = document.getElementById('importError');
+    const confirmBtn = document.getElementById('importConfirmBtn');
+
+    previewEl.style.display = 'none';
+    errorEl.style.display = 'none';
+    confirmBtn.disabled = true;
+    pendingImportData = null;
+
+    if (!raw) return;
+
+    try {
+        const data = JSON.parse(raw);
+
+        // Validate required structure
+        if (!data.client || !data.matter) {
+            throw new Error('JSON must have "client" and "matter" objects');
+        }
+        if (!data.client.lastName) {
+            throw new Error('client.lastName is required');
+        }
+        if (!data.matter.subjectName) {
+            throw new Error('matter.subjectName is required');
+        }
+        if (!data.matter.type) {
+            data.matter.type = 'probate'; // default
+        }
+
+        // Check for existing client match
+        const existingClient = findMatchingClient(data.client);
+        const existingMatter = existingClient ? findMatchingMatter(existingClient, data.matter) : null;
+
+        // Count form fields
+        const fieldCount = data.formData ? Object.keys(data.formData).length : 0;
+        const arrayFields = data.formData ? Object.values(data.formData).filter(v => Array.isArray(v)) : [];
+        const arrayDesc = arrayFields.length > 0
+            ? ' + ' + arrayFields.map(a => a.length + ' rows').join(', ')
+            : '';
+
+        // Build preview
+        const clientName = (data.client.firstName || '') + ' ' + data.client.lastName;
+        const matterLabel = data.matter.type === 'probate'
+            ? 'Probate — Estate of ' + data.matter.subjectName
+            : 'Guardianship — ' + data.matter.subjectName;
+
+        let html = '<h4>Import Preview</h4>';
+        html += '<div class="preview-field"><span class="preview-label">Client:</span> ' + escapeHtml(clientName.trim());
+        if (existingClient) {
+            html += ' <em>(existing — will update)</em>';
+        } else {
+            html += ' <em>(new client)</em>';
+        }
+        html += '</div>';
+        html += '<div class="preview-field"><span class="preview-label">Matter:</span> ' + escapeHtml(matterLabel);
+        if (existingMatter) {
+            html += ' <em>(existing — will merge data)</em>';
+        } else {
+            html += ' <em>(new matter)</em>';
+        }
+        html += '</div>';
+        if (data.matter.fileNo) {
+            html += '<div class="preview-field"><span class="preview-label">File No.:</span> ' + escapeHtml(data.matter.fileNo) + '</div>';
+        }
+        if (data.matter.county) {
+            html += '<div class="preview-field"><span class="preview-label">County:</span> ' + escapeHtml(data.matter.county) + '</div>';
+        }
+        html += '<div class="preview-field"><span class="preview-label">Form fields:</span> ' + fieldCount + ' fields' + arrayDesc + '</div>';
+
+        previewEl.innerHTML = html;
+        previewEl.style.display = 'block';
+        confirmBtn.disabled = false;
+        pendingImportData = data;
+    } catch (e) {
+        errorEl.textContent = 'Invalid JSON: ' + e.message;
+        errorEl.style.display = 'block';
+    }
+}
+
+function findMatchingClient(importClient) {
+    const lastName = (importClient.lastName || '').toLowerCase().trim();
+    const firstName = (importClient.firstName || '').toLowerCase().trim();
+    return clients.find(c => {
+        const cLast = (c.lastName || '').toLowerCase().trim();
+        const cFirst = (c.firstName || '').toLowerCase().trim();
+        return cLast === lastName && (cFirst === firstName || !firstName || !cFirst);
+    });
+}
+
+function findMatchingMatter(client, importMatter) {
+    const subjectName = (importMatter.subjectName || '').toLowerCase().trim();
+    return (client.matters || []).find(m => {
+        return (m.subjectName || '').toLowerCase().trim() === subjectName;
+    });
+}
+
+function confirmClaudeImport() {
+    if (!pendingImportData) return;
+
+    const data = pendingImportData;
+
+    // Find or create client
+    let client = findMatchingClient(data.client);
+    if (client) {
+        // Update existing client with any new info
+        if (data.client.firstName) client.firstName = data.client.firstName;
+        if (data.client.address) client.address = data.client.address;
+        if (data.client.phone) client.phone = data.client.phone;
+        if (data.client.email) client.email = data.client.email;
+    } else {
+        client = {
+            id: generateId(),
+            firstName: data.client.firstName || '',
+            lastName: data.client.lastName,
+            address: data.client.address || '',
+            phone: data.client.phone || '',
+            email: data.client.email || '',
+            matters: [],
+            createdAt: new Date().toISOString()
+        };
+        clients.unshift(client);
+    }
+
+    // Find or create matter
+    let matter = findMatchingMatter(client, data.matter);
+    if (matter) {
+        // Update existing matter metadata
+        if (data.matter.fileNo) matter.fileNo = data.matter.fileNo;
+        if (data.matter.county) matter.county = data.matter.county;
+        if (data.matter.division) matter.division = data.matter.division;
+        if (data.matter.matterData) {
+            matter.matterData = { ...(matter.matterData || {}), ...data.matter.matterData };
+        }
+    } else {
+        matter = {
+            id: generateId(),
+            type: data.matter.type || 'probate',
+            subjectName: data.matter.subjectName,
+            county: data.matter.county || '',
+            fileNo: data.matter.fileNo || '',
+            division: data.matter.division || '',
+            matterData: data.matter.matterData || {},
+            formData: {},
+            createdAt: new Date().toISOString()
+        };
+        if (!client.matters) client.matters = [];
+        client.matters.push(matter);
+    }
+
+    // Merge form data — import data wins over existing empty values
+    if (data.formData && Object.keys(data.formData).length > 0) {
+        if (!matter.formData) matter.formData = {};
+
+        // Store as a shared data pool under a special '_claude_import' key
+        // AND merge into any existing form-specific data
+        const existing = matter.formData['_shared'] || {};
+        matter.formData['_shared'] = { ...existing, ...data.formData };
+
+        // Also merge into any existing per-form data
+        Object.keys(matter.formData).forEach(formId => {
+            if (formId === '_shared') return;
+            const formFields = matter.formData[formId];
+            Object.keys(data.formData).forEach(key => {
+                // Only fill in if the existing value is empty/missing
+                if (!formFields[key] && formFields[key] !== false && data.formData[key]) {
+                    formFields[key] = data.formData[key];
+                }
+            });
+        });
+    }
+
+    saveClientsToStorage();
+
+    // Navigate to the imported client/matter
+    currentClient = client;
+    currentMatter = matter;
+    currentFormId = null;
+    selectedFormIds = [];
+    currentFormData = {};
+
+    renderClientList();
+    renderMatterView();
+    showView('matter');
+    closeAllModals();
+
+    const fieldCount = data.formData ? Object.keys(data.formData).length : 0;
+    showNotification('Imported: ' + (data.matter.subjectName || 'matter') + ' (' + fieldCount + ' fields)', 'success');
+
+    pendingImportData = null;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 // ============================================

@@ -1,0 +1,129 @@
+{
+  "client": {
+    "firstName": "Robert",
+    "lastName": "Muscara",
+    "address": "",
+    "phone": "",
+    "email": "robert@brokersabstract.com"
+  },
+  "matter": {
+    "type": "probate",
+    "subjectName": "Lorraine Ann Muscara",
+    "county": "Broward",
+    "fileNo": "PRC250003382",
+    "division": "62J",
+    "matterData": {
+      "decedent_address": "2417 NE 26th Avenue, Lighthouse Point, FL 33064",
+      "decedent_death_date": "June 14",
+      "decedent_death_year": "2025",
+      "decedent_death_place": "Lighthouse Point, Broward County, Florida",
+      "decedent_domicile": "Broward",
+      "decedent_ssn_last4": ""
+    }
+  },
+  "formData": {
+    "petitioner_name": "Robert Keith Muscara and Cheryl Marie Rondinelli",
+    "petitioner_interest": "co-personal representatives named in the Last Will and Testament",
+    "petitioner_address": "",
+    "decedent_full_name": "Lorraine Ann Muscara",
+    "decedent_address": "2417 NE 26th Avenue, Lighthouse Point, FL 33064",
+    "decedent_ssn_last4": "",
+    "decedent_death_date": "June 14",
+    "decedent_death_year": "2025",
+    "decedent_death_place": "Lighthouse Point, Broward County, Florida",
+    "decedent_domicile": "Broward",
+    "venue_reason": "the decedent was domiciled in Broward County, Florida at the time of death",
+    "will_date": "October 30",
+    "will_year": "2021",
+    "codicil_dates": "",
+    "pr_name": "Robert Keith Muscara and Cheryl Marie Rondinelli",
+    "pr_address": "",
+    "pr_relationship": "nephew and niece of decedent",
+    "domiciliary_court_address": "",
+    "domiciliary_representative": "",
+    "domiciliary_representative_address": "",
+    "county": "Broward",
+    "file_no": "PRC250003382",
+    "division": "62J",
+    "judge_name": "Hon. Kenneth L. Gillespie",
+    "court_county": "Broward",
+    "court_address": "201 SE 6th Street, Fort Lauderdale, FL 33301",
+    "affiant_name": "Robert Keith Muscara",
+    "notary_state": "Florida",
+    "notary_county": "Broward",
+    "petitioners": [
+      {
+        "pet_name": "Robert Keith Muscara",
+        "pet_address": "",
+        "pet_relationship": "nephew"
+      },
+      {
+        "pet_name": "Cheryl Marie Rondinelli",
+        "pet_address": "",
+        "pet_relationship": "niece"
+      }
+    ],
+    "beneficiaries": [
+      {
+        "ben_name": "Mark J. Heron",
+        "ben_address": "2417 NE 26th Avenue, Lighthouse Point, FL 33064",
+        "ben_relationship": "Surviving spouse",
+        "ben_year_of_birth": ""
+      },
+      {
+        "ben_name": "Penn State University",
+        "ben_address": "",
+        "ben_relationship": "Residuary beneficiary (scholarship fund)",
+        "ben_year_of_birth": ""
+      },
+      {
+        "ben_name": "University of Pennsylvania",
+        "ben_address": "",
+        "ben_relationship": "Residuary beneficiary (scholarship fund)",
+        "ben_year_of_birth": ""
+      },
+      {
+        "ben_name": "Temple University",
+        "ben_address": "",
+        "ben_relationship": "Residuary beneficiary (scholarship fund)",
+        "ben_year_of_birth": ""
+      },
+      {
+        "ben_name": "Elaine Costanzo/Swinand",
+        "ben_address": "",
+        "ben_relationship": "Specific monetary legatee ($300,000)",
+        "ben_year_of_birth": ""
+      },
+      {
+        "ben_name": "Philabundance",
+        "ben_address": "",
+        "ben_relationship": "Specific monetary legatee ($500,000)",
+        "ben_year_of_birth": ""
+      },
+      {
+        "ben_name": "Patricia Tacey",
+        "ben_address": "",
+        "ben_relationship": "Specific monetary legatee ($200,000)",
+        "ben_year_of_birth": ""
+      },
+      {
+        "ben_name": "Jeff Davis",
+        "ben_address": "",
+        "ben_relationship": "Specific monetary legatee ($200,000)",
+        "ben_year_of_birth": ""
+      },
+      {
+        "ben_name": "Diane DelVecchio (a/k/a Diane Rauch)",
+        "ben_address": "",
+        "ben_relationship": "Specific monetary legatee ($200,000)",
+        "ben_year_of_birth": ""
+      },
+      {
+        "ben_name": "Sylvia Thomas",
+        "ben_address": "",
+        "ben_relationship": "Specific monetary legatee ($200,000)",
+        "ben_year_of_birth": ""
+      }
+    ]
+  }
+}
