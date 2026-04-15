@@ -1,157 +1,162 @@
-# FLSSI Forms — Project Context
+# GS Court Forms — Project Context
 
 ## What This Is
 
-A static HTML/JS/CSS web app for David Shulman (and potentially Jill Ginsberg) to select a Florida FLSSI 2025 court form — guardianship or probate — fill out a questionnaire, and download a populated `.docx`. No server-side rendering — everything runs in the browser.
+A browser-based app for generating Florida court forms (FLSSI 2025 + Broward County local forms). Select a client, select a matter, answer a few questions or pick forms, fill out a merged questionnaire, and download populated `.docx` files — individually or as a `.zip` bundle. No server-side rendering — everything runs in the browser with localStorage persistence.
 
 ## Who Uses This
 
-David Shulman is both the builder and the primary end user. He handles probate matters and will use this daily for his own filings. Jill Ginsberg handles guardianship — she may or may not adopt it. UX should be simple (court filing speed matters) but doesn't need to be dumbed down.
+David Shulman is both the builder and the primary end user. He handles probate matters in Broward County and will use this daily for his own filings. Jill Ginsberg handles guardianship — she may or may not adopt it.
 
-## Project Scope
+## Current State
 
-The project covers both **guardianship AND probate** Florida FLSSI forms. There are ~400 total forms across both folders but only a prioritized subset will be converted. David identifies which forms to add next.
+The app is **functional for probate** with an Open Estate wizard that guides form selection. 37 forms are defined in forms.json (5 guardianship, 30 probate FLSSI, 2 Broward local). All probate templates are tagged and generating correctly.
 
-## Roadmap
-
-**Phase 1 (current):** Convert the most-used FLSSI forms — tag templates, wire into forms.json, verify. Get the form-filling pipeline working for both probate and guardianship.
-
-**Phase 2 (future):** Full case management system. Probate and guardianship matters are created with persistent memory of people (ward, decedent, PR, guardian, beneficiaries, creditors), addresses, relationships, and case details. Enter once, auto-populate everywhere across all forms for that matter. During Phase 1, track which fields recur across forms — those become the Phase 2 schema.
+**Auth is disabled** for local dev — no login required. Data persists in localStorage with seed test data.
 
 ## Stack
 
 - **Frontend**: Single-page HTML (`index.html`), vanilla JS (`app.js`), vanilla CSS (`styles.css`)
-- **Auth & Data**: Supabase (hosted) — `clients` + `form_submissions` tables with RLS
-- **Document Generation**: docxtemplater (client-side, loaded via CDN) + PizZip + FileSaver.js
+- **Storage**: localStorage (Supabase exists but auth is disabled for dev)
+- **Document Generation**: docxtemplater (client-side, CDN) + PizZip + FileSaver.js
 - **Config Layer**: `forms.json` — all form field definitions live here, NOT in app.js
 - **Templates**: `.docx` files in `templates/` with `{field_name}` placeholders
+
+## Data Model
+
+```
+Client (Margaret Torres)
+  ├── firstName, lastName, address, phone, email
+  └── Matters[]
+      ├── Matter (Probate — Estate of Helen Marie Torres)
+      │   ├── type: 'probate'
+      │   ├── subjectName, county, fileNo, division
+      │   ├── matterData: { decedent_address, decedent_death_date, ... }
+      │   └── formData: { 'P3-0100': { field: value, ... }, 'P3-0420': { ... } }
+      └── Matter (Guardianship — Robert James Torres)
+          └── ...
+```
+
+**Cross-form data sharing**: Fields entered on any form for a matter are available to every other form in that matter. Enter once, populate everywhere. Priority: form data → matter data → client data → attorney defaults.
 
 ## File Structure
 
 ```
-├── index.html          # Single-page app shell
-├── app.js              # All application logic
-├── styles.css          # All styles
-├── forms.json          # Form configuration (sections, fields, template paths)
-├── config.js           # Supabase credentials (gitignored)
-├── config.example.js   # Template for config.js on new clones
-├── .gitignore          # Ignores config.js, .env, .DS_Store
-├── supabase-setup.sql  # Schema reference (DO NOT re-run — schema is live)
-├── repair_templates.py # One-time script that fixed G3-010.docx and G3-026.docx
-├── CLAUDE.md           # This file
+├── index.html                  # Single-page app shell
+├── app.js                      # All application logic (~1100 lines)
+├── styles.css                  # All styles
+├── forms.json                  # 37 form definitions (sections, fields, template paths)
+├── CLAUDE.md                   # This file
+├── create_broward_templates.py # Script to generate Broward local form templates
+├── tag_probate_templates.py    # Tags summary admin forms (rerunnable)
+├── tag_formal_admin_templates.py # Tags formal admin forms (rerunnable)
+├── repair_templates.py         # One-time fix for G3-010.docx and G3-026.docx
 ├── templates/
-│   ├── G2-010.docx     # Petition to Determine Incapacity (fully tagged)
-│   ├── G2-140.docx     # Notice of Designation of Email Addresses (fully tagged)
-│   ├── G3-010.docx     # Emergency Temp Guardian (fully tagged after repair)
-│   ├── G3-025.docx     # Plenary Guardian / Property (fully tagged)
-│   └── G3-026.docx     # Limited Guardian Person & Property (fully tagged after repair)
+│   ├── G2-010.docx .. G3-026.docx   # 5 guardianship templates
+│   ├── P1-0900.docx                  # Notice of Designation of Email Addresses
+│   ├── P2-0204.docx .. P2-0650.docx # 19 summary admin templates
+│   ├── P3-0100.docx .. P3-0900.docx # 8 formal admin templates
+│   ├── P5-0400.docx, P5-0800.docx   # 2 discharge templates
+│   ├── BW-0010.docx                  # Broward: Affidavit Regarding Criminal History
+│   └── BW-0020.docx                  # Broward: Mandatory Checklist (Formal Admin Testate)
 ```
 
-## Supabase
+## How to Run
 
-**Project URL**: `https://xcjrpfkexdxggkaswefh.supabase.co`
-
-The Supabase URL and anon key live in `config.js` (gitignored). A template is provided in `config.example.js`. To set up a new clone, copy `config.example.js` to `config.js` and fill in the real values.
-
-**DO NOT recreate or modify the schema — it is live.**
-
-### `clients` table
-Core fields shared across all forms:
-- `county`, `file_no`, `division`
-- `petitioner_name`, `petitioner_age`, `petitioner_address`, `petitioner_relationship`
-- `aip_name`, `aip_age`, `aip_county`, `aip_primary_language`, `aip_address`
-- `attorney_name`, `attorney_email`, `attorney_bar_no`, `attorney_address`, `attorney_phone`
-- `physician_name`, `physician_address`, `physician_phone`
-- `created_by` (uuid ref to `auth.users`)
-
-### `form_submissions` table
-- `client_id` (FK → clients), `form_id` (text, e.g. "G3-010"), `form_data` (jsonb)
-- Form-specific field values stored as JSON in `form_data`
-
-Both tables have RLS enabled — all authenticated users have full CRUD.
-
-**Important:** Fields not in the `clients` table schema are form-specific and live in `form_submissions.form_data` as JSON. Do NOT add them to the `clients` table. This includes fields like `petitioner_residence`, `petitioner_phone`, `aip_dob_month/day/year`, `aip_residence`, `aip_incapacity_nature`, `proposed_guardian_*`, `imminent_danger_reason`, etc. The `clients` table only holds fields that are shared across ALL forms. Form-specific fields belong in `forms.json` and get stored in `form_data`.
-
-### Auth
-Three accounts exist (`david@`, `dshulman@`, `jill@ginsbergshulman.com`) — passwords unknown. Email confirmation is enforced. Password reset via Supabase dashboard is needed before full UI testing.
-
-## forms.json Structure
-
-```json
-{
-  "forms": [
-    {
-      "id": "G2-010",
-      "name": "Human-readable form name",
-      "template": "templates/G2-010.docx",
-      "sections": [
-        {
-          "title": "Section Title",
-          "fields": [
-            {"name": "field_name", "label": "UI Label", "type": "text|textarea|checkbox"},
-            {
-              "name": "next_of_kin",
-              "label": "Next of kin",
-              "type": "repeating_group",
-              "subfields": [
-                {"name": "name", "label": "Name", "type": "text"}
-              ]
-            }
-          ]
-        }
-      ]
-    }
-  ]
-}
+```bash
+cd "/Users/davidshulman/Library/CloudStorage/Dropbox-GinsbergShulman,PL/David Shulman/FLSSI Forms/Forms Project"
+python3 -m http.server 8765
+# Open http://localhost:8765
 ```
 
-Field types: `text`, `textarea`, `checkbox`, `repeating_group`.
+## Key Features
+
+### Open Estate Wizard
+The primary entry point for filing. Asks 4 questions:
+1. **Administration**: Formal / Summary
+2. **Will**: Testate / Intestate
+3. **Jurisdiction**: Domiciliary / Ancillary
+4. **County**: Broward / Palm Beach / Miami-Dade / Other
+
+These map to a `wizardFormMatrix` in app.js that selects the exact right set of forms. County = Broward triggers local forms (BW-*) automatically.
+
+### Batch Form Generation
+- Select multiple forms (via wizard, bundle presets, or manual checkboxes)
+- All fields merge into one deduplicated questionnaire
+- Single form → downloads `.docx` directly
+- Multiple forms → downloads `.zip` with all `.docx` files
+- Bundle presets available under "Manual form selection" for non-wizard workflows
+
+### Auto-Population Layers
+`getAutoPopulateDefaults()` builds field values from 4 sources (in priority order):
+1. Data from other forms in this matter (cross-form sharing)
+2. Matter-level data (county, subject name, matterData)
+3. Client-level data (petitioner name/address)
+4. Attorney defaults (David A. Shulman, Bar No. 150762, etc.)
+
+### Seed Test Data
+Margaret "Maggie" Torres with 3 matters:
+- Guardianship of person & property — Robert James Torres
+- Guardianship of property — Sophia Grace Reyes
+- **Probate formal admin — Estate of Helen Marie Torres** (testate, died 3/2/2026, Broward County)
+  - P3-0100 pre-seeded with full data including 3 beneficiaries
+
+Bump `seedVersion` in `loadClientsFromStorage()` to force test data refresh.
+
+## Form ID Conventions
+
+- `G*` — Guardianship FLSSI forms (G2-010, G3-025, etc.)
+- `P1-*` — General probate FLSSI forms
+- `P2-*` — Summary administration FLSSI forms
+- `P3-*` — Formal administration FLSSI forms
+- `P5-*` — Discharge FLSSI forms
+- `BW-*` — Broward County local forms
 
 ## docxtemplater Conventions
 
-- Text fields: `{field_name}` in template → value from data
-- Repeating groups: `{#next_of_kin}{name}\t{address}\t{relationship}{/next_of_kin}`
-- Checkboxes: In `forms.json`, the field name is plain (e.g. `has_alternatives`). In the template, the tag has `_check` appended: `{has_alternatives_check}`. The `prepareTemplateData()` function in `app.js` handles this transform automatically — it creates both `has_alternatives` and `has_alternatives_check` keys, converting `true`→`(X)` and `false`→`(  )`.
-
-## Core Fields vs Form-Specific Fields
-
-**Core fields** live in the `clients` table and are shared across all forms. They appear in the "Client Info" panel in the UI and auto-populate into every template.
-
-**Form-specific fields** are defined in `forms.json` sections and stored in `form_submissions.form_data` as JSON. They only appear when that form is selected.
-
-If a template uses a field that matches a core field name (e.g. `{county}`), the core field value is used automatically.
+- Text fields: `{field_name}` → value from data
+- Repeating groups: `{#beneficiaries}{ben_name} {ben_address}{/beneficiaries}`
+- Checkboxes: Field name in forms.json is plain (e.g. `no_felony`). Template tag has `_check` appended: `{no_felony_check}`. `prepareTemplateData()` handles the transform: `true`→`(X)`, `false`→`(  )`.
 
 ## Template Repair Notes
 
-When writing repair scripts for new FLSSI forms:
+When fixing or creating FLSSI templates:
+1. **rsid attributes vary per paragraph** — never assume shared values between `<w:p>` elements
+2. **Smart apostrophes** — FLSSI uses U+2019 (`'`) not ASCII `'`
+3. **No f-strings for template tags** — Python f-strings double-escape braces. Use `+` concatenation
+4. For new Broward templates, use `create_broward_templates.py` (requires `python-docx`)
 
-1. **rsid attributes vary per paragraph** — each `<w:p>` has unique rsidR/rsidRPr/rsidRDefault. Never assume consecutive paragraphs share the same values. Verify each one individually.
-2. **Smart apostrophes** — FLSSI forms use U+2019 (`'`) not ASCII `'`. Always check with hex/ord.
-3. **No f-strings for template tags** — Python f-strings treat `"{{county}}"` inside expressions as literal `{{county}}` (double braces), but docxtemplater needs single braces `{county}`. Use `+` concatenation instead.
-4. **repair_templates.py** uses Python stdlib only (zipfile, shutil, os, re) — no pip dependencies. Run with `python3` (macOS).
+## Broward County (17th Circuit) — Local Requirements
 
-## Template Status
+**Judges (current as of April 2026):**
+- Judge Kenneth L. Gillespie — Administrative Judge (Div. 62J)
+- Judge Nicholas Lopane (Div. 60J)
+- Judge Natasha DePrimo (Div. 61J)
+- General Magistrate Yves Laventure
 
-| Template | Status | Notes |
-|----------|--------|-------|
-| G2-010.docx | Fully tagged | Wired in forms.json since initial build |
-| G2-140.docx | Fully tagged | forms.json entry added |
-| G3-010.docx | Fully tagged | Repaired by repair_templates.py |
-| G3-025.docx | Fully tagged | forms.json entry added |
-| G3-026.docx | Fully tagged | Repaired by repair_templates.py |
+**Filing rules:**
+- Mandatory checklists required for ALL petition types — Clerk will NOT forward without them
+- Proposed orders must have at least 4 lines of text + case number on signature page
+- Affidavit Regarding Criminal History required for every estate opening (testate AND intestate)
+- Non-FL-resident PRs must post a bond (uniform policy)
+- Original will must be deposited with Clerk; original death certificate required
+- Contact: probate@17th.flcourts.org / guardian@17th.flcourts.org
+
+**Reference docs downloaded:**
+- Local Procedures (Oct 2023, 22 pages) — saved during session
+- Mandatory checklists for all petition types — URLs captured
+- Affidavit of Heirs form (4 pages) — needed for intestate
 
 ## GitHub
 
 Repository: `https://github.com/davidshulman22/guardianship-forms`
 
-(May need renaming now that probate is in scope.)
+**Git discipline:** Project lives in Dropbox — that's intentional, don't move it. Git is source of truth. Start of session: `git pull`. End of session: commit and push.
 
-**Git discipline:** Project lives in Dropbox — that's intentional, don't move it. Git is source of truth, Dropbox syncs whatever Git leaves on disk. Start of session: `git pull`. End of session: commit and push. Claude Code handles this — David doesn't need to run terminal commands.
+## Constraints
 
-## TODOs
-
-- [ ] Reset Supabase auth passwords so the app can be fully UI-tested
-- [ ] Full UI-path E2E test (login → create client → select form → generate → download)
-- [ ] David identifies next batch of FLSSI forms to convert
-- [ ] Consider renaming repo/app title from "Guardianship Forms" to something broader
-- [ ] Phase 2 planning: case management schema for persistent people/roles/addresses
+- No required fields during build phase
+- Probate first, guardianship later
+- File No. assigned after filing — always optional
+- Attorney defaults: David A. Shulman, Bar No. 150762, david@ginsbergshulman.com, 954-990-0896
+- Address: Ginsberg Shulman PL, 300 SE 2nd St Ste 600, Fort Lauderdale, FL 33301
