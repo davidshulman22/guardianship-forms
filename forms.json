@@ -76,6 +76,286 @@
           ]
         }
       ]
+    },
+    {
+      "id": "G2-140",
+      "name": "Notice of Designation of Email Addresses for Service",
+      "template": "templates/G2-140.docx",
+      "sections": [
+        {
+          "title": "Email Addresses for Service",
+          "fields": [
+            {"name": "primary_email", "label": "Primary email address for service", "type": "text"},
+            {"name": "secondary_email", "label": "Secondary email address for service", "type": "text"}
+          ]
+        },
+        {
+          "title": "Certificate of Service",
+          "fields": [
+            {"name": "cos_served_to", "label": "Name(s) of person(s) served", "type": "textarea"},
+            {"name": "cos_service_method", "label": "Method of service (e.g., email, hand delivery)", "type": "text"},
+            {"name": "cos_day", "label": "Day of service", "type": "text"},
+            {"name": "cos_month", "label": "Month of service", "type": "text"},
+            {"name": "cos_year", "label": "Year of service", "type": "text"}
+          ]
+        },
+        {
+          "title": "Signing Information",
+          "fields": [
+            {"name": "signing_day", "label": "Day", "type": "text"},
+            {"name": "signing_month", "label": "Month", "type": "text"},
+            {"name": "signing_year", "label": "Year", "type": "text"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "G3-010",
+      "name": "Petition for Appointment of Emergency Temporary Guardian",
+      "template": "templates/G3-010.docx",
+      "sections": [
+        {
+          "title": "Petitioner Information",
+          "fields": [
+            {"name": "petitioner_residence", "label": "Petitioner's county of residence", "type": "text"},
+            {"name": "petitioner_phone", "label": "Petitioner's phone number", "type": "text"}
+          ]
+        },
+        {
+          "title": "AIP Information",
+          "fields": [
+            {"name": "aip_residence", "label": "AIP's county of residence", "type": "text"},
+            {"name": "aip_dob_month", "label": "AIP date of birth — month", "type": "text"},
+            {"name": "aip_dob_day", "label": "AIP date of birth — day", "type": "text"},
+            {"name": "aip_dob_year", "label": "AIP date of birth — year", "type": "text"},
+            {"name": "aip_incapacity_nature", "label": "Nature and extent of incapacity", "type": "textarea"}
+          ]
+        },
+        {
+          "title": "Imminent Danger",
+          "fields": [
+            {"name": "imminent_danger_reason", "label": "Why immediate action is required (imminent danger)", "type": "textarea"}
+          ]
+        },
+        {
+          "title": "Proposed Guardian",
+          "fields": [
+            {"name": "proposed_guardian_name", "label": "Proposed guardian's name", "type": "text"},
+            {"name": "proposed_guardian_residence", "label": "Proposed guardian's county of residence", "type": "text"},
+            {"name": "proposed_guardian_address", "label": "Proposed guardian's post office address", "type": "text"},
+            {"name": "proposed_guardian_professional", "label": "Professional guardian status (e.g., 'is a professional guardian' or 'is not a professional guardian')", "type": "text"},
+            {"name": "proposed_guardian_relationship", "label": "Relationship to AIP", "type": "text"}
+          ]
+        },
+        {
+          "title": "Guardianship Scope",
+          "fields": [
+            {"name": "guardianship_scope", "label": "Scope of emergency temporary guardianship (person, property, or both)", "type": "text"}
+          ]
+        },
+        {
+          "title": "Alternatives to Guardianship",
+          "fields": [
+            {"name": "has_alternatives", "label": "AIP has executed documents (advance directives, etc.)", "type": "checkbox"},
+            {"name": "has_preneed", "label": "AIP has designated a preneed guardian", "type": "checkbox"}
+          ]
+        },
+        {
+          "title": "Appointment Reason",
+          "fields": [
+            {"name": "appointment_reason", "label": "Why the proposed emergency temporary guardian should be appointed", "type": "textarea"}
+          ]
+        },
+        {
+          "title": "Property",
+          "fields": [
+            {"name": "property_nature_value", "label": "Nature and value of property subject to guardianship", "type": "textarea"}
+          ]
+        },
+        {
+          "title": "Next of Kin",
+          "fields": [
+            {
+              "name": "next_of_kin",
+              "label": "Next of kin of the alleged incapacitated person",
+              "type": "repeating_group",
+              "subfields": [
+                {"name": "name", "label": "Name", "type": "text"},
+                {"name": "address", "label": "Address", "type": "text"},
+                {"name": "relationship", "label": "Relationship", "type": "text"}
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Signing Information",
+          "fields": [
+            {"name": "signing_day", "label": "Day", "type": "text"},
+            {"name": "signing_month", "label": "Month", "type": "text"},
+            {"name": "signing_year", "label": "Year", "type": "text"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "G3-025",
+      "name": "Petition for Appointment of Plenary Guardian of Property",
+      "template": "templates/G3-025.docx",
+      "sections": [
+        {
+          "title": "Petitioner Information",
+          "fields": [
+            {"name": "petitioner_residence", "label": "Petitioner's county of residence", "type": "text"}
+          ]
+        },
+        {
+          "title": "Ward Information",
+          "fields": [
+            {"name": "aip_residence", "label": "Ward's county of residence", "type": "text"},
+            {"name": "ward_incapacity_nature", "label": "Nature and extent of ward's incapacity", "type": "textarea"}
+          ]
+        },
+        {
+          "title": "Proposed Guardian",
+          "fields": [
+            {"name": "proposed_guardian_name", "label": "Proposed guardian's name", "type": "text"},
+            {"name": "proposed_guardian_residence", "label": "Proposed guardian's county of residence", "type": "text"},
+            {"name": "proposed_guardian_address", "label": "Proposed guardian's post office address", "type": "text"},
+            {"name": "proposed_guardian_professional", "label": "Professional guardian?", "type": "checkbox"},
+            {"name": "proposed_guardian_relationship", "label": "Relationship to ward", "type": "text"}
+          ]
+        },
+        {
+          "title": "Property",
+          "fields": [
+            {"name": "property_description", "label": "Description of property subject to guardianship", "type": "textarea"}
+          ]
+        },
+        {
+          "title": "Alternatives and Appointment",
+          "fields": [
+            {"name": "alternatives_description", "label": "Alternatives to guardianship considered", "type": "textarea"},
+            {"name": "alternatives_insufficient_reason", "label": "Why alternatives are insufficient", "type": "textarea"},
+            {"name": "has_preneed", "label": "Ward has designated a preneed guardian", "type": "checkbox"},
+            {"name": "appointment_reason", "label": "Reason for appointing proposed guardian", "type": "textarea"}
+          ]
+        },
+        {
+          "title": "Next of Kin",
+          "fields": [
+            {
+              "name": "next_of_kin",
+              "label": "Next of kin of the ward",
+              "type": "repeating_group",
+              "subfields": [
+                {"name": "name", "label": "Name", "type": "text"},
+                {"name": "address", "label": "Address", "type": "text"},
+                {"name": "relationship", "label": "Relationship", "type": "text"}
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Signing Information",
+          "fields": [
+            {"name": "signing_day", "label": "Day", "type": "text"},
+            {"name": "signing_month", "label": "Month", "type": "text"},
+            {"name": "signing_year", "label": "Year", "type": "text"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "G3-026",
+      "name": "Petition for Appointment of Limited Guardian of Person and Property",
+      "template": "templates/G3-026.docx",
+      "sections": [
+        {
+          "title": "Petitioner Information",
+          "fields": [
+            {"name": "petitioner_residence", "label": "Petitioner's county of residence", "type": "text"}
+          ]
+        },
+        {
+          "title": "Ward Information",
+          "fields": [
+            {"name": "aip_residence", "label": "Ward's county of residence", "type": "text"}
+          ]
+        },
+        {
+          "title": "Rights to Remove from Ward",
+          "fields": [
+            {"name": "remove_marry", "label": "To marry", "type": "checkbox"},
+            {"name": "remove_vote", "label": "To vote", "type": "checkbox"},
+            {"name": "remove_govt_benefits", "label": "To apply for government benefits", "type": "checkbox"},
+            {"name": "remove_drivers_license", "label": "To have a driver's license", "type": "checkbox"},
+            {"name": "remove_travel", "label": "To travel", "type": "checkbox"},
+            {"name": "remove_employment", "label": "To seek or retain employment", "type": "checkbox"}
+          ]
+        },
+        {
+          "title": "Rights to Delegate to Guardian",
+          "fields": [
+            {"name": "delegate_contract", "label": "To contract", "type": "checkbox"},
+            {"name": "delegate_sue", "label": "To sue and defend lawsuits", "type": "checkbox"},
+            {"name": "delegate_govt_benefits", "label": "To apply for government benefits", "type": "checkbox"},
+            {"name": "delegate_property", "label": "To manage property", "type": "checkbox"},
+            {"name": "delegate_residence", "label": "To determine residence", "type": "checkbox"},
+            {"name": "delegate_medical", "label": "To consent to medical treatment", "type": "checkbox"},
+            {"name": "delegate_social", "label": "To make decisions about social environment", "type": "checkbox"}
+          ]
+        },
+        {
+          "title": "Property",
+          "fields": [
+            {"name": "property_value_description", "label": "Nature and value of property subject to guardianship", "type": "textarea"},
+            {"name": "incapable_property", "label": "Description of property ward is incapable of managing", "type": "textarea"}
+          ]
+        },
+        {
+          "title": "Proposed Guardian",
+          "fields": [
+            {"name": "proposed_guardian_name", "label": "Proposed guardian's name", "type": "text"},
+            {"name": "proposed_guardian_residence", "label": "Proposed guardian's county of residence", "type": "text"},
+            {"name": "proposed_guardian_address", "label": "Proposed guardian's post office address", "type": "text"},
+            {"name": "proposed_guardian_professional", "label": "Professional guardian?", "type": "checkbox"},
+            {"name": "proposed_guardian_pronoun", "label": "Proposed guardian's pronoun (he/she/they)", "type": "text"},
+            {"name": "proposed_guardian_relationship", "label": "Relationship to ward", "type": "text"}
+          ]
+        },
+        {
+          "title": "Alternatives and Appointment",
+          "fields": [
+            {"name": "has_alternatives", "label": "Ward has executed documents (advance directives, etc.)", "type": "checkbox"},
+            {"name": "alternatives_description", "label": "Description of alternatives considered", "type": "textarea"},
+            {"name": "has_preneed", "label": "Ward has designated a preneed guardian", "type": "checkbox"},
+            {"name": "appointment_reason", "label": "Reason for appointing proposed guardian", "type": "textarea"}
+          ]
+        },
+        {
+          "title": "Next of Kin",
+          "fields": [
+            {
+              "name": "next_of_kin",
+              "label": "Next of kin of the ward",
+              "type": "repeating_group",
+              "subfields": [
+                {"name": "name", "label": "Name", "type": "text"},
+                {"name": "address", "label": "Address", "type": "text"},
+                {"name": "relationship", "label": "Relationship", "type": "text"}
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Signing Information",
+          "fields": [
+            {"name": "signing_day", "label": "Day", "type": "text"},
+            {"name": "signing_month", "label": "Month", "type": "text"},
+            {"name": "signing_year", "label": "Year", "type": "text"}
+          ]
+        }
+      ]
     }
   ]
 }
