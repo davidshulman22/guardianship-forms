@@ -1,6 +1,6 @@
 # CHAT HANDOFF — RESUME-READY
 **Generated:** 2026-04-15
-**Source:** Claude Code session — Claude import integration + document filenames
+**Source:** Claude Code session — homepage dashboard + case management roadmap
 **Status:** RESUME-READY
 
 ---
@@ -13,7 +13,7 @@ Build a browser-based app for generating Florida court forms (FLSSI 2025 + Browa
 
 # 2. Current State
 
-The app is functional for all Broward County domiciliary probate paths. 41 forms defined in forms.json. **Claude import feature is built and working** — paste JSON from any Claude conversation to create/update a client + matter with all form fields pre-populated. Document filenames now use human-readable form names. The app runs at `http://localhost:8765` via `python3 -m http.server 8765`.
+The app is functional for all Broward County domiciliary probate paths. 41 forms defined in forms.json. **Claude import feature is built and working** — paste JSON from any Claude conversation to create/update a client + matter with all form fields pre-populated. Document filenames now use human-readable form names. **Homepage dashboard** shows recent matters, quick actions, and overview stats — click "GS Court Forms" title to return home from any view. The app runs at `http://localhost:8765` via `python3 -m http.server 8765`.
 
 ---
 
@@ -30,6 +30,13 @@ The app is functional for all Broward County domiciliary probate paths. 41 forms
 - **Real-world example** (`examples/muscara_import.json`) — generated from actual `Muscara_Context.md`, tested end-to-end with 28 fields + 2 petitioners + 10 beneficiaries
 - **Human-readable document filenames** — `Petition_for_Administration` instead of `P3-0100` in both single-doc and zip downloads
 - **Committed and pushed** to `main` on GitHub
+- **Homepage dashboard** — replaces empty placeholder with:
+  - Quick Actions (New Client, Import from Claude)
+  - Recent Matters (last 5, clickable — jumps directly into the matter)
+  - Overview stats (client count, probate count, guardianship count)
+  - "GS Court Forms" title is clickable to navigate home from anywhere
+- **Case management system** added to roadmap as Priority 5
+- **Committed and pushed** homepage to `main` on GitHub
 
 ---
 
@@ -157,6 +164,7 @@ Debug the import bugs David is seeing, then stabilize the import → generate fl
 - **6 Broward local forms** (criminal history affidavit, 4 mandatory checklists, affidavit of heirs)
 - **Multi-petitioner model** for summary admin forms
 - **Test data:** Margaret Torres with 3 matters
+- **Homepage dashboard** — recent matters, quick actions, overview stats; click title to return home
 - **No login required** — auth disabled for local dev
 
 ### How Claude Import works
@@ -176,7 +184,7 @@ Debug the import bugs David is seeing, then stabilize the import → generate fl
 7. **Case management system** — track assets, dates, deadlines, and todos per matter
 
 ### Key files
-- `app.js` — all application logic (~1350 lines), includes Claude import, wizard, batch generation
+- `app.js` — all application logic (~1800 lines), includes Claude import, wizard, batch generation
 - `forms.json` — 41 form definitions with all field/section structure
 - `index.html` — single-page app shell with wizard + import modal
 - `styles.css` — all styles
