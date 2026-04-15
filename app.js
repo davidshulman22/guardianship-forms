@@ -598,7 +598,7 @@ const wizardFormMatrix = {
     },
     'formal|intestate|domiciliary|single': {
         forms: ['P3-0120', 'P3-0440', 'P3-0600', 'P3-0700', 'P1-0900'],
-        broward: ['BW-0010']
+        broward: ['BW-0010', 'BW-0030', 'BW-0060']
     },
     // Formal Admin — multiple petitioners (use same forms, multi-petitioner is rare in formal)
     'formal|testate|domiciliary|multiple': {
@@ -607,25 +607,25 @@ const wizardFormMatrix = {
     },
     'formal|intestate|domiciliary|multiple': {
         forms: ['P3-0120', 'P3-0440', 'P3-0600', 'P3-0700', 'P1-0900'],
-        broward: ['BW-0010']
+        broward: ['BW-0010', 'BW-0030', 'BW-0060']
     },
 
     // Summary Administration — Domiciliary
     'summary|testate|domiciliary|single': {
         forms: ['P2-0204', 'P2-0300', 'P2-0355'],
-        broward: ['BW-0010']
+        broward: ['BW-0010', 'BW-0040']
     },
     'summary|testate|domiciliary|multiple': {
         forms: ['P2-0205', 'P2-0300', 'P2-0355'],
-        broward: ['BW-0010']
+        broward: ['BW-0010', 'BW-0040']
     },
     'summary|intestate|domiciliary|single': {
         forms: ['P2-0214', 'P2-0310', 'P2-0355'],
-        broward: ['BW-0010']
+        broward: ['BW-0010', 'BW-0050', 'BW-0060']
     },
     'summary|intestate|domiciliary|multiple': {
         forms: ['P2-0215', 'P2-0310', 'P2-0355'],
-        broward: ['BW-0010']
+        broward: ['BW-0010', 'BW-0050', 'BW-0060']
     },
 
     // Summary Administration — Ancillary
@@ -1022,6 +1022,15 @@ function getAutoPopulateDefaults() {
     if (!defaults.petitioner_name) defaults.petitioner_name = fullName;
     if (!defaults.petitioner_names) defaults.petitioner_names = fullName;
     if (!defaults.petitioner_address) defaults.petitioner_address = currentClient.address || '';
+
+    // --- Layer 3a: Auto-populate petitioners array for multi-petitioner forms ---
+    if (!defaults.petitioners || !Array.isArray(defaults.petitioners) || defaults.petitioners.length === 0) {
+        defaults.petitioners = [{
+            pet_name: fullName,
+            pet_address: currentClient.address || '',
+            pet_relationship: ''
+        }];
+    }
 
     // --- Layer 3b: Auto-derive fields ---
     if (!defaults.affiant_name) defaults.affiant_name = defaults.petitioner_name || fullName;
@@ -1427,6 +1436,13 @@ function prepareTemplateData() {
             data[key] = value || '';
         }
     });
+
+    // Derive petitioner_names from petitioners array for backward compatibility
+    if (data.petitioners && Array.isArray(data.petitioners)) {
+        if (!data.petitioner_names) {
+            data.petitioner_names = data.petitioners.map(p => p.pet_name).filter(Boolean).join(' and ');
+        }
+    }
 
     return data;
 }
