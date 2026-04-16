@@ -1,6 +1,6 @@
 # CHAT HANDOFF — RESUME-READY
-**Generated:** 2026-04-15
-**Source:** Claude Code session — lifecycle sections + wizard persistence
+**Generated:** 2026-04-16
+**Source:** Claude Code session — template audit, Helen Torres walkthrough, summary admin sections
 **Status:** RESUME-READY
 
 ---
@@ -13,22 +13,23 @@ Build a browser-based app for generating Florida court forms (FLSSI 2025 + Browa
 
 # 2. Current State
 
-The app is functional for all Broward County domiciliary probate paths. 41 forms defined in forms.json. **Claude import feature is built and working.** The matter view is now organized into **three lifecycle sections**: Open Estate (wizard-driven), Estate Administration (Notice to Creditors, Inventory), and Close Estate (Petition/Order of Discharge). Wizard selections persist on the matter — imported or previously-configured matters auto-restore their wizard state and load forms immediately instead of showing a blank "Open Estate" wizard. The app runs at `http://localhost:8765` via `python3 -m http.server 8765`.
+The app is functional for all Broward County domiciliary probate paths. 41 forms defined in forms.json. **All 36 probate/local templates pass tag audit — zero mismatches.** Claude import feature is built and working. The matter view has **three lifecycle sections** (Open Estate, Estate Administration, Close Estate) that now dynamically switch between formal and summary admin form sets based on wizard selections. GitHub Pages has been disabled — app runs locally only at `http://localhost:8765`.
 
 ---
 
 # 3. Work Completed (This Session)
 
-- **Wizard selection persistence** — wizard choices (admin type, will, jurisdiction, petitioners, county) are saved to `matter.wizardSelections` when "Load Forms" is clicked. Re-entering the matter auto-restores selections and auto-loads forms.
-- **Import wizard inference** — Claude import now infers wizard selections from imported data: `will_date`/`will_year` → testate, petitioners array length → single/multiple, defaults to formal + domiciliary. Existing imported matters without `wizardSelections` get inference from `_shared` formData on first view.
-- **Bug fix: imported matters stuck on "Open Estate"** — previously, opening an imported matter showed a blank wizard with no forms loaded. Now it auto-detects the matter has data and restores/infers the wizard state.
-- **Lifecycle section cards** — matter view reorganized into three sections:
-  - **Open Estate** (blue border) — wizard with admin/will/jurisdiction/petitioners/county toggles + "Forms to Generate" tags
-  - **Estate Administration** (green border) — Notice to Creditors (P3-0740), Inventory (P3-0900) as clickable toggle buttons
-  - **Close Estate** (red border) — Petition for Discharge (P5-0400), Order of Discharge (P5-0800)
-  - **All forms** — collapsed `<details>` at bottom with full checklist + bundle buttons as fallback
-- Form section buttons toggle forms into/out of `selectedFormIds`, syncing with the manual checklist and merged questionnaire
-- Wizard header dynamically shows "Change selections below if needed" for configured matters vs. "Answer these questions to load the correct forms" for new matters
+- **Template tag audit** — audited all 36 probate/local templates against forms.json. Fixed 16 templates with missing/mismatched tags:
+  - `signing_year` blanks (10 templates): replaced underscore placeholders with `{signing_year}` tag
+  - Death date/year fields (P3-0420, P3-0700, P3-0900, P2-0355, P2-0500): replaced blank underlined runs with `{decedent_death_date}` and `{decedent_death_year}`
+  - Will/witness tags (P3-0420, P2-0500): added `{will_date}`, `{will_year}`, `{witnesses}`; fixed P2-0500 where `{will_date}` was in the wrong position (after "attested by" instead of after "will dated")
+  - Petitioner relationship (P2-0205, P2-0215, P2-0220, P2-0225): added `{pet_relationship}` subfield inside `{#petitioners}` loop
+  - Judge name (P2-0310, BW-0060): added/standardized to `{judge_name}`
+  - PR entitlement (P3-0440): replaced misplaced `{pr_name}` with `{pr_entitlement_reason}` after "by reason of"
+  - Other fields: `{decedent_full_name}` in P3-0600, `{court_county}` and `{court_address}` in P3-0740, `{estate_value}` in P2-0355
+- **Helen Torres walkthrough** — verified seed data through wizard → form selection → template data merge → render. 7 forms selected correctly, P3-0100 renders with 26 populated fields and 3 beneficiaries, cross-form data sharing works, no tag splitting issues.
+- **Summary admin lifecycle sections** — `formSections` now has separate `formal` and `summary` sub-configs. Summary admin shows P2-0355 (Notice to Creditors) in administration and 5 will admission order variants in closing. Sections auto-update when wizard admin type changes.
+- **GitHub Pages disabled** — site was temporarily online, now taken down. App is local-only.
 - **Committed and pushed** to `main` on GitHub
 
 ---
@@ -37,12 +38,11 @@ The app is functional for all Broward County domiciliary probate paths. 41 forms
 
 | Decision | Why It Was Made |
 |----------|----------------|
-| Save `wizardSelections` on the matter object | Eliminates the "stuck on Open Estate" bug — matter remembers its configuration across sessions |
-| Infer wizard selections from import data | Imported matters should auto-configure without manual wizard interaction; will_date presence → testate, petitioners array → single/multiple are reliable signals |
-| Default inference: formal + domiciliary | These are by far the most common cases; summary admin and ancillary are rarer and can be corrected |
-| Three lifecycle sections instead of one long list | Matches the mental model of estate progression: open → administer → close |
-| Keep "All forms" as collapsed fallback | Power-user escape hatch; also needed for summary admin forms not covered by sections |
-| `formSections` config object in app.js | Easy to add/remove/reorder forms per section later when David identifies seldom-used forms |
+| Fix template tags via XML manipulation, not python-docx | FLSSI templates have specific rsid attributes and formatting that python-docx would destroy; raw XML replacement preserves original structure |
+| Standardize `{judge}` to `{judge_name}` in BW-0060 | All other templates use `judge_name`; consistency prevents silent data-missing bugs |
+| Replace `{pr_name}` with `{pr_entitlement_reason}` in P3-0440 | The tag was in the "by reason of ___" position, which is the entitlement reason, not the PR's name; the second `{pr_name}` (in "ADJUDGED that {pr_name} is appointed") was correct |
+| Nest formSections under `formal`/`summary` keys | Cleanest way to show different lifecycle forms without restructuring the HTML; the existing section card elements just get repopulated with different form lists |
+| Summary "closing" section shows will admission orders | In summary admin, the order IS the closing — but separate will admission orders may be needed if not combined with the summary order |
 
 ---
 
@@ -72,13 +72,12 @@ The app is functional for all Broward County domiciliary probate paths. 41 forms
 
 # 6. Remaining Work
 
-**Priority 1 — Additional import bugs (David has more to report):**
+**Priority 1 — Import bugs (David has more to report):**
 - [ ] Debug and fix other issues David encounters with the import flow
 - [ ] Test import → wizard → generate → download end-to-end in David's browser
 
 **Priority 2 — Section refinement:**
 - [ ] David will identify seldom/never-used forms to move to their own collapsed section to reduce clutter
-- [ ] Summary admin forms need section treatment (currently only in "All forms" fallback)
 
 **Priority 3 — Claude direct document generation (v2 vision):**
 - [ ] "Draft the petition" in chat → .docx output, no browser interaction
@@ -91,8 +90,6 @@ The app is functional for all Broward County domiciliary probate paths. 41 forms
 
 **Priority 5 — From the original roadmap:**
 - [ ] Ancillary Broward checklists (URLs captured, not built)
-- [ ] Helen Torres chronological walkthrough (verify template chain)
-- [ ] Template tag audit (29 of 30 probate templates un-audited; P3-0100 had 4 missing tags)
 - [ ] Lifecycle bundles beyond opening (Notice to Creditors, Inventory, Closing/Discharge)
 
 **Priority 6 — Case management system:**
@@ -114,17 +111,16 @@ The app is functional for all Broward County domiciliary probate paths. 41 forms
 # 7. Known Issues / Risks
 
 **Fixed this session:**
-- Imported matters no longer stuck on blank "Open Estate" wizard
+- 16 templates had missing/mismatched tags — all now pass audit
+- P2-0500 had `{will_date}` in the witnesses position — corrected
 
 **Remaining problems:**
 - David reported additional import bugs (not yet specified — needs debugging next session)
 
 **Weak spots:**
-- 29 un-audited probate templates may have missing/mismatched tags
 - Ancillary wizard entries only have BW-0010
 - `seedVersion` was not bumped — existing seed data won't refresh unless bumped
 - localStorage is fragile long-term (browser wipe = data loss)
-- Summary admin forms don't have section cards yet (only in "All forms" fallback)
 
 ---
 
@@ -139,7 +135,7 @@ The app is functional for all Broward County domiciliary probate paths. 41 forms
 
 # 9. Next Best Action
 
-Have David test the updated matter view with imported matters, then identify which forms to move to a "seldom used" section. Continue debugging any remaining import bugs.
+Have David test the updated templates with a real matter to verify the tag fixes produce correct output. Continue debugging any remaining import bugs.
 
 ---
 
@@ -157,37 +153,36 @@ Have David test the updated matter view with imported matters, then identify whi
 
 ### What exists now
 - **41 forms** in forms.json (5 guardianship, 30 FLSSI probate, 6 Broward local)
-- **Three lifecycle sections** in matter view:
-  - **Open Estate** — wizard auto-configures from saved/inferred selections; opening forms load automatically for existing matters
-  - **Estate Administration** — Notice to Creditors, Inventory (clickable toggle buttons)
-  - **Close Estate** — Petition for Discharge, Order of Discharge
+- **All 36 probate/local templates pass tag audit** — zero mismatches after fixing 16 templates
+- **Three lifecycle sections** in matter view, now dynamic by admin type:
+  - **Open Estate** — wizard auto-configures from saved/inferred selections; opening forms load automatically
+  - **Estate Administration** — formal: Notice to Creditors + Inventory; summary: Notice to Creditors
+  - **Close Estate** — formal: Petition/Order of Discharge; summary: Will admission orders
   - **All forms** — collapsed fallback with bundles + full checklist
 - **Claude Import feature** — "Import from Claude" button in sidebar. Paste JSON → auto-preview → creates/updates client + matter + all form fields + infers wizard selections. Schema in `claude_import_schema.md`, example in `examples/muscara_import.json`.
 - **Wizard persistence** — `matter.wizardSelections` saves admin type, will, jurisdiction, petitioners, county. Auto-restored on re-entry.
 - **Human-readable filenames** — downloads use form names not IDs
 - **Cross-form data sharing** — fields entered on one form auto-populate into others
 - **Homepage dashboard** — recent matters, quick actions, overview stats
+- **GitHub Pages disabled** — local only
 - **No login required** — auth disabled for local dev
 
 ### How the sections work
-- Open Estate wizard saves selections to `matter.wizardSelections` on "Load Forms"
-- Import infers selections: `will_date`→testate, petitioners array→single/multiple, defaults to formal+domiciliary
-- Existing imported matters without selections get inference from `_shared` formData on first view
-- Section form buttons toggle forms into/out of `selectedFormIds`, syncing with manual checklist
-- `formSections` config in app.js defines which forms go in Administration vs Closing — easy to modify
+- `formSections` in app.js has `formal` and `summary` sub-configs under `probate`
+- `populateFormSections()` reads `currentMatter.wizardSelections.adminType` to pick the right set
+- Section headers and subtitles update dynamically
+- `wizardLoadForms()` calls `populateFormSections()` after saving selections so sections update immediately
 
 ### What's next (priority order)
 1. **Fix remaining import bugs** David found (unspecified — debug first)
-2. **Declutter sections** — David will identify seldom-used forms to move to collapsed section
-3. **Summary admin section treatment** — currently only in "All forms" fallback
-4. **Claude direct generation (v2)** — "Draft the petition" in chat → .docx output
-5. **Quick Add Matter** — onboard existing mid-stream matters without wizard
-6. **Ancillary Broward checklists** — URLs captured
-7. **Template tag audit** — 29 remaining probate templates un-audited
-8. **Case management system** — track assets, dates, deadlines, and todos per matter
+2. **Declutter sections** — David will identify seldom-used forms
+3. **Claude direct generation (v2)** — "Draft the petition" in chat → .docx output
+4. **Quick Add Matter** — onboard existing mid-stream matters without wizard
+5. **Ancillary Broward checklists** — URLs captured
+6. **Case management system** — track assets, dates, deadlines, and todos per matter
 
 ### Key files
-- `app.js` — all application logic (~1900 lines), includes wizard persistence, sections, import, batch generation
+- `app.js` — all application logic (~1950 lines), includes wizard persistence, sections, import, batch generation
 - `forms.json` — 41 form definitions with all field/section structure
 - `index.html` — single-page app shell with wizard + section cards + import modal
 - `styles.css` — all styles including section card styling
@@ -196,11 +191,12 @@ Have David test the updated matter view with imported matters, then identify whi
 - `CLAUDE.md` — full project context (read this first)
 
 ### Key code locations
-- `formSections` object — defines which forms go in Administration/Closing sections
+- `formSections` object — formal/summary sub-configs for lifecycle sections
+- `populateFormSections()` — picks formal vs summary based on wizardSelections.adminType
 - `initWizardForMatter()` — restores/infers wizard selections, auto-loads forms
 - `confirmClaudeImport()` — infers `wizardSelections` from import data
-- `populateFormSections()` / `renderFormSection()` / `toggleSectionForm()` — section card rendering and interaction
-- `wizardLoadForms()` — saves `wizardSelections` to matter
+- `renderFormSection()` / `toggleSectionForm()` — section card rendering and interaction
+- `wizardLoadForms()` — saves `wizardSelections` to matter, updates sections
 
 ### Constraints
 - Personal tool, never for sale (FLSSI license restriction)
