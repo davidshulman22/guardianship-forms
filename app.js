@@ -65,16 +65,30 @@ const formBundles = {
 // Opening forms are handled by the wizard; these define Administration and Closing
 const formSections = {
     probate: {
-        // Opening form IDs are determined by the wizard matrix — not listed here
-        administration: {
-            label: 'Estate Administration',
-            subtitle: 'Mid-estate filings',
-            formIds: ['P3-0740', 'P3-0900']
+        formal: {
+            // Opening form IDs are determined by the wizard matrix — not listed here
+            administration: {
+                label: 'Estate Administration',
+                subtitle: 'Mid-estate filings',
+                formIds: ['P3-0740', 'P3-0900']
+            },
+            closing: {
+                label: 'Close Estate',
+                subtitle: 'Discharge and closing',
+                formIds: ['P5-0400', 'P5-0800']
+            }
         },
-        closing: {
-            label: 'Close Estate',
-            subtitle: 'Discharge and closing',
-            formIds: ['P5-0400', 'P5-0800']
+        summary: {
+            administration: {
+                label: 'Estate Administration',
+                subtitle: 'Post-order filings',
+                formIds: ['P2-0355']
+            },
+            closing: {
+                label: 'Additional Orders',
+                subtitle: 'Will admission orders (if not included in opening)',
+                formIds: ['P2-0500', 'P2-0600', 'P2-0610', 'P2-0630', 'P2-0650']
+            }
         }
     }
 };
@@ -873,6 +887,9 @@ function wizardLoadForms() {
         saveClientsToStorage();
     }
 
+    // Update lifecycle section cards to match the new admin type
+    populateFormSections();
+
     // Set the selected forms and trigger rendering
     selectedFormIds = allForms;
     currentFormId = selectedFormIds[0];
@@ -1054,15 +1071,39 @@ function populateFormSelector() {
 
 function populateFormSections() {
     const matterType = currentMatter ? currentMatter.type || 'probate' : 'probate';
-    const sections = formSections[matterType];
+    const matterSections = formSections[matterType];
 
     const adminEl = document.getElementById('adminSection');
     const closingEl = document.getElementById('closingSection');
+
+    if (!matterSections) {
+        if (adminEl) adminEl.style.display = 'none';
+        if (closingEl) closingEl.style.display = 'none';
+        return;
+    }
+
+    // Pick formal vs summary sections based on wizard selections
+    const adminType = (currentMatter && currentMatter.wizardSelections && currentMatter.wizardSelections.adminType) || 'formal';
+    const sections = matterSections[adminType] || matterSections.formal;
 
     if (!sections) {
         if (adminEl) adminEl.style.display = 'none';
         if (closingEl) closingEl.style.display = 'none';
         return;
+    }
+
+    // Update section headers to reflect the config
+    if (sections.administration && adminEl) {
+        const h3 = adminEl.querySelector('.section-header h3');
+        const sub = adminEl.querySelector('.section-subtitle');
+        if (h3) h3.textContent = sections.administration.label;
+        if (sub) sub.textContent = sections.administration.subtitle;
+    }
+    if (sections.closing && closingEl) {
+        const h3 = closingEl.querySelector('.section-header h3');
+        const sub = closingEl.querySelector('.section-subtitle');
+        if (h3) h3.textContent = sections.closing.label;
+        if (sub) sub.textContent = sections.closing.subtitle;
     }
 
     // Render each section
