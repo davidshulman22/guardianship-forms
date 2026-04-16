@@ -2955,8 +2955,18 @@
               "type": "text"
             },
             {
+              "name": "decedent_death_year",
+              "label": "Year of death",
+              "type": "text"
+            },
+            {
               "name": "will_date",
               "label": "Date of will",
+              "type": "text"
+            },
+            {
+              "name": "will_year",
+              "label": "Year of will",
               "type": "text"
             },
             {
@@ -3669,6 +3679,16 @@
             {
               "name": "will_date",
               "label": "Date of will",
+              "type": "text"
+            },
+            {
+              "name": "decedent_death_date",
+              "label": "Date of death",
+              "type": "text"
+            },
+            {
+              "name": "decedent_death_year",
+              "label": "Year of death",
               "type": "text"
             },
             {

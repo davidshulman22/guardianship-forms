@@ -10,7 +10,7 @@ David Shulman is both the builder and the primary end user. He handles probate m
 
 ## Current State
 
-The app is **functional for probate** with an Open Estate wizard that guides form selection. 37 forms are defined in forms.json (5 guardianship, 30 probate FLSSI, 2 Broward local). All probate templates are tagged and generating correctly.
+The app is **functional for probate** with an Open Estate wizard that guides form selection. 41 forms are defined in forms.json (5 guardianship, 30 probate FLSSI, 6 Broward local). All probate templates are tagged and generating correctly.
 
 **Auth is disabled** for local dev — no login required. Data persists in localStorage with seed test data.
 
@@ -43,9 +43,9 @@ Client (Margaret Torres)
 
 ```
 ├── index.html                  # Single-page app shell
-├── app.js                      # All application logic (~1100 lines)
+├── app.js                      # All application logic (~2000 lines)
 ├── styles.css                  # All styles
-├── forms.json                  # 37 form definitions (sections, fields, template paths)
+├── forms.json                  # 41 form definitions (sections, fields, template paths)
 ├── CLAUDE.md                   # This file
 ├── create_broward_templates.py # Script to generate Broward local form templates
 ├── tag_probate_templates.py    # Tags summary admin forms (rerunnable)
@@ -58,7 +58,11 @@ Client (Margaret Torres)
 │   ├── P3-0100.docx .. P3-0900.docx # 8 formal admin templates
 │   ├── P5-0400.docx, P5-0800.docx   # 2 discharge templates
 │   ├── BW-0010.docx                  # Broward: Affidavit Regarding Criminal History
-│   └── BW-0020.docx                  # Broward: Mandatory Checklist (Formal Admin Testate)
+│   ├── BW-0020.docx                  # Broward: Mandatory Checklist (Formal Admin Testate)
+│   ├── BW-0030.docx                  # Broward: Mandatory Checklist (Formal Admin Intestate)
+│   ├── BW-0040.docx                  # Broward: Mandatory Checklist (Summary Admin Testate)
+│   ├── BW-0050.docx                  # Broward: Mandatory Checklist (Summary Admin Intestate)
+│   └── BW-0060.docx                  # Broward: Affidavit of Heirs
 ```
 
 ## How to Run
