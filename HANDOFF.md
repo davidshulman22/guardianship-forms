@@ -184,7 +184,23 @@ The app is functional for all Broward County domiciliary probate paths. 41 forms
 - `wizardLoadForms()` calls `populateFormSections()` after saving selections so sections update immediately
 
 ### What's next (priority order)
-1. **Build out the full FLSSI catalog** — David reviews `FORMS_CATALOG_MAP.md`, marks skips, I batch-build the rest from `/FODPROBWD2025/Converted DOCX/` (138 forms possible, realistically ~60–80 after skips)
+
+**IMMEDIATE TASK — Build out the full FLSSI catalog (in progress, cross-computer):**
+- David is reviewing `FORMS_CATALOG_MAP.md` and marking `[x]` in the SKIP column for forms he does not want built (or writing "SKIP ALL" next to section headers).
+- When David says "ready" (possibly on a different computer — always `git pull` first), execute the batch build:
+  1. Read `FORMS_CATALOG_MAP.md`, extract the list of unbuilt forms that are NOT marked skip.
+  2. Source files live at: `/Users/davidshulman/Library/CloudStorage/Dropbox-GinsbergShulman,PL/David Shulman/FLSSI Forms/FODPROBWD2025/Converted DOCX/` — 194 FLSSI 2025 probate .docx files. Filenames start with the form ID (e.g. `P3-0802 Notice of Administration testate.docx`). Note there are a few typos in source filenames (e.g. `P2-0325Order...`, `P3-0111Petition...` no space; "Stateemnt", "Witess", "testate nonrisident", "Foreing") — match by ID prefix, not exact name.
+  3. For each form: unzip the .docx, replace blank underlined runs / placeholder text in `word/document.xml` with docxtemplater tags (`{field_name}`, `{field_check}`, `{#group}...{/group}`). Preserve rsid attributes, smart apostrophes (U+2019), and original formatting. Do NOT use python-docx for tag insertion — raw XML only, same pattern used in existing `tag_probate_templates.py` and `tag_formal_admin_templates.py`.
+  4. Save tagged file to `templates/{FORM-ID}.docx`.
+  5. Add the form definition to `forms.json` with sections + fields. Reuse existing field names wherever possible (e.g. `decedent_full_name`, `court_county`, `pr_name`, `pet_name_1`, etc.) so cross-form autopopulation works. Check existing forms.json entries for naming conventions.
+  6. If relevant, wire the form into `formSections` (formal/summary, opening/admin/closing) in `app.js` and into `wizardFormMatrix` for auto-selection.
+  7. After all builds: run a tag audit to confirm every `{tag}` in every template is backed by a field in `forms.json`. Script pattern: unzip each template, regex `\{([^#/][^}]+)\}` from document.xml, cross-reference forms.json fields.
+  8. Bump `seedVersion` in `loadClientsFromStorage()` if new fields apply to Helen Torres seed data.
+  9. Commit with a descriptive message naming the batch, push to `main`.
+- Realistic batch size: ~60–80 forms after David's skips.
+- If David has not yet marked the catalog when you start, do NOT begin building — prompt him to mark it first.
+
+**After catalog batch:**
 2. **Fix remaining import bugs** David found (unspecified — debug first)
 3. **Declutter sections** — happens naturally once catalog is complete and we know what David actually uses
 4. **Claude direct generation (v2)** — "Draft the petition" in chat → .docx output
@@ -200,6 +216,10 @@ The app is functional for all Broward County domiciliary probate paths. 41 forms
 - `claude_import_schema.md` — field reference for Claude to generate import JSON
 - `examples/muscara_import.json` — real-world import example
 - `CLAUDE.md` — full project context (read this first)
+- `FORMS_CATALOG_MAP.md` — full FLSSI 2025 catalog with SKIP checkboxes; drives the next batch build
+- `tag_probate_templates.py` / `tag_formal_admin_templates.py` — existing tagging scripts; reference pattern for new tag insertion (raw XML, no python-docx for tags)
+- `repair_templates.py` — one-time fix pattern, good reference for XML manipulation
+- Source .docx files: `/Users/davidshulman/Library/CloudStorage/Dropbox-GinsbergShulman,PL/David Shulman/FLSSI Forms/FODPROBWD2025/Converted DOCX/` (194 source forms)
 
 ### Key code locations
 - `formSections` object — formal/summary sub-configs for lifecycle sections
