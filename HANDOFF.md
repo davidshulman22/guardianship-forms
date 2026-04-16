@@ -1,7 +1,7 @@
 # CHAT HANDOFF — RESUME-READY
-**Generated:** 2026-04-16
-**Source:** Claude Code session — template audit, Helen Torres walkthrough, summary admin sections
-**Status:** RESUME-READY
+**Generated:** 2026-04-16 (updated)
+**Source:** Claude Code session — full FLSSI catalog mapping + exclude list
+**Status:** RESUME-READY — awaiting David's skip marks on FORMS_CATALOG_MAP.md
 
 ---
 
@@ -19,6 +19,14 @@ The app is functional for all Broward County domiciliary probate paths. 41 forms
 
 # 3. Work Completed (This Session)
 
+**Latest mini-session (2026-04-16 continuation):**
+- Surveyed full FLSSI 2025 probate catalog — **194 forms** exist in `/FODPROBWD2025/Converted DOCX/`, only **31 probate forms built** so far (36 total including 5 guardianship + Broward locals)
+- Created `FORMS_CATALOG_MAP.md` — exclude-list format grouping all 138 missing probate forms by series (P1/P2/P3/P4/P5) and sub-category, with SKIP checkboxes
+- Coverage gap: P1 29 missing, P2 4 missing, P3 57 missing, P4 26 missing, P5 22 missing
+- Default = build everything; David to mark `[x]` in SKIP column for forms he doesn't want, then say "ready" to kick off batch build
+- Suggested skip candidates surfaced: caveats, adversary formal notice variants, elective share suite, depository, commissioner, corporate PR variants, ancillary-specific forms
+
+**Prior session (2026-04-16):**
 - **Template tag audit** — audited all 36 probate/local templates against forms.json. Fixed 16 templates with missing/mismatched tags:
   - `signing_year` blanks (10 templates): replaced underscore placeholders with `{signing_year}` tag
   - Death date/year fields (P3-0420, P3-0700, P3-0900, P2-0355, P2-0500): replaced blank underlined runs with `{decedent_death_date}` and `{decedent_death_year}`
@@ -135,7 +143,9 @@ The app is functional for all Broward County domiciliary probate paths. 41 forms
 
 # 9. Next Best Action
 
-Have David test the updated templates with a real matter to verify the tag fixes produce correct output. Continue debugging any remaining import bugs.
+**Immediate:** David opens `FORMS_CATALOG_MAP.md` and puts `[x]` in the SKIP column for any forms he does not want built (or writes "SKIP ALL" next to section headers). When he says "ready", start building the remaining forms: extract text from each source .docx in `/FODPROBWD2025/Converted DOCX/`, tag with docxtemplater placeholders, add field definitions to `forms.json`, drop templates into `templates/`, and wire relevant ones into the lifecycle sections and wizard matrix.
+
+**After build batch:** run tag audit on every new template, generate a walkthrough test, commit, push.
 
 ---
 
@@ -174,12 +184,13 @@ Have David test the updated templates with a real matter to verify the tag fixes
 - `wizardLoadForms()` calls `populateFormSections()` after saving selections so sections update immediately
 
 ### What's next (priority order)
-1. **Fix remaining import bugs** David found (unspecified — debug first)
-2. **Declutter sections** — David will identify seldom-used forms
-3. **Claude direct generation (v2)** — "Draft the petition" in chat → .docx output
-4. **Quick Add Matter** — onboard existing mid-stream matters without wizard
-5. **Ancillary Broward checklists** — URLs captured
-6. **Case management system** — track assets, dates, deadlines, and todos per matter
+1. **Build out the full FLSSI catalog** — David reviews `FORMS_CATALOG_MAP.md`, marks skips, I batch-build the rest from `/FODPROBWD2025/Converted DOCX/` (138 forms possible, realistically ~60–80 after skips)
+2. **Fix remaining import bugs** David found (unspecified — debug first)
+3. **Declutter sections** — happens naturally once catalog is complete and we know what David actually uses
+4. **Claude direct generation (v2)** — "Draft the petition" in chat → .docx output
+5. **Quick Add Matter** — onboard existing mid-stream matters without wizard
+6. **Ancillary Broward checklists** — URLs captured
+7. **Case management system** — track assets, dates, deadlines, and todos per matter
 
 ### Key files
 - `app.js` — all application logic (~1950 lines), includes wizard persistence, sections, import, batch generation
