@@ -1,3 +1,5 @@
 config.js
 .env
 .DS_Store
+.claude/
+*.docx.bak

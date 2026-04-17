@@ -19,7 +19,14 @@ The app is functional for all Broward County domiciliary probate paths. **41 for
 
 # 3. Work Completed
 
-**Latest mini-session (2026-04-16, third pass):**
+**Latest mini-session (2026-04-17):**
+- **Housekeeping** — added `.claude/` and `*.docx.bak` to `.gitignore`; untracked `.DS_Store`; deleted stale `templates/P3-0100.docx.bak`
+- **Added `audit_tags.py`** — reusable tag audit script. Walks `subfields` inside repeating groups; excludes auto-populated fields (caption, attorney defaults, petitioner/affiant/notary). Run: `python3 audit_tags.py`. Currently passes clean.
+- **Fixed BW-0060** (Affidavit of Heirs) — template had `{judge_name}` tag but forms.json was missing the field. Added `judge_name` text field to Affiant Information section.
+- **Captured 5 Broward ancillary/misc checklist PDFs** to `reference/` (Formal Ancillary, Summary Ancillary, Homestead, Sell Real Property, Disposition) — ready to build templates from. NOT YET BUILT.
+- **Added "Future / fork" priority** to Remaining Work — generalize template architecture to non-court documents (engagement letters, estate planning docs, etc.)
+
+**Prior session (2026-04-16, third pass):**
 - **Full tag audit** — audited all 36 probate/local templates against forms.json, excluding auto-populated fields (case caption, attorney defaults) and deferred guardianship forms
 - Found and fixed **4 real mismatches**:
   - P2-0500: added missing `decedent_death_year` and `will_year` fields to forms.json
@@ -96,10 +103,20 @@ The app is functional for all Broward County domiciliary probate paths. **41 for
 - [ ] Onboard existing mid-stream matters without the opening wizard
 
 **Priority 6 — Ancillary Broward checklists:**
-- [ ] Build from captured URLs (formal ancillary, summary ancillary, homestead, disposition, sell real property)
+- [ ] PDFs downloaded 2026-04-17 — `reference/Broward-Checklist-{Formal-Ancillary,Summary-Ancillary,Homestead,Sell-Real-Property,Disposition}.pdf`
+- [ ] For each: add builder fn to `create_broward_templates.py` (follow BW-0020/0030 pattern), extract checkbox items from the PDF, enumerate fields in `forms.json`, wire into `wizardFormMatrix`
+- [ ] Suggested IDs: BW-0070 (Formal Ancillary), BW-0080 (Summary Ancillary), BW-0090 (Homestead), BW-0100 (Sell Real Property), BW-0110 (Disposition)
+- [ ] Rough scope: ~150 lines of Python per template + forms.json entry. Plus new wizard questions for ancillary/homestead/sell/disposition paths.
+- [ ] Recommend: build ONE (e.g., Homestead) end-to-end as pattern, review, then batch the other 4
 
 **Priority 7 — Case management system:**
 - [ ] Asset inventory, date/deadline tracking, todo/task list per matter
+
+**Future / fork — Generalize beyond court forms:**
+- [ ] Extend the same template + forms.json + auto-populate architecture to any fill-in document: engagement letters, estate planning documents (wills, trusts, POAs, HC surrogates), retainer agreements, correspondence, etc.
+- [ ] Likely a fork or a sibling "Documents" section rather than mixing with court pleadings
+- [ ] Same mechanics: `.docx` template with `{tags}` → forms.json field defs → cross-matter auto-populate → generate
+- [ ] Captured 2026-04-17 — do not start until FLSSI catalog build-out is done
 
 ---
 

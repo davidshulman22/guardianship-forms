@@ -4697,6 +4697,7 @@
         {
           "title": "Affiant Information",
           "fields": [
+            { "name": "judge_name", "label": "Circuit Judge name", "type": "text" },
             { "name": "affiant_name", "label": "Affiant name (person swearing)", "type": "text" },
             { "name": "aoh_has_interest", "label": "Affiant HAS an interest in this estate", "type": "checkbox" },
             { "name": "aoh_no_interest", "label": "Affiant does NOT have an interest in this estate", "type": "checkbox" },
