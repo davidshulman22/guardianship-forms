@@ -157,6 +157,18 @@ document.addEventListener('DOMContentLoaded', async function () {
         await establishSession(session);
     });
 
+    // Wrap a promise with a hard timeout. Supabase's getSession can hang
+    // indefinitely when the stored token is in a weird state (observed on
+    // reload after OAuth), and hangs would leave the app blank because
+    // neither screen is shown. Timing out lets us recover via the catch.
+    const withTimeout = (promise, ms, label) => Promise.race([
+        promise,
+        new Promise((_, reject) => setTimeout(
+            () => reject(new Error(label + ' timed out after ' + ms + 'ms')),
+            ms
+        ))
+    ]);
+
     try {
         // If we arrived back from Microsoft with a code in the URL, manually
         // exchange it. detectSessionInUrl is supposed to handle this but
@@ -164,7 +176,11 @@ document.addEventListener('DOMContentLoaded', async function () {
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
         if (code) {
-            const { data, error } = await window.supabaseClient.auth.exchangeCodeForSession(code);
+            const { data, error } = await withTimeout(
+                window.supabaseClient.auth.exchangeCodeForSession(code),
+                8000,
+                'exchangeCodeForSession'
+            );
             if (error) {
                 console.error('exchangeCodeForSession error:', error);
                 showLoginScreen();
@@ -180,12 +196,23 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
 
         // Normal load — check for an existing session
-        const { data: { session } } = await window.supabaseClient.auth.getSession();
+        const { data: { session } } = await withTimeout(
+            window.supabaseClient.auth.getSession(),
+            5000,
+            'getSession'
+        );
         await establishSession(session);
     } catch (err) {
         console.error('Auth init failed:', err);
+        // If getSession hung, the stored token is probably corrupt. Nuke it so
+        // the user can start clean without manually clearing localStorage.
+        if (err && err.message && err.message.indexOf('timed out') !== -1) {
+            Object.keys(localStorage)
+                .filter(k => k.indexOf('sb-') === 0)
+                .forEach(k => localStorage.removeItem(k));
+        }
         showLoginScreen();
-        setLoginError('Auth init failed: ' + (err && err.message ? err.message : 'unknown'));
+        setLoginError('Auth init failed: ' + (err && err.message ? err.message : 'unknown') + ' — try signing in again.');
     }
 });
 
