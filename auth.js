@@ -144,76 +144,48 @@ async function handleSignOut() {
     location.reload();
 }
 
-document.addEventListener('DOMContentLoaded', async function () {
+document.addEventListener('DOMContentLoaded', function () {
     const signInBtn = document.getElementById('msSignInBtn');
     if (signInBtn) signInBtn.addEventListener('click', handleMicrosoftSignIn);
 
     const signOutBtn = document.getElementById('signOutBtn');
     if (signOutBtn) signOutBtn.addEventListener('click', handleSignOut);
 
-    // Fires on initial load, on OAuth callback return, on sign-out, and on
-    // token refresh. Single source of truth for "is the user logged in?"
-    window.supabaseClient.auth.onAuthStateChange(async (_event, session) => {
-        await establishSession(session);
-    });
-
-    // Wrap a promise with a hard timeout. Supabase's getSession can hang
-    // indefinitely when the stored token is in a weird state (observed on
-    // reload after OAuth), and hangs would leave the app blank because
-    // neither screen is shown. Timing out lets us recover via the catch.
-    const withTimeout = (promise, ms, label) => Promise.race([
-        promise,
-        new Promise((_, reject) => setTimeout(
-            () => reject(new Error(label + ' timed out after ' + ms + 'ms')),
-            ms
-        ))
-    ]);
-
-    try {
-        // If we arrived back from Microsoft with a code in the URL, manually
-        // exchange it. detectSessionInUrl is supposed to handle this but
-        // occasionally silently fails; explicit exchange surfaces the error.
-        const urlParams = new URLSearchParams(window.location.search);
-        const code = urlParams.get('code');
-        if (code) {
-            const { data, error } = await withTimeout(
-                window.supabaseClient.auth.exchangeCodeForSession(code),
-                8000,
-                'exchangeCodeForSession'
-            );
-            if (error) {
-                console.error('exchangeCodeForSession error:', error);
-                showLoginScreen();
-                setLoginError('Sign-in callback failed: ' + error.message);
-                return;
-            }
-            // Clean the URL so reloads don't try to re-exchange a stale code
-            if (window.history && window.history.replaceState) {
+    // detectSessionInUrl: true in the client config makes Supabase auto-
+    // exchange ?code=... on page load. It fires an INITIAL_SESSION event
+    // via onAuthStateChange once it's done (whether it succeeded or not).
+    //
+    // We rely on that single code path. Calling exchangeCodeForSession
+    // manually races with the built-in detection and the loser hangs.
+    let resolved = false;
+    window.supabaseClient.auth.onAuthStateChange(async (event, session) => {
+        resolved = true;
+        try {
+            await establishSession(session);
+            // Clean the URL after a successful OAuth callback so reloads don't
+            // choke on a one-time-use code.
+            if (session && window.location.search && window.history.replaceState) {
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
-            await establishSession(data.session);
-            return;
+        } catch (err) {
+            console.error('establishSession failed (outer):', err);
+            showLoginScreen();
+            setLoginError('Session setup failed: ' + (err.message || 'unknown'));
         }
+    });
 
-        // Normal load — check for an existing session
-        const { data: { session } } = await withTimeout(
-            window.supabaseClient.auth.getSession(),
-            5000,
-            'getSession'
-        );
-        await establishSession(session);
-    } catch (err) {
-        console.error('Auth init failed:', err);
-        // If getSession hung, the stored token is probably corrupt. Nuke it so
-        // the user can start clean without manually clearing localStorage.
-        if (err && err.message && err.message.indexOf('timed out') !== -1) {
-            Object.keys(localStorage)
-                .filter(k => k.indexOf('sb-') === 0)
-                .forEach(k => localStorage.removeItem(k));
-        }
+    // Safety net: if onAuthStateChange never fires within 8 seconds (e.g. the
+    // auto-detection hangs), surface an error instead of leaving a blank
+    // page. Also clear any sb-* keys so the next load starts clean.
+    setTimeout(() => {
+        if (resolved) return;
+        console.warn('onAuthStateChange did not fire within 8s; forcing login screen');
+        Object.keys(localStorage)
+            .filter(k => k.indexOf('sb-') === 0)
+            .forEach(k => localStorage.removeItem(k));
         showLoginScreen();
-        setLoginError('Auth init failed: ' + (err && err.message ? err.message : 'unknown') + ' — try signing in again.');
-    }
+        setLoginError('Sign-in stalled. Try signing in again.');
+    }, 8000);
 });
 
 window.ensureAuthenticated = function () {
