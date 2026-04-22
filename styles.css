@@ -1594,3 +1594,36 @@ details[open] .form-selector-toggle::before {
         bottom: 1rem;
     }
 }
+
+/* ============================================
+   AUTH UI
+   ============================================ */
+
+.current-user-email {
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin-left: 1rem;
+}
+
+.owner-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    padding: 0.1rem 0.4rem;
+    background: #e0e7ff;
+    color: #3730a3;
+    border-radius: 3px;
+    margin-left: 0.4rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.login-status {
+    /* Inline styles in HTML provide the visual; keep this class for future
+       restyling. */
+}
+
+#loginGate {
+    width: 100vw;
+}
+

@@ -8,7 +8,28 @@
 </head>
 <body>
     <div id="app">
-        <div id="mainApp" class="main-app">
+        <!-- Login gate — covers the app until the user is authenticated. -->
+        <div id="loginGate" class="login-screen" style="display:none;">
+            <div class="login-container">
+                <h1>GS Court Forms</h1>
+                <p style="text-align:center;color:#6b7280;margin-bottom:2rem;">Sign in with your Ginsberg Shulman Microsoft account.</p>
+
+                <button type="button" id="msSignInBtn" class="btn btn-primary btn-full" style="display:flex;align-items:center;justify-content:center;gap:0.6rem;padding:0.9rem;font-size:1rem;">
+                    <svg width="20" height="20" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <rect x="1" y="1" width="9" height="9" fill="#f25022"/>
+                        <rect x="11" y="1" width="9" height="9" fill="#7fba00"/>
+                        <rect x="1" y="11" width="9" height="9" fill="#00a4ef"/>
+                        <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
+                    </svg>
+                    <span>Sign in with Microsoft</span>
+                </button>
+
+                <div id="loginStatus" class="login-status" style="display:none;margin-top:1rem;padding:0.75rem;background:#ecfdf5;color:#065f46;border-radius:4px;font-size:0.9rem;text-align:center;"></div>
+                <div id="loginError" class="error-message" style="display:none;margin-top:1rem;"></div>
+            </div>
+        </div>
+
+        <div id="mainApp" class="main-app" style="display:none;">
             <!-- Header -->
             <header class="header">
                 <div class="header-left">
@@ -16,6 +37,8 @@
                 </div>
                 <div class="header-right">
                     <span id="breadcrumb" class="breadcrumb"></span>
+                    <span id="currentUserEmail" class="current-user-email"></span>
+                    <button id="signOutBtn" class="btn btn-secondary btn-sm" style="margin-left:8px;">Sign out</button>
                 </div>
             </header>
 
@@ -321,6 +344,9 @@
     <script src="https://cdn.jsdelivr.net/npm/pizzip@3/dist/pizzip-utils.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/docxtemplater@3/build/docxtemplater.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/file-saver@2/dist/FileSaver.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="supabase-config.js"></script>
+    <script src="auth.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
