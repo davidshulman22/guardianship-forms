@@ -1,135 +1,173 @@
-# Supabase Setup — Checklist
+# Supabase + Microsoft OAuth Setup — Checklist
 
-Do these steps in order, in the Supabase dashboard at
-https://xcjrpfkexdxggkaswefh.supabase.co
+Sign-in is via Microsoft (Entra ID / Azure AD) restricted to the
+`ginsbergshulman.com` tenant only. Supabase is the session store.
 
-Total time: ~10 minutes.
-
----
-
-## 1. Apply the schema
-
-1. Dashboard → **SQL Editor** → **New query**
-2. Open `supabase-setup.sql` from this repo
-3. Copy its contents, paste into the SQL editor, click **Run**
-4. You should see "Success. No rows returned." (or similar)
-5. **Sanity check**: go to **Table Editor** — you should now see four tables:
-   `user_profiles`, `clients`, `matters`, `form_data`
-
-> The SQL file is safe to re-run (it drops existing tables first). But
-> re-running will wipe any production data — so after launch, only re-run if
-> you really mean it.
+Total time: ~20 minutes (one-time setup).
 
 ---
 
-## 2. Configure authentication
+## Phase A — Azure Portal (10 min)
 
-1. Dashboard → **Authentication** → **Sign In / Providers**
-2. Find **Email**
-3. Set:
-   - **Enable Email provider**: ON
-   - **Confirm email**: ON
-   - **Allow new users to sign up**: **OFF**  ← important
-   - **Secure email change**: ON
-4. Save
+Open https://entra.microsoft.com (Microsoft Entra admin center).
+
+### 1. Create the app registration
+
+1. Left sidebar → **Identity** → **Applications** → **App registrations**
+2. **+ New registration**
+3. Fill in:
+   - **Name**: `GS Court Forms`
+   - **Supported account types**: **Accounts in this organizational directory only (Ginsberg Shulman PL - Single tenant)**
+   - **Redirect URI**:
+     - Platform: **Web**
+     - URI: `https://xcjrpfkexdxggkaswefh.supabase.co/auth/v1/callback`
+4. Click **Register**
+
+### 2. Copy the identifiers
+
+From the app's **Overview** page, copy these:
+- **Application (client) ID**
+- **Directory (tenant) ID**
+
+### 3. Create a client secret
+
+1. Left nav (inside the app) → **Certificates & secrets** → **Client secrets**
+2. **+ New client secret**
+3. Description: `Supabase production`, Expires: **24 months**
+4. Click **Add**
+5. **Copy the `Value` immediately** — it shows only once
+
+### 4. API permissions (verify default)
+
+1. Left nav → **API permissions**
+2. Confirm `User.Read` is present under Microsoft Graph
+3. If you see yellow "Admin consent required" → click **Grant admin consent** → confirm
+
+### 5. Token configuration (optional)
+
+1. Left nav → **Token configuration**
+2. **+ Add optional claim** → **ID** → check `email` and `preferred_username` → Add
 
 ---
 
-## 3. Set redirect URLs
+## Phase B — Supabase dashboard (3 min)
 
-1. Dashboard → **Authentication** → **URL Configuration**
+Open https://supabase.com/dashboard/project/xcjrpfkexdxggkaswefh
+
+### 6. Apply the schema (if not already done)
+
+1. **SQL Editor** → **+ New query**
+2. Paste contents of `supabase-setup.sql`
+3. **Run**. Expected: "Success. No rows returned."
+
+### 7. Enable the Azure provider
+
+1. **Authentication** → **Sign In / Providers**
+2. Find **Azure (Microsoft)** → click
+3. Toggle **Enable Azure provider** → ON
+4. Fill in:
+   - **Azure Client ID**: the Application (client) ID from step 2
+   - **Azure Secret**: the client secret `Value` from step 3
+   - **Azure Tenant URL**: `https://login.microsoftonline.com/<tenant-id>`
+     (replace `<tenant-id>` with the Directory ID from step 2)
+5. Confirm the **Callback URL** at the top of the provider card matches:
+   `https://xcjrpfkexdxggkaswefh.supabase.co/auth/v1/callback`
+6. **Save**
+
+### 8. Clean slate — remove any previous test users
+
+If you created magic-link users earlier, delete them now. Their user IDs
+won't match the OAuth-created ones.
+
+1. **Authentication** → **Users** → delete each listed user
+2. **SQL Editor** → run: `DELETE FROM user_profiles;`
+
+### 9. Redirect URL allowlist
+
+1. **Authentication** → **URL Configuration**
 2. **Site URL**: `https://davidshulman22.github.io/guardianship-forms/`
-3. **Redirect URLs** (add each as a separate entry):
+3. **Redirect URLs** (add each):
    - `https://davidshulman22.github.io/guardianship-forms/`
    - `http://localhost:8765/`
-   - `http://localhost:8766/`
-4. Save
-
-Without the redirect URLs, the magic link will fail on click.
+4. **Save**
 
 ---
 
-## 4. Create the users
+## Phase C — Local smoke test (3 min)
 
-1. Dashboard → **Authentication** → **Users** → **Add user** → **Create new user**
-2. For each user, enter their email and check **"Auto Confirm User"**
-   (this skips the "click to confirm your email" step since you're creating
-   the account on their behalf):
-   - `david@ginsbergshulman.com`
-   - `jill@ginsbergshulman.com`
-3. No password needed — they'll sign in via magic link.
+### 10. Start the server
 
-After creation, both users will appear in the **Users** tab.
+```
+cd "/Users/davidshulman/Library/CloudStorage/Dropbox-GinsbergShulman,PL/David Shulman/FLSSI Forms/Forms Project"
+git checkout supabase-migration
+git pull
+python3 -m http.server 8765
+```
 
----
+### 11. Sign in as David
 
-## 5. Promote David to admin
+1. Open http://localhost:8765
+2. Click **Sign in with Microsoft**
+3. Microsoft prompts → pick your `david@ginsbergshulman.com` account → consent if prompted → you land back in the app
+4. **Expected:** header shows `david@ginsbergshulman.com` (not yet "admin")
 
-1. Dashboard → **SQL Editor** → **New query**
-2. Run this:
-   ```sql
-   UPDATE user_profiles
-     SET role = 'admin'
-     WHERE email = 'david@ginsbergshulman.com';
+### 12. Promote David to admin
 
-   SELECT email, role FROM user_profiles;
-   ```
-3. The second query should return two rows:
-   - `david@ginsbergshulman.com  admin`
-   - `jill@ginsbergshulman.com   standard`
+Supabase SQL Editor:
+```sql
+UPDATE user_profiles
+  SET role = 'admin'
+  WHERE email = 'david@ginsbergshulman.com';
 
-Note: `user_profiles` rows are created automatically by a trigger the first
-time a user signs in. If David hasn't signed in yet, the UPDATE will affect
-zero rows. In that case, have David sign in once, then re-run the UPDATE.
+SELECT email, role FROM user_profiles ORDER BY role;
+```
 
----
+Expected: one row, `david@ginsbergshulman.com | admin`.
 
-## 6. Smoke test
+Reload the app (⌘R) — header should now show `(admin)` next to your email.
 
-1. Open `http://localhost:8765/` (or the GitHub Pages URL).
-2. Enter your email (`david@ginsbergshulman.com`) and click **Send magic link**.
-3. Check your inbox — Supabase sends the email within a few seconds
-   (from `noreply@supabase.io` by default).
-4. Click the link. You should land back on the app, signed in, header
-   showing `david@ginsbergshulman.com (admin)`.
-5. Create a test client. Reload the page. Client should still be there.
-6. Open the app in a private window, sign in as Jill. You should NOT see
-   David's client. Create a Jill-owned client.
-7. Back in David's window, reload. You should see BOTH clients, with an
-   owner tag next to Jill's.
+### 13. Have Jill sign in
+
+Jill opens the same URL on her Windows machine (once we're deployed) or
+through a remote browser session, clicks **Sign in with Microsoft**, picks
+her account, consents. Her `user_profiles` row auto-creates with
+`role='standard'`. Confirm in SQL:
+```sql
+SELECT email, role FROM user_profiles ORDER BY role;
+```
 
 ---
 
 ## Troubleshooting
 
-**"Invalid login credentials"** when clicking magic link:
-- Check the redirect URL is in the allowlist (step 3)
-- Check the user exists in the Users tab (step 4)
+**"AADSTS50020: User account does not exist in tenant"**
+The user signed in with a personal Microsoft account instead of the
+ginsbergshulman.com work account. They need to pick the work account on
+the Microsoft chooser screen.
 
-**Magic link email never arrives**:
-- Check the Supabase default email sender's rate limit (4 emails / hour on
-  free tier). If you hit it, configure SMTP: Auth → SMTP Settings.
+**"AADSTS700016: Application with identifier was not found"**
+The Client ID in Supabase doesn't match the Azure app registration.
+Double-check you pasted the Application (client) ID, not the Object ID.
 
-**"That email is not authorized for this app."**:
-- The client-side allowlist in `auth.js` only lets two emails sign in.
-  If you add a third attorney, update `ALLOWED_EMAILS` in `auth.js`.
+**"Invalid login credentials" / redirect loop**
+Redirect URL mismatch. In Azure, the redirect URI must be exactly
+`https://xcjrpfkexdxggkaswefh.supabase.co/auth/v1/callback` (no trailing
+slash, no path variations).
 
-**"Permission denied for table X"**:
-- User's `user_profiles` row is missing. Check `SELECT * FROM user_profiles;`
-  — should have a row for them. If not, the `handle_new_user` trigger
-  didn't fire. Re-run the schema SQL.
+**"Permission denied for table user_profiles"**
+The `handle_new_user` trigger didn't fire. Re-run the schema SQL in step 6.
+
+**User signs in but immediately sees an empty client list when they had data before**
+Expected — this is the multi-user migration's blank state. Anything that
+was in browser localStorage isn't in Supabase yet and won't appear. You
+create it fresh here, or import via the Claude Import feature.
 
 ---
 
-## What changed vs the old schema
+## What's different from magic-link setup
 
-The previous `supabase-setup.sql` had a single flat `clients` table with AIP
-fields baked in. The new schema matches the actual app model:
-
-- `clients` — just contact info (name, address, phone, email)
-- `matters` — one per case, nested under a client
-- `form_data` — JSONB per (matter, form_id), keyed by Florida Bar form ID
-
-RLS went from "any authenticated user sees everything" to "admin sees
-everything, standard users see their own". Implemented via a helper
-function `is_admin()` that checks `user_profiles.role`.
+- No `ALLOWED_EMAILS` array in `auth.js` — Azure single-tenant enforces this
+- No email to check; Microsoft SSO is one-click
+- User creation in Supabase happens automatically on first sign-in, not
+  manually in the dashboard
+- Client secret in Azure expires after 24 months — calendar a renewal

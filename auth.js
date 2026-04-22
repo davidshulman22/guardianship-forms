@@ -1,20 +1,20 @@
 // ============================================================================
-// Supabase authentication — magic link + email allowlist
+// Supabase authentication — Microsoft (Azure AD) OAuth
 // ============================================================================
 // Exposes:
 //   window.supabaseClient        — Supabase JS client
 //   window.currentUser           — { id, email, role, display_name } or null
 //   window.isAdmin()             — true if currentUser.role === 'admin'
 //   window.ensureAuthenticated() — promise that resolves when a session exists
+//
+// Access is restricted at three layers:
+//   1. Azure AD app registration is single-tenant (ginsbergshulman.com only).
+//      Only users inside the firm's Microsoft 365 tenant can even initiate
+//      sign-in — enforced by Microsoft, server-side.
+//   2. Supabase is the auth system of record; it creates the user row only
+//      after Microsoft confirms the identity.
+//   3. RLS policies on every table require an authenticated session.
 // ============================================================================
-
-// Only these emails can even request a magic link. The server-side guard is
-// "disable public signup" in the Supabase dashboard. This is a second layer
-// for immediate UX feedback.
-const ALLOWED_EMAILS = [
-    'david@ginsbergshulman.com',
-    'jill@ginsbergshulman.com'
-];
 
 window.supabaseClient = window.supabase.createClient(
     window.SUPABASE_URL,
@@ -23,7 +23,8 @@ window.supabaseClient = window.supabase.createClient(
         auth: {
             persistSession: true,
             autoRefreshToken: true,
-            detectSessionInUrl: true
+            detectSessionInUrl: true,
+            flowType: 'pkce'
         }
     }
 );
@@ -50,20 +51,13 @@ function showApp() {
     }
 }
 
-function setLoginStatus(msg) {
-    const el = document.getElementById('loginStatus');
-    if (!el) return;
-    el.textContent = msg;
-    el.style.display = msg ? 'block' : 'none';
-    document.getElementById('loginError').style.display = 'none';
-}
-
 function setLoginError(msg) {
     const el = document.getElementById('loginError');
     if (!el) return;
     el.textContent = msg;
     el.style.display = msg ? 'block' : 'none';
-    document.getElementById('loginStatus').style.display = 'none';
+    const statusEl = document.getElementById('loginStatus');
+    if (statusEl) statusEl.style.display = 'none';
 }
 
 async function loadProfile(userId) {
@@ -87,79 +81,74 @@ async function establishSession(session) {
         return;
     }
 
-    // Fetch profile (role, display_name). The handle_new_user trigger creates
-    // the row server-side the first time a user signs in, so it should exist.
+    // The handle_new_user trigger creates the user_profiles row server-side
+    // the first time a user authenticates; it's available immediately after.
     const profile = await loadProfile(session.user.id);
     window.currentUser = {
         id: session.user.id,
-        email: session.user.email,
+        // Microsoft puts the user's email at different claim keys depending
+        // on tenant config. Fall back through the usual candidates.
+        email: session.user.email
+            || (session.user.user_metadata && (session.user.user_metadata.email
+                                               || session.user.user_metadata.preferred_username))
+            || '',
         role: profile ? profile.role : 'standard',
-        display_name: profile ? profile.display_name : null
+        display_name: profile ? profile.display_name : (
+            session.user.user_metadata && session.user.user_metadata.full_name
+        )
     };
 
     showApp();
-    // Let app.js know to (re)load data from Supabase
     document.dispatchEvent(new CustomEvent('gs-auth-ready', { detail: window.currentUser }));
 }
 
-async function handleMagicLinkSubmit(e) {
-    e.preventDefault();
-    const email = document.getElementById('loginEmail').value.trim().toLowerCase();
-    const btn = document.getElementById('loginSubmitBtn');
-
+async function handleMicrosoftSignIn() {
     setLoginError('');
-
-    if (!ALLOWED_EMAILS.includes(email)) {
-        setLoginError('That email is not authorized for this app.');
-        return;
-    }
-
+    const btn = document.getElementById('msSignInBtn');
     btn.disabled = true;
-    btn.textContent = 'Sending...';
 
     const redirectTo = window.location.origin + window.location.pathname;
-    const { error } = await window.supabaseClient.auth.signInWithOtp({
-        email: email,
+
+    const { error } = await window.supabaseClient.auth.signInWithOAuth({
+        provider: 'azure',
         options: {
-            emailRedirectTo: redirectTo,
-            shouldCreateUser: false  // must exist in auth.users already
+            redirectTo: redirectTo,
+            scopes: 'openid email profile User.Read'
         }
     });
 
+    // On success the browser navigates to Microsoft; we won't reach the next
+    // line in the success case. Only hit it on immediate failure.
     btn.disabled = false;
-    btn.textContent = 'Send magic link';
-
     if (error) {
-        setLoginError(error.message || 'Failed to send magic link.');
-        return;
+        console.error('OAuth sign-in failed:', error);
+        setLoginError(error.message || 'Sign-in failed. Try again or contact the admin.');
     }
-
-    setLoginStatus('Check ' + email + ' for a sign-in link.');
 }
 
 async function handleSignOut() {
     await window.supabaseClient.auth.signOut();
     window.currentUser = null;
-    // Clear the localStorage cache so the next user doesn't see stale data
-    localStorage.removeItem('gs_court_forms_clients');
+    // Clear the localStorage cache so the next user doesn't see stale data.
+    localStorage.removeItem('gs_court_forms_clients_cache');
     location.reload();
 }
 
 document.addEventListener('DOMContentLoaded', async function () {
-    // Wire up form and sign-out button
-    const loginForm = document.getElementById('loginForm');
-    if (loginForm) loginForm.addEventListener('submit', handleMagicLinkSubmit);
+    const signInBtn = document.getElementById('msSignInBtn');
+    if (signInBtn) signInBtn.addEventListener('click', handleMicrosoftSignIn);
 
     const signOutBtn = document.getElementById('signOutBtn');
     if (signOutBtn) signOutBtn.addEventListener('click', handleSignOut);
 
-    // On auth state change (initial load, magic-link callback, logout)
+    // Fires on initial load, on OAuth callback return, on sign-out, and on
+    // token refresh. Single source of truth for "is the user logged in?"
     window.supabaseClient.auth.onAuthStateChange(async (_event, session) => {
         await establishSession(session);
     });
 
-    // Immediate check (onAuthStateChange also fires but this avoids a flash
-    // of login screen when we already have a session)
+    // Immediate check avoids a flash of login screen for users with an
+    // existing session.
     const { data: { session } } = await window.supabaseClient.auth.getSession();
     await establishSession(session);
 });
