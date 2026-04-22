@@ -2,7 +2,7 @@
 """Tag audit: compare {tags} in each template .docx against forms.json field defs.
 
 Reports tags that are NOT in forms.json and NOT auto-populated by prepareTemplateData().
-Skips guardianship templates (deferred per handoff).
+Covers probate, Broward local, and guardianship templates.
 """
 import json
 import re
@@ -14,15 +14,19 @@ TEMPLATES = ROOT / "templates"
 FORMS_JSON = ROOT / "forms.json"
 
 AUTO_POPULATED = {
-    "county", "decedent_name", "decedent_full_name", "aip_name", "file_no", "division",
+    "county", "county_is_broward", "county_is_miami_dade",
+    "decedent_name", "decedent_full_name",
+    "aip_name", "aip_name_upper",
+    "file_no", "division",
     "petitioner_name", "petitioner_names", "petitioner_address",
     "affiant_name", "notary_state", "notary_county",
-    "attorney_name", "attorney_email", "attorney_email_secondary",
+    "attorney_name", "attorney_firm",
+    "attorney_email", "attorney_email_secondary",
     "attorney_bar_no", "attorney_address", "attorney_phone",
     "petitioners",
 }
 
-TAG_RE = re.compile(r"\{([#/]?)([a-zA-Z0-9_]+)\}")
+TAG_RE = re.compile(r"\{[#/^]?([a-zA-Z0-9_]+)\}")
 
 def extract_tags(docx_path: Path) -> set:
     tags = set()
@@ -32,8 +36,7 @@ def extract_tags(docx_path: Path) -> set:
                 xml = z.read(name).decode("utf-8", errors="ignore")
                 xml = re.sub(r"<[^>]+>", "", xml)
                 for m in TAG_RE.finditer(xml):
-                    prefix, tag = m.group(1), m.group(2)
-                    tags.add(tag)
+                    tags.add(m.group(1))
     return tags
 
 def walk_fields(section, into):
@@ -68,8 +71,6 @@ def main():
     issues = []
     for docx in sorted(TEMPLATES.glob("*.docx")):
         form_id = docx.stem
-        if form_id.startswith("G"):
-            continue
         if form_id not in by_form:
             issues.append((form_id, "NO forms.json entry", set(), set()))
             continue
@@ -94,7 +95,7 @@ def main():
                           sorted(orphan), set()))
 
     if not issues:
-        print("PASS — all probate/local templates match forms.json (excluding auto-populated).")
+        print("PASS — all templates match forms.json (excluding auto-populated).")
         return 0
 
     print(f"FAIL — {len(issues)} templates with issues:\n")

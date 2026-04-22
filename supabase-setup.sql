@@ -35,17 +35,28 @@ CREATE TABLE user_profiles (
   created_at    timestamptz NOT NULL DEFAULT now()
 );
 
--- Auto-create a standard-role profile the first time a user logs in.
--- (You promote David to admin manually after seeding — see bottom of file.)
+-- Auto-create a profile the first time a user logs in.
+-- Anyone whose email appears in the ADMIN_EMAILS allow-list gets role='admin'
+-- immediately; everyone else starts as 'standard' and can be promoted manually.
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
+DECLARE
+  admin_emails text[] := ARRAY[
+    'david@ginsbergshulman.com',
+    'maribel@ginsbergshulman.com'
+  ];
+  assigned_role text;
 BEGIN
-  INSERT INTO user_profiles (id, email)
-  VALUES (NEW.id, NEW.email)
+  assigned_role := CASE
+    WHEN lower(NEW.email) = ANY(admin_emails) THEN 'admin'
+    ELSE 'standard'
+  END;
+  INSERT INTO user_profiles (id, email, role)
+  VALUES (NEW.id, NEW.email, assigned_role)
   ON CONFLICT (id) DO NOTHING;
   RETURN NEW;
 END;
@@ -239,9 +250,10 @@ CREATE TRIGGER trg_form_data_updated_at
 -- 4. Auth → Users → "Add user":
 --      - david@ginsbergshulman.com  (send magic link or auto-confirm)
 --      - jill@ginsbergshulman.com
--- 5. SQL editor — promote David to admin (do this AFTER step 4):
+-- 5. SQL editor — promote anyone missed (David + Maribel are auto-admin via
+--    the handle_new_user trigger; use this only to promote someone else):
 --      UPDATE user_profiles SET role = 'admin'
---      WHERE email = 'david@ginsbergshulman.com';
+--      WHERE email = '<that-person>@ginsbergshulman.com';
 -- 6. Verify:
 --      SELECT email, role FROM user_profiles;
 -- ============================================================================

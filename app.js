@@ -931,6 +931,7 @@ function openMatterModal(matter) {
     document.getElementById('matterSubjectName').value = matter ? matter.subjectName || '' : '';
     document.getElementById('matterFileNo').value = matter ? matter.fileNo || '' : '';
     document.getElementById('matterDivision').value = matter ? matter.division || '' : '';
+    document.getElementById('matterAttorneyId').value = matter ? matter.attorneyId || '' : '';
     updateMatterSubjectHint();
     document.getElementById('newMatterModal').style.display = 'flex';
 }
@@ -957,6 +958,7 @@ function handleMatterFormSubmit(e) {
         subjectName: document.getElementById('matterSubjectName').value,
         fileNo: document.getElementById('matterFileNo').value,
         division: document.getElementById('matterDivision').value,
+        attorneyId: document.getElementById('matterAttorneyId').value || null,
     };
 
     if (!currentClient.matters) currentClient.matters = [];
@@ -1531,20 +1533,14 @@ function handleFormSelectionChanged() {
     renderMergedFormFields();
 }
 
-function getAttorneyDefaults(matterType) {
-    // Guardianship matters are Jill's; everything else is David's.
-    if (matterType === 'guardianship') {
-        return {
-            attorney_name: 'Jill R. Ginsberg',
-            attorney_email: 'jill@ginsbergshulman.com',
-            attorney_email_secondary: 'maribel@hflegalsolutions.com',
-            attorney_bar_no: '813850',
-            attorney_firm: 'Ginsberg Shulman, PL',
-            attorney_address: '300 SE 2nd Street, Suite 600\nFort Lauderdale, FL 33301',
-            attorney_phone: '954-990-0896'
-        };
-    }
-    return {
+// Canonical attorney profiles. Add new attorneys here, pick per-matter in the
+// matter modal via the `attorneyId` field. Matter type drives the default.
+// NOTE: Only actual attorneys belong here. Maribel Gannon is a paralegal who
+// drafts for Jill — she signs into the app but documents list Jill as
+// attorney of record. Do not add Maribel to this dict.
+const ATTORNEY_PROFILES = {
+    david: {
+        label: 'David A. Shulman',
         attorney_name: 'David A. Shulman',
         attorney_email: 'david@ginsbergshulman.com',
         attorney_email_secondary: '',
@@ -1552,7 +1548,39 @@ function getAttorneyDefaults(matterType) {
         attorney_firm: 'Ginsberg Shulman PL',
         attorney_address: '300 SE 2nd St Ste 600\nFort Lauderdale, FL 33301',
         attorney_phone: '954-990-0896'
-    };
+    },
+    jill: {
+        label: 'Jill R. Ginsberg',
+        attorney_name: 'Jill R. Ginsberg',
+        attorney_email: 'jill@ginsbergshulman.com',
+        attorney_email_secondary: 'maribel@ginsbergshulman.com',
+        attorney_bar_no: '813850',
+        attorney_firm: 'Ginsberg Shulman, PL',
+        attorney_address: '300 SE 2nd Street, Suite 600\nFort Lauderdale, FL 33301',
+        attorney_phone: '954-332-2310'
+    }
+};
+
+function defaultAttorneyIdForType(matterType) {
+    return matterType === 'guardianship' ? 'jill' : 'david';
+}
+
+// Accepts either a matter object (preferred — honors matter.attorneyId) or a
+// bare matter-type string for legacy callers.
+function getAttorneyDefaults(matterOrType) {
+    let attorneyId;
+    let matterType;
+    if (matterOrType && typeof matterOrType === 'object') {
+        attorneyId = matterOrType.attorneyId;
+        matterType = matterOrType.type;
+    } else {
+        matterType = matterOrType;
+    }
+    if (!attorneyId) attorneyId = defaultAttorneyIdForType(matterType);
+    const profile = ATTORNEY_PROFILES[attorneyId] || ATTORNEY_PROFILES.david;
+    // Strip the UI-only `label` before returning — template data only.
+    const { label, ...defaults } = profile;
+    return { ...defaults };
 }
 
 function getAutoPopulateDefaults() {
@@ -1616,8 +1644,8 @@ function getAutoPopulateDefaults() {
     if (!defaults.notary_state) defaults.notary_state = 'Florida';
     if (!defaults.notary_county) defaults.notary_county = currentMatter.county || '';
 
-    // --- Layer 4: Attorney defaults (matter-type-specific) ---
-    const attorneyDefaults = getAttorneyDefaults(currentMatter.type);
+    // --- Layer 4: Attorney defaults (per-matter attorneyId, falls back to type) ---
+    const attorneyDefaults = getAttorneyDefaults(currentMatter);
     Object.keys(attorneyDefaults).forEach(key => {
         if (!defaults[key]) defaults[key] = attorneyDefaults[key];
     });
@@ -1991,12 +2019,20 @@ function prepareTemplateData() {
     data.file_no = currentMatter.fileNo || '';
     data.division = currentMatter.division || 'Probate';
 
+    // County-specific AI-certification flags (per 2026 local AOs). Templates
+    // wrap the certification text in {#county_is_broward}...{/county_is_broward}
+    // or {#county_is_miami_dade}...{/county_is_miami_dade} so it renders only
+    // in filings headed for those circuits.
+    const cty = (currentMatter.county || '').toLowerCase();
+    data.county_is_broward = cty === 'broward';
+    data.county_is_miami_dade = cty === 'miami-dade' || cty === 'miami dade';
+
     // Client-level fields
     data.petitioner_name = ((currentClient.firstName || '') + ' ' + (currentClient.lastName || '')).trim();
     data.petitioner_address = currentClient.address || '';
 
-    // Attorney defaults (matter-type-specific)
-    const attorneyDefaults = getAttorneyDefaults(currentMatter.type);
+    // Attorney defaults (per-matter attorneyId, falls back to type)
+    const attorneyDefaults = getAttorneyDefaults(currentMatter);
     Object.keys(attorneyDefaults).forEach(key => {
         data[key] = attorneyDefaults[key];
     });

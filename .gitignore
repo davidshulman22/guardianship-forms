@@ -3,3 +3,5 @@ config.js
 .DS_Store
 .claude/
 *.docx.bak
+__pycache__/
+*.pyc
