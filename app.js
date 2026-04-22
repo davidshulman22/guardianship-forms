@@ -98,14 +98,23 @@ const formSections = {
 // ============================================
 
 async function initializeApp() {
-    // Wait for Supabase auth before loading any data.
+    console.info('[init] waiting for auth');
     await window.ensureAuthenticated();
+    console.info('[init] auth ready, loading forms config');
     await loadFormsConfig();
-    await loadClientsFromSupabase();
+    console.info('[init] loading clients from Supabase');
+    try {
+        await loadClientsFromSupabase();
+    } catch (err) {
+        console.error('[init] loadClientsFromSupabase threw:', err);
+        showNotification('Failed to load data from server — working from local cache', 'error');
+    }
+    console.info('[init] rendering UI');
     renderClientList();
     setupEventListeners();
     setupClaudeImport();
     showView('noClient');
+    console.info('[init] done');
 }
 
 async function loadFormsConfig() {

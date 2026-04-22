@@ -8,21 +8,39 @@
 </head>
 <body>
     <div id="app">
-        <!-- Login gate — covers the app until the user is authenticated. -->
-        <div id="loginGate" class="login-screen" style="display:none;">
+        <!-- Login gate — visible by default so we never paint blank. JS swaps
+             between the three inner states (checking / signing-in / button)
+             and hides the whole gate once a session is established. -->
+        <div id="loginGate" class="login-screen">
             <div class="login-container">
                 <h1>GS Court Forms</h1>
-                <p style="text-align:center;color:#6b7280;margin-bottom:2rem;">Sign in with your Ginsberg Shulman Microsoft account.</p>
 
-                <button type="button" id="msSignInBtn" class="btn btn-primary btn-full" style="display:flex;align-items:center;justify-content:center;gap:0.6rem;padding:0.9rem;font-size:1rem;">
-                    <svg width="20" height="20" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                        <rect x="1" y="1" width="9" height="9" fill="#f25022"/>
-                        <rect x="11" y="1" width="9" height="9" fill="#7fba00"/>
-                        <rect x="1" y="11" width="9" height="9" fill="#00a4ef"/>
-                        <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
-                    </svg>
-                    <span>Sign in with Microsoft</span>
-                </button>
+                <!-- State A: checking existing session (default on load). -->
+                <div id="loginStateChecking" class="login-state">
+                    <div class="login-spinner"></div>
+                    <p class="login-state-text">Checking your session…</p>
+                </div>
+
+                <!-- State B: OAuth callback in progress (URL has ?code=). -->
+                <div id="loginStateSigningIn" class="login-state" style="display:none;">
+                    <div class="login-spinner"></div>
+                    <p class="login-state-text">Signing you in…</p>
+                </div>
+
+                <!-- State C: no session, show sign-in button. -->
+                <div id="loginStateButton" class="login-state" style="display:none;">
+                    <p style="text-align:center;color:#6b7280;margin-bottom:2rem;">Sign in with your Ginsberg Shulman Microsoft account.</p>
+                    <button type="button" id="msSignInBtn" class="btn btn-primary btn-full" style="display:flex;align-items:center;justify-content:center;gap:0.6rem;padding:0.9rem;font-size:1rem;">
+                        <svg width="20" height="20" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <rect x="1" y="1" width="9" height="9" fill="#f25022"/>
+                            <rect x="11" y="1" width="9" height="9" fill="#7fba00"/>
+                            <rect x="1" y="11" width="9" height="9" fill="#00a4ef"/>
+                            <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
+                        </svg>
+                        <span>Sign in with Microsoft</span>
+                    </button>
+                    <button type="button" id="resetAuthBtn" class="btn btn-secondary btn-full" style="margin-top:0.75rem;font-size:0.85rem;">Reset auth &amp; reload</button>
+                </div>
 
                 <div id="loginStatus" class="login-status" style="display:none;margin-top:1rem;padding:0.75rem;background:#ecfdf5;color:#065f46;border-radius:4px;font-size:0.9rem;text-align:center;"></div>
                 <div id="loginError" class="error-message" style="display:none;margin-top:1rem;"></div>

@@ -7,14 +7,16 @@
 //   window.isAdmin()             — true if currentUser.role === 'admin'
 //   window.ensureAuthenticated() — promise that resolves when a session exists
 //
-// Access is restricted at three layers:
-//   1. Azure AD app registration is single-tenant (ginsbergshulman.com only).
-//      Only users inside the firm's Microsoft 365 tenant can even initiate
-//      sign-in — enforced by Microsoft, server-side.
-//   2. Supabase is the auth system of record; it creates the user row only
-//      after Microsoft confirms the identity.
-//   3. RLS policies on every table require an authenticated session.
+// Every stage logs to the console with the "[auth]" prefix. When a sign-in
+// stalls, open DevTools → Console and you can tell which stage died.
 // ============================================================================
+
+const AUTH_TAG = '[auth]';
+function alog(...args) { console.info(AUTH_TAG, ...args); }
+function awarn(...args) { console.warn(AUTH_TAG, ...args); }
+function aerr(...args) { console.error(AUTH_TAG, ...args); }
+
+alog('script loaded');
 
 window.supabaseClient = window.supabase.createClient(
     window.SUPABASE_URL,
@@ -35,9 +37,28 @@ window.isAdmin = function () {
     return !!(window.currentUser && window.currentUser.role === 'admin');
 };
 
-function showLoginScreen() {
+// ---------------------------------------------------------------------------
+// Login-gate state machine
+// ---------------------------------------------------------------------------
+
+function setLoginState(which) {
+    // which ∈ 'checking' | 'signingIn' | 'button'
+    const map = {
+        checking: 'loginStateChecking',
+        signingIn: 'loginStateSigningIn',
+        button: 'loginStateButton'
+    };
+    Object.keys(map).forEach(k => {
+        const el = document.getElementById(map[k]);
+        if (el) el.style.display = (k === which) ? 'flex' : 'none';
+    });
+    alog('login state →', which);
+}
+
+function showLoginScreen(state) {
     document.getElementById('loginGate').style.display = 'flex';
     document.getElementById('mainApp').style.display = 'none';
+    setLoginState(state || 'button');
 }
 
 function showApp() {
@@ -49,6 +70,7 @@ function showApp() {
         const roleTag = window.currentUser.role === 'admin' ? ' (admin)' : '';
         emailEl.textContent = window.currentUser.email + roleTag;
     }
+    alog('app shown as', window.currentUser && window.currentUser.email);
 }
 
 function setLoginError(msg) {
@@ -60,64 +82,138 @@ function setLoginError(msg) {
     if (statusEl) statusEl.style.display = 'none';
 }
 
-async function loadProfile(userId) {
-    const { data, error } = await window.supabaseClient
-        .from('user_profiles')
-        .select('id, email, role, display_name')
-        .eq('id', userId)
-        .maybeSingle();
+// ---------------------------------------------------------------------------
+// Nuke all Supabase localStorage keys. Safe because we don't rely on any
+// user-entered data surviving a reset — the DB is source of truth.
+// ---------------------------------------------------------------------------
+function clearSupabaseStorage() {
+    const keys = Object.keys(localStorage).filter(k => k.indexOf('sb-') === 0);
+    keys.forEach(k => localStorage.removeItem(k));
+    alog('cleared', keys.length, 'sb-* localStorage keys');
+}
 
-    if (error) {
-        console.warn('Failed to load user_profiles row:', error);
+function hardResetAndReload() {
+    alog('hard reset');
+    clearSupabaseStorage();
+    localStorage.removeItem('gs_court_forms_clients_cache');
+    // Strip query string so we don't re-trigger a code exchange after reload.
+    window.location.replace(window.location.origin + window.location.pathname);
+}
+
+// ---------------------------------------------------------------------------
+// Profile load — cosmetic (role badge). Wrap with a 3s timeout so it can
+// never block sign-in. If it times out, we default to role='standard' and
+// the app still loads; a later page load may pick up the real profile.
+// ---------------------------------------------------------------------------
+function withTimeout(promise, ms, label) {
+    return new Promise((resolve) => {
+        let done = false;
+        const t = setTimeout(() => {
+            if (done) return;
+            done = true;
+            awarn(label, 'timed out after', ms, 'ms');
+            resolve({ timedOut: true });
+        }, ms);
+        promise.then(v => {
+            if (done) return;
+            done = true;
+            clearTimeout(t);
+            resolve({ value: v });
+        }, e => {
+            if (done) return;
+            done = true;
+            clearTimeout(t);
+            resolve({ error: e });
+        });
+    });
+}
+
+async function loadProfileSafely(userId) {
+    alog('loadProfile start', userId);
+    const result = await withTimeout(
+        window.supabaseClient
+            .from('user_profiles')
+            .select('id, email, role, display_name')
+            .eq('id', userId)
+            .maybeSingle(),
+        3000,
+        'loadProfile'
+    );
+
+    if (result.timedOut) return null;
+    if (result.error) {
+        awarn('loadProfile error:', result.error);
         return null;
     }
+    const { data, error } = result.value || {};
+    if (error) {
+        awarn('loadProfile postgrest error:', error);
+        return null;
+    }
+    alog('loadProfile done', data);
     return data;
 }
 
+// ---------------------------------------------------------------------------
+// Session handling
+// ---------------------------------------------------------------------------
 async function establishSession(session) {
+    alog('establishSession called; has session =', !!session);
     try {
         if (!session || !session.user) {
             window.currentUser = null;
-            showLoginScreen();
+            showLoginScreen('button');
             return;
         }
 
-        // The handle_new_user trigger creates the user_profiles row server-side
-        // the first time a user authenticates; it's available immediately after.
-        const profile = await loadProfile(session.user.id);
+        // Build a minimal currentUser immediately and flip to the app. Profile
+        // load happens in the background so it can never gate sign-in.
+        const meta = session.user.user_metadata || {};
         window.currentUser = {
             id: session.user.id,
-            // Microsoft puts the user's email at different claim keys depending
-            // on tenant config. Fall back through the usual candidates.
             email: session.user.email
-                || (session.user.user_metadata && (session.user.user_metadata.email
-                                                   || session.user.user_metadata.preferred_username))
+                || meta.email
+                || meta.preferred_username
                 || '',
-            role: profile ? profile.role : 'standard',
-            display_name: profile ? profile.display_name : (
-                session.user.user_metadata && session.user.user_metadata.full_name
-            )
+            role: 'standard',
+            display_name: meta.full_name || ''
         };
 
         showApp();
         document.dispatchEvent(new CustomEvent('gs-auth-ready', { detail: window.currentUser }));
+
+        // Background profile fetch — upgrades the cached 'standard' to 'admin'
+        // and fills in display_name when available. Non-blocking.
+        loadProfileSafely(session.user.id).then(profile => {
+            if (!profile || !window.currentUser) return;
+            window.currentUser.role = profile.role || window.currentUser.role;
+            window.currentUser.display_name = profile.display_name || window.currentUser.display_name;
+            // Refresh email badge in the header if the role changed.
+            const emailEl = document.getElementById('currentUserEmail');
+            if (emailEl) {
+                const roleTag = window.currentUser.role === 'admin' ? ' (admin)' : '';
+                emailEl.textContent = window.currentUser.email + roleTag;
+            }
+        });
     } catch (err) {
-        // If anything in establishSession throws, we'd otherwise leave both
-        // screens hidden and the user staring at a blank page. Fall back to
-        // the login screen with an error so they have a path forward.
-        console.error('establishSession failed:', err);
+        aerr('establishSession threw:', err);
         window.currentUser = null;
-        showLoginScreen();
-        setLoginError('Sign-in error: ' + (err && err.message ? err.message : 'unknown') + '. Try again or contact admin.');
+        showLoginScreen('button');
+        setLoginError('Sign-in error: ' + (err && err.message ? err.message : 'unknown') + '. Try again or reset.');
     }
 }
 
+// ---------------------------------------------------------------------------
+// Sign in / sign out
+// ---------------------------------------------------------------------------
 async function handleMicrosoftSignIn() {
+    alog('sign-in click');
     setLoginError('');
     const btn = document.getElementById('msSignInBtn');
-    btn.disabled = true;
+    if (btn) btn.disabled = true;
 
     const redirectTo = window.location.origin + window.location.pathname;
+    alog('redirectTo =', redirectTo);
 
     const { error } = await window.supabaseClient.auth.signInWithOAuth({
         provider: 'azure',
@@ -127,65 +223,88 @@ async function handleMicrosoftSignIn() {
         }
     });
 
-    // On success the browser navigates to Microsoft; we won't reach the next
-    // line in the success case. Only hit it on immediate failure.
-    btn.disabled = false;
+    if (btn) btn.disabled = false;
     if (error) {
-        console.error('OAuth sign-in failed:', error);
-        setLoginError(error.message || 'Sign-in failed. Try again or contact the admin.');
+        aerr('signInWithOAuth failed:', error);
+        setLoginError(error.message || 'Sign-in failed. Try again or reset.');
     }
 }
 
 async function handleSignOut() {
-    await window.supabaseClient.auth.signOut();
+    alog('sign-out click');
+    try { await window.supabaseClient.auth.signOut(); } catch (e) { awarn('signOut:', e); }
     window.currentUser = null;
-    // Clear the localStorage cache so the next user doesn't see stale data.
     localStorage.removeItem('gs_court_forms_clients_cache');
     location.reload();
 }
 
+// ---------------------------------------------------------------------------
+// Boot
+// ---------------------------------------------------------------------------
 document.addEventListener('DOMContentLoaded', function () {
+    const hasCode = /[?&]code=/.test(window.location.search);
+    alog('DOMContentLoaded; hasCode =', hasCode);
+
+    // Paint a visible state before anything async runs. If we just got
+    // redirected back from Microsoft, show the "Signing you in..." spinner;
+    // otherwise show the "Checking your session..." spinner. JS will flip
+    // to either showApp() (session found) or state='button' (no session).
+    showLoginScreen(hasCode ? 'signingIn' : 'checking');
+
+    // Wire up buttons.
     const signInBtn = document.getElementById('msSignInBtn');
     if (signInBtn) signInBtn.addEventListener('click', handleMicrosoftSignIn);
 
     const signOutBtn = document.getElementById('signOutBtn');
     if (signOutBtn) signOutBtn.addEventListener('click', handleSignOut);
 
+    const resetBtn = document.getElementById('resetAuthBtn');
+    if (resetBtn) resetBtn.addEventListener('click', hardResetAndReload);
+
     // detectSessionInUrl: true in the client config makes Supabase auto-
     // exchange ?code=... on page load. It fires an INITIAL_SESSION event
-    // via onAuthStateChange once it's done (whether it succeeded or not).
-    //
-    // We rely on that single code path. Calling exchangeCodeForSession
-    // manually races with the built-in detection and the loser hangs.
+    // via onAuthStateChange once it's done (success or not). We rely on
+    // that single code path — calling exchangeCodeForSession manually
+    // races with detection and the loser hangs.
     let resolved = false;
     window.supabaseClient.auth.onAuthStateChange(async (event, session) => {
+        alog('onAuthStateChange fired; event =', event, '; hasSession =', !!session);
         resolved = true;
         try {
             await establishSession(session);
-            // Clean the URL after a successful OAuth callback so reloads don't
-            // choke on a one-time-use code.
+            // Strip the one-time-use ?code=... after a successful exchange.
             if (session && window.location.search && window.history.replaceState) {
                 window.history.replaceState({}, document.title, window.location.pathname);
+                alog('cleaned ?code= from URL');
             }
         } catch (err) {
-            console.error('establishSession failed (outer):', err);
-            showLoginScreen();
-            setLoginError('Session setup failed: ' + (err.message || 'unknown'));
+            aerr('onAuthStateChange handler threw:', err);
+            showLoginScreen('button');
+            setLoginError('Session setup failed: ' + (err.message || 'unknown') + '. Click "Reset auth" to retry.');
         }
     });
 
-    // Safety net: if onAuthStateChange never fires within 8 seconds (e.g. the
-    // auto-detection hangs), surface an error instead of leaving a blank
-    // page. Also clear any sb-* keys so the next load starts clean.
+    // Safety net 1 (6s): if we're in 'signingIn' state (came back with a code)
+    // and nothing has happened, the exchange almost certainly failed silently.
+    // Clear sb-* keys and show the button with an actionable error.
     setTimeout(() => {
         if (resolved) return;
-        console.warn('onAuthStateChange did not fire within 8s; forcing login screen');
-        Object.keys(localStorage)
-            .filter(k => k.indexOf('sb-') === 0)
-            .forEach(k => localStorage.removeItem(k));
-        showLoginScreen();
-        setLoginError('Sign-in stalled. Try signing in again.');
-    }, 8000);
+        if (!hasCode) return;
+        awarn('6s: still no auth event after OAuth callback — exchange likely failed');
+        clearSupabaseStorage();
+        showLoginScreen('button');
+        setLoginError('Sign-in didn\'t complete. Click "Sign in with Microsoft" to try again.');
+    }, 6000);
+
+    // Safety net 2 (10s): final backstop for any path. If onAuthStateChange
+    // never fires at all, don't leave the user staring at a spinner forever.
+    setTimeout(() => {
+        if (resolved) return;
+        awarn('10s: onAuthStateChange never fired — forcing button state');
+        clearSupabaseStorage();
+        showLoginScreen('button');
+        setLoginError('Sign-in stalled. Click "Sign in with Microsoft" to try again.');
+    }, 10000);
 });
 
 window.ensureAuthenticated = function () {
