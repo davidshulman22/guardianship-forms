@@ -1,7 +1,53 @@
 # CHAT HANDOFF — RESUME-READY
-**Generated:** 2026-04-16 (updated)
-**Source:** Claude Code session — tag audit + CLAUDE.md refresh
-**Status:** RESUME-READY — awaiting David's skip marks on FORMS_CATALOG_MAP.md
+**Generated:** 2026-04-21 (late evening)
+**Source:** Claude Code session — G3-025 rebuild + Supabase/OAuth attempt
+**Status:** RESUME-READY — David tapped out late; forms formatting is top priority for next session
+
+---
+
+# 0. READ FIRST — State as of 2026-04-21 end-of-night
+
+**The top priority for next session is fixing form formatting across the rest
+of the catalog.** David said: "Jill has no tech knowledge. she has no idea
+how long this takes. she tries and if it doesn't work perfectly she gets
+frustrated and gives up. So let's go back to what we started on, making
+the forms look right."
+
+Two work threads landed on `main` tonight:
+
+**A. G3-025 rebuild (working).** `templates/G3-025.docx` was rebuilt from
+scratch via `build_guardianship_templates.py` to match Jill's preferred
+clean single-column format. Real tables for next-of-kin and property,
+docxtemplater conditionals for has-alternatives / has-preneed /
+is-professional, running header on pages 2+. forms.json updated, app.js
+attorney switcher updated (guardianship → Jill, probate → David).
+
+**B. Supabase + Microsoft OAuth (shipped but flaky).** localStorage → Supabase
+migration with Azure AD single-tenant auth. Deployed to `main` but the
+OAuth callback flow is unreliable — `exchangeCodeForSession` and
+`getSession` hang indefinitely under conditions we never pinned down.
+Latest commit (`8c897e6`) added timeouts and simplified to rely only on
+`onAuthStateChange`. David saw the login screen work but the full
+end-to-end flow is still shaky.
+
+**Decision David did NOT make:** whether to revert the Supabase merge
+from `main` so Jill can use the app without login. **Ask him first
+thing.** If he says revert, run:
+
+```bash
+git revert -m 1 9186c07
+git revert 8c897e6
+git push origin main
+```
+
+Branch `supabase-migration` keeps the work for later. Supabase project
+is live with David as admin; Jill has never signed in.
+
+**Recommendation: revert auth, focus on forms.** Jill needs the app to
+just work without setup. Auth adds friction she won't tolerate, and the
+current implementation has a real hang bug we don't fully understand.
+
+---
 
 ---
 
@@ -19,7 +65,39 @@ The app is functional for all Broward County domiciliary probate paths. **41 for
 
 # 3. Work Completed
 
-**Latest mini-session (2026-04-17):**
+**Latest session (2026-04-21, evening):**
+- **Rebuilt G3-025 Plenary Guardian of Property template** from scratch to
+  match Jill's preferred format (Villareal case PDFs on David's Desktop were
+  the reference). Abandoned the FLSSI two-column layout — it was breaking
+  when fields with line breaks hit justified paragraphs, spreading words
+  across the page. New layout: single-column, clean caption table, real
+  Word tables for next-of-kin and property with Nature/Value columns,
+  docxtemplater conditional blocks for has-alternatives, has-preneed, and
+  is-professional-guardian, running header "Guardianship of {aip_name} /
+  Page X of Y" on pages 2+.
+- **Added `build_guardianship_templates.py`** — python-docx builder with
+  reusable helpers (`_add_para`, `_table_with_borders`, `_add_page_field`,
+  `_set_different_first_page_header`). Follow this pattern for the other
+  guardianship forms.
+- **forms.json for G3-025 rewritten** — added `aip_age`, `aip_address`,
+  `petitioner_address`, `has_alternatives`, `preneed_guardian_name`,
+  `preneed_reason`, `is_professional_guardian`; replaced the
+  `property_description` textarea with a `property_items` repeating group.
+- **`getAttorneyDefaults(matterType)` helper in app.js** — guardianship
+  matters default to Jill (Bar 813850, jill@ + maribel@hflegalsolutions.com
+  secondary), probate stays David. `prepareTemplateData` updated: booleans
+  passed raw so `{#field}` conditionals resolve, legacy `_check` preserved
+  for older templates, `aip_name_upper` emitted for captions.
+- **Seeded Villareal test matter** in `seedTestData()` (seedVersion not
+  bumped, so existing users won't see it; fresh installs will).
+- **Supabase auth migration** (shipped but unreliable, see section 0):
+  new schema (`clients`, `matters`, `form_data`, `user_profiles` with
+  admin/standard roles via RLS), Microsoft OAuth through Supabase's Azure
+  provider, login gate in `index.html`, `auth.js` for sign-in/out, owner
+  badge in client list for admins. `SUPABASE_SETUP.md` documents the
+  dashboard steps.
+
+**Prior mini-session (2026-04-17):**
 - **Housekeeping** — added `.claude/` and `*.docx.bak` to `.gitignore`; untracked `.DS_Store`; deleted stale `templates/P3-0100.docx.bak`
 - **Added `audit_tags.py`** — reusable tag audit script. Walks `subfields` inside repeating groups; excludes auto-populated fields (caption, attorney defaults, petitioner/affiant/notary). Run: `python3 audit_tags.py`. Currently passes clean.
 - **Fixed BW-0060** (Affidavit of Heirs) — template had `{judge_name}` tag but forms.json was missing the field. Added `judge_name` text field to Affiant Information section.
@@ -83,16 +161,40 @@ The app is functional for all Broward County domiciliary probate paths. **41 for
 
 # 6. Remaining Work
 
-**Priority 1 — FLSSI catalog build-out (waiting on David):**
+**Priority 1 — Fix form formatting across the catalog (TOP PRIORITY):**
+- [ ] G3-025 is done (see section 3 — single-column rebuild using
+      `build_guardianship_templates.py`). The rest of the catalog still
+      uses the old FLSSI two-column layout that breaks on multi-line
+      fields in justified paragraphs.
+- [ ] Use G3-025 as the pattern. Extend `build_guardianship_templates.py`
+      with a builder function per form. Build one form end-to-end, review
+      with David, iterate on the pattern, then batch the rest.
+- [ ] Likely next targets (Jill's area — guardianship):
+      **G3-026** Petition for Limited Guardian of Person and Property,
+      **G3-010** Petition for Emergency Temporary Guardian,
+      **G2-010** Petition to Determine Incapacity.
+- [ ] Reference docs: `Villareal ... 2026-04-21.pdf` (BEFORE — broken)
+      and `Villareal ... Updated JRG1.pdf` (AFTER — Jill's format).
+      Both on David's Desktop.
+- [ ] Key docxtemplater features to lean on: `{#conditional}...{/conditional}`
+      for optional paragraphs, `{#loop}...{/loop}` in a table row for
+      repeating data, `{^neg}...{/neg}` for "show when falsy", plain
+      `{field}` for scalars. Booleans pass through raw now (see
+      `prepareTemplateData()` in app.js).
+- [ ] Beware of justified text + line-break-containing fields — that
+      combo is what breaks the old FLSSI layouts. Use left-aligned
+      paragraphs or separate paragraphs per value.
+
+**Priority 2 — FLSSI catalog build-out (waiting on David):**
 - [ ] David marks `[x]` in SKIP column of `FORMS_CATALOG_MAP.md` for forms he doesn't want
 - [ ] When David says "ready", build all unmarked forms: tag source .docx, add to forms.json, wire into wizard/sections
 - [ ] 138 missing forms; realistic batch after skips: ~60–80
 
-**Priority 2 — Import bugs (David has more to report):**
+**Priority 3 — Import bugs (David has more to report):**
 - [ ] Debug and fix issues David encounters with the import flow
 - [ ] Test import → wizard → generate → download end-to-end
 
-**Priority 3 — Section refinement:**
+**Priority 4 — Section refinement:**
 - [ ] Identify seldom/never-used forms for a collapsed section
 
 **Priority 4 — Claude direct document generation (v2 vision):**
@@ -136,9 +238,19 @@ The app is functional for all Broward County domiciliary probate paths. **41 for
 
 # 8. Next Best Action
 
-**Immediate:** Open `FORMS_CATALOG_MAP.md` and put `[x]` in the SKIP column for any forms you do NOT want built. Write "SKIP ALL" next to section headers to skip whole sections. When done, say "ready" to kick off the batch build.
+**Immediate (for next Claude session):**
+1. Greet David, then read section 0 out loud (summarize). Ask whether to
+   revert the Supabase/OAuth merge from `main` so Jill can keep using
+   the app without login. Recommendation: yes, revert.
+2. Regardless of revert decision, the next work is **fixing form
+   formatting** — Priority 1. Ask David which form to tackle first.
+   Default suggestion: G3-026 (Limited Guardian of Person and Property),
+   since it's structurally similar to G3-025 which we just nailed.
+3. Use `build_guardianship_templates.py` as the scaffold. Add a
+   `build_g3_026()` function next to `build_g3_025()`.
 
-**After catalog batch:** run tag audit on every new template, commit, push.
+**After first form rebuilt:** run tag audit, commit, push, ask for
+David's review on the output before moving to the next form.
 
 ---
 
@@ -171,22 +283,36 @@ The app is functional for all Broward County domiciliary probate paths. **41 for
 
 ### What's next (priority order)
 
-**IMMEDIATE TASK — Build out the full FLSSI catalog:**
-- David is reviewing `FORMS_CATALOG_MAP.md` and marking `[x]` in the SKIP column for forms he does not want built.
-- When David says "ready" (possibly on a different computer — always `git pull` first), execute the batch build:
-  1. Read `FORMS_CATALOG_MAP.md`, extract the list of unbuilt forms NOT marked skip.
-  2. Source files: `/Users/davidshulman/Library/CloudStorage/Dropbox-GinsbergShulman,PL/David Shulman/FLSSI Forms/FODPROBWD2025/Converted DOCX/` — 194 FLSSI 2025 .docx files. Match by ID prefix (some source filenames have typos).
-  3. For each: unzip .docx, replace blanks with docxtemplater tags via raw XML. Preserve rsid, smart apostrophes, formatting. No python-docx for tags.
-  4. Save to `templates/{FORM-ID}.docx`, add definition to `forms.json`, wire into sections/wizard if relevant.
-  5. After all builds: run tag audit, bump `seedVersion` if needed, commit, push.
+**IMMEDIATE TASK — Fix form formatting across the catalog:**
+- G3-025 (Plenary Guardian of Property) was rebuilt 2026-04-21 via
+  `build_guardianship_templates.py` using a clean single-column layout
+  that matches Jill's Villareal edits. The rest of the catalog still
+  uses the old FLSSI two-column style that breaks on multi-line fields
+  in justified paragraphs (words spread across the page).
+- Next form to tackle: **G3-026** (Limited Guardian of Person and Property).
+- Pattern: add a `build_g3_026()` function to
+  `build_guardianship_templates.py`, using the same helpers. Inspect the
+  existing FLSSI source at `templates/G3-026.docx` for the paragraph
+  content, but rewrite the layout from scratch.
+- Build one, review with David, iterate, then batch the rest.
 
-**After catalog batch:**
-2. Fix remaining import bugs
-3. Declutter sections
-4. Claude direct generation (v2)
-5. Quick Add Matter for mid-stream matters
-6. Ancillary Broward checklists
-7. Case management system
+**UNRESOLVED DECISION — Revert Supabase/OAuth merge?**
+- Tonight's session shipped Microsoft OAuth + Supabase multi-user
+  storage to main. The sign-in flow is flaky (hang bugs not fully fixed).
+- Jill is non-technical and will bounce if sign-in fails. David called
+  it a night before deciding whether to revert.
+- First thing next session: ask. If yes →
+  `git revert -m 1 9186c07 && git revert 8c897e6 && git push origin main`.
+  Keeps Supabase work alive on branch `supabase-migration`.
+
+**After forms formatting:**
+2. FLSSI catalog build-out (see `FORMS_CATALOG_MAP.md`)
+3. Fix remaining import bugs
+4. Declutter sections
+5. Claude direct generation (v2)
+6. Quick Add Matter for mid-stream matters
+7. Ancillary Broward checklists
+8. Case management system
 
 ### Key files
 - `app.js` — all application logic (~2000 lines)
