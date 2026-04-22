@@ -75,31 +75,41 @@ async function loadProfile(userId) {
 }
 
 async function establishSession(session) {
-    if (!session || !session.user) {
+    try {
+        if (!session || !session.user) {
+            window.currentUser = null;
+            showLoginScreen();
+            return;
+        }
+
+        // The handle_new_user trigger creates the user_profiles row server-side
+        // the first time a user authenticates; it's available immediately after.
+        const profile = await loadProfile(session.user.id);
+        window.currentUser = {
+            id: session.user.id,
+            // Microsoft puts the user's email at different claim keys depending
+            // on tenant config. Fall back through the usual candidates.
+            email: session.user.email
+                || (session.user.user_metadata && (session.user.user_metadata.email
+                                                   || session.user.user_metadata.preferred_username))
+                || '',
+            role: profile ? profile.role : 'standard',
+            display_name: profile ? profile.display_name : (
+                session.user.user_metadata && session.user.user_metadata.full_name
+            )
+        };
+
+        showApp();
+        document.dispatchEvent(new CustomEvent('gs-auth-ready', { detail: window.currentUser }));
+    } catch (err) {
+        // If anything in establishSession throws, we'd otherwise leave both
+        // screens hidden and the user staring at a blank page. Fall back to
+        // the login screen with an error so they have a path forward.
+        console.error('establishSession failed:', err);
         window.currentUser = null;
         showLoginScreen();
-        return;
+        setLoginError('Sign-in error: ' + (err && err.message ? err.message : 'unknown') + '. Try again or contact admin.');
     }
-
-    // The handle_new_user trigger creates the user_profiles row server-side
-    // the first time a user authenticates; it's available immediately after.
-    const profile = await loadProfile(session.user.id);
-    window.currentUser = {
-        id: session.user.id,
-        // Microsoft puts the user's email at different claim keys depending
-        // on tenant config. Fall back through the usual candidates.
-        email: session.user.email
-            || (session.user.user_metadata && (session.user.user_metadata.email
-                                               || session.user.user_metadata.preferred_username))
-            || '',
-        role: profile ? profile.role : 'standard',
-        display_name: profile ? profile.display_name : (
-            session.user.user_metadata && session.user.user_metadata.full_name
-        )
-    };
-
-    showApp();
-    document.dispatchEvent(new CustomEvent('gs-auth-ready', { detail: window.currentUser }));
 }
 
 async function handleMicrosoftSignIn() {
@@ -147,10 +157,36 @@ document.addEventListener('DOMContentLoaded', async function () {
         await establishSession(session);
     });
 
-    // Immediate check avoids a flash of login screen for users with an
-    // existing session.
-    const { data: { session } } = await window.supabaseClient.auth.getSession();
-    await establishSession(session);
+    try {
+        // If we arrived back from Microsoft with a code in the URL, manually
+        // exchange it. detectSessionInUrl is supposed to handle this but
+        // occasionally silently fails; explicit exchange surfaces the error.
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        if (code) {
+            const { data, error } = await window.supabaseClient.auth.exchangeCodeForSession(code);
+            if (error) {
+                console.error('exchangeCodeForSession error:', error);
+                showLoginScreen();
+                setLoginError('Sign-in callback failed: ' + error.message);
+                return;
+            }
+            // Clean the URL so reloads don't try to re-exchange a stale code
+            if (window.history && window.history.replaceState) {
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+            await establishSession(data.session);
+            return;
+        }
+
+        // Normal load — check for an existing session
+        const { data: { session } } = await window.supabaseClient.auth.getSession();
+        await establishSession(session);
+    } catch (err) {
+        console.error('Auth init failed:', err);
+        showLoginScreen();
+        setLoginError('Auth init failed: ' + (err && err.message ? err.message : 'unknown'));
+    }
 });
 
 window.ensureAuthenticated = function () {
