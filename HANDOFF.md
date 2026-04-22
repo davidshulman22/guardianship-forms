@@ -1,51 +1,60 @@
 # CHAT HANDOFF — RESUME-READY
-**Generated:** 2026-04-21 (late evening)
-**Source:** Claude Code session — G3-025 rebuild + Supabase/OAuth attempt
-**Status:** RESUME-READY — David tapped out late; forms formatting is top priority for next session
+**Generated:** 2026-04-22 (morning)
+**Source:** Claude Code session — blank-page-after-sign-in fix + architectural todo
+**Status:** RESUME-READY — auth hang fixed and shipped live; forms formatting is still top priority
 
 ---
 
-# 0. READ FIRST — State as of 2026-04-21 end-of-night
+# 0. READ FIRST — State as of 2026-04-22 morning
 
-**The top priority for next session is fixing form formatting across the rest
-of the catalog.** David said: "Jill has no tech knowledge. she has no idea
-how long this takes. she tries and if it doesn't work perfectly she gets
-frustrated and gives up. So let's go back to what we started on, making
-the forms look right."
+**The top priority is still fixing form formatting across the rest of
+the catalog.** David wants to keep the app "just work," not ask him to
+re-configure anything — so auth stays (he explicitly said "don't worry
+about Jill" when the revert option was offered this morning).
 
-Two work threads landed on `main` tonight:
+Two work threads shipped since last night:
 
-**A. G3-025 rebuild (working).** `templates/G3-025.docx` was rebuilt from
-scratch via `build_guardianship_templates.py` to match Jill's preferred
-clean single-column format. Real tables for next-of-kin and property,
+**A. G3-025 rebuild (working, landed 2026-04-21).**
+`templates/G3-025.docx` was rebuilt from scratch via
+`build_guardianship_templates.py` to match Jill's preferred clean
+single-column format. Real tables for next-of-kin and property,
 docxtemplater conditionals for has-alternatives / has-preneed /
 is-professional, running header on pages 2+. forms.json updated, app.js
 attorney switcher updated (guardianship → Jill, probate → David).
 
-**B. Supabase + Microsoft OAuth (shipped but flaky).** localStorage → Supabase
-migration with Azure AD single-tenant auth. Deployed to `main` but the
-OAuth callback flow is unreliable — `exchangeCodeForSession` and
-`getSession` hang indefinitely under conditions we never pinned down.
-Latest commit (`8c897e6`) added timeouts and simplified to rely only on
-`onAuthStateChange`. David saw the login screen work but the full
-end-to-end flow is still shaky.
+**B. Blank-page-after-sign-in fix (landed 2026-04-22).** Root cause:
+`index.html` started both `loginGate` and `mainApp` with inline
+`display:none`, so every async step of the auth flow ran against a
+blank page. `loadProfile()` was also on the critical path with no
+timeout, so any hiccup there froze sign-in permanently. Fix:
 
-**Decision David did NOT make:** whether to revert the Supabase merge
-from `main` so Jill can use the app without login. **Ask him first
-thing.** If he says revert, run:
+- Login gate is visible by default with three inner states
+  (`checking` / `signingIn` / `button`). Never paints blank.
+- `loadProfile()` moved off the critical path — runs in the background
+  with a 3s timeout; role defaults to `standard` and upgrades to `admin`
+  if/when profile returns.
+- `[auth]` and `[init]` console logs at every stage — next stall will
+  show exactly which step died.
+- 6s + 10s safety nets now fire even if `onAuthStateChange` fired (old
+  8s net disarmed itself the moment the event fired, so a hang inside
+  `establishSession` slipped past).
+- "Reset auth & reload" button in the login card — one-click wipe of
+  `sb-*` localStorage + URL cleanup. David confirmed it's safe to wipe
+  any time (no important data on the server yet).
+- Pushed to `main` as `c7af1b9`, GitHub Pages build succeeded.
+  Live at https://davidshulman22.github.io/guardianship-forms/.
 
-```bash
-git revert -m 1 9186c07
-git revert 8c897e6
-git push origin main
-```
+**Supabase project** is live; David is admin. No data worth preserving
+yet — reset freely if anything stalls.
 
-Branch `supabase-migration` keeps the work for later. Supabase project
-is live with David as admin; Jill has never signed in.
-
-**Recommendation: revert auth, focus on forms.** Jill needs the app to
-just work without setup. Auth adds friction she won't tolerate, and the
-current implementation has a real hang bug we don't fully understand.
+**External gotchas that could still bite:**
+- Supabase → Auth → URL Configuration must list
+  `https://davidshulman22.github.io/guardianship-forms/` in both Site
+  URL and Redirect URLs (setup docs claim yes — verify if sign-in
+  fails on the live URL).
+- Azure AD app registration must have Supabase's callback
+  (`https://xcjrpfkexdxggkaswefh.supabase.co/auth/v1/callback`)
+  registered as a redirect URI.
 
 ---
 
@@ -65,7 +74,21 @@ The app is functional for all Broward County domiciliary probate paths. **41 for
 
 # 3. Work Completed
 
-**Latest session (2026-04-21, evening):**
+**Latest session (2026-04-22, morning):**
+- **Fixed blank-page-after-sign-in bug.** Rewrote `auth.js` with stage
+  logging, a 3s timeout on `loadProfile()` (moved off the critical path),
+  and a login gate that's visible by default with three inner states
+  (checking / signingIn / button). Added `[auth]` and `[init]` console
+  logs at every stage so the next stall is diagnosable from the
+  console. Added "Reset auth & reload" button in the login card. Fixed
+  the safety nets so a hang inside `establishSession` actually trips a
+  fallback (previously the net disarmed itself the moment
+  `onAuthStateChange` fired). Pushed as `c7af1b9`, Pages deploy green,
+  live at https://davidshulman22.github.io/guardianship-forms/.
+- **David chose to keep auth, not revert.** "Don't worry about Jill or
+  anyone using it" — he wants the fix, not a rollback.
+
+**Prior session (2026-04-21, evening):**
 - **Rebuilt G3-025 Plenary Guardian of Property template** from scratch to
   match Jill's preferred format (Villareal case PDFs on David's Desktop were
   the reference). Abandoned the FLSSI two-column layout — it was breaking
@@ -185,6 +208,36 @@ The app is functional for all Broward County domiciliary probate paths. **41 for
       combo is what breaks the old FLSSI layouts. Use left-aligned
       paragraphs or separate paragraphs per value.
 
+**Priority 1b — Lift shared matter data up to a Matter Interview (architectural):**
+- [ ] Any data that describes the *matter*, not a specific form, should
+      live on the matter — not under `matter.formData['P3-0100']` or
+      `['G3-025']`. Examples: guardian name, relatives / next-of-kin,
+      asset inventory, client addresses, petitioner address, AIP age
+      and address, preneed guardian, decedent facts.
+- [ ] Today the cross-form sharing is a read-through from other forms'
+      data. That works but it's fragile: whoever edits P3-0100 owns the
+      "decedent address" field for the whole matter; delete that form
+      and the address vanishes from every other form.
+- [ ] Target shape: a dedicated "Matter Interview" view (one per matter
+      type — probate, guardianship, trust admin) that writes to
+      `matter.matterData` (already exists — expand it). All forms then
+      read from `matterData` → formData override → client defaults →
+      attorney defaults (re-order the priority chain in
+      `getAutoPopulateDefaults()`).
+- [ ] Schema-wise: add a `matter_data` schema file (like `forms.json`
+      but one definition per matter type) with sections for
+      Parties / Relatives / Assets / Addresses / Key dates. The matter
+      view renders that interview above the lifecycle sections.
+- [ ] Migration: a one-shot script that walks every existing matter,
+      promotes cross-form fields (decedent_*, aip_*, petitioner_*,
+      property_items, etc.) up to `matterData`, then prunes them from
+      per-form formData. Re-run safe.
+- [ ] Rough scope: a weekend's work. Start with probate
+      (decedent + petitioner + PR + beneficiaries), then guardianship
+      (AIP + relatives + assets + preneed).
+- [ ] Captured 2026-04-22. Do not start before Priority 1 (form
+      formatting) — that work is more user-visible.
+
 **Priority 2 — FLSSI catalog build-out (waiting on David):**
 - [ ] David marks `[x]` in SKIP column of `FORMS_CATALOG_MAP.md` for forms he doesn't want
 - [ ] When David says "ready", build all unmarked forms: tag source .docx, add to forms.json, wire into wizard/sections
@@ -227,7 +280,12 @@ The app is functional for all Broward County domiciliary probate paths. **41 for
 **Weak spots:**
 - Ancillary wizard entries only have BW-0010 (no ancillary-specific checklists yet)
 - `seedVersion` was not bumped — existing seed data won't refresh unless bumped
-- localStorage is fragile long-term (browser wipe = data loss)
+- Matter-level facts (decedent, AIP, relatives, assets, addresses) still
+  live under per-form `formData` rather than on the matter itself — see
+  Priority 1b.
+- Sign-in flow has only been tested end-to-end once on the live URL
+  after the 2026-04-22 fix. If the next session starts with "still
+  blank," grab the `[auth]` console logs first.
 
 **Open questions:**
 - What specific import bugs is David seeing?
@@ -239,18 +297,22 @@ The app is functional for all Broward County domiciliary probate paths. **41 for
 # 8. Next Best Action
 
 **Immediate (for next Claude session):**
-1. Greet David, then read section 0 out loud (summarize). Ask whether to
-   revert the Supabase/OAuth merge from `main` so Jill can keep using
-   the app without login. Recommendation: yes, revert.
-2. Regardless of revert decision, the next work is **fixing form
-   formatting** — Priority 1. Ask David which form to tackle first.
-   Default suggestion: G3-026 (Limited Guardian of Person and Property),
-   since it's structurally similar to G3-025 which we just nailed.
+1. Auth + live site are up. Don't propose reverting Supabase — David
+   explicitly kept it this morning. If David reports sign-in is still
+   broken on https://davidshulman22.github.io/guardianship-forms/, ask
+   him to open DevTools → Console and paste the `[auth]` lines — the
+   last one before the hang identifies the failed stage.
+2. Real work resumes on **Priority 1 — form formatting**. Default
+   suggestion: **G3-026** (Limited Guardian of Person and Property),
+   structurally similar to G3-025 which is already nailed.
 3. Use `build_guardianship_templates.py` as the scaffold. Add a
    `build_g3_026()` function next to `build_g3_025()`.
 
-**After first form rebuilt:** run tag audit, commit, push, ask for
-David's review on the output before moving to the next form.
+**After first form rebuilt:** run tag audit, commit, push, ask David
+to review the output before moving to the next form.
+
+**Parallel architectural work** (Priority 1b) — matter-level data
+interview. Don't start without asking; it's a weekend-sized change.
 
 ---
 
@@ -264,7 +326,8 @@ David's review on the output before moving to the next form.
 
 **Where it is:** `/Users/davidshulman/Library/CloudStorage/Dropbox-GinsbergShulman,PL/David Shulman/FLSSI Forms/Forms Project`
 **Repo:** `https://github.com/davidshulman22/guardianship-forms` (main branch, up to date)
-**Run it:** `cd` to project dir, `python3 -m http.server 8765`, open `http://localhost:8765`
+**Live:** `https://davidshulman22.github.io/guardianship-forms/`
+**Local:** `cd` to project dir, `python3 -m http.server 8765`, open `http://localhost:8765`
 
 ### What exists now
 - **41 forms** in forms.json (5 guardianship, 30 FLSSI probate, 6 Broward local)
@@ -279,7 +342,11 @@ David's review on the output before moving to the next form.
 - **Multi-petitioner model** — `petitioners` repeating group on summary admin forms
 - **Cross-form data sharing** — fields entered on one form auto-populate into others
 - **Human-readable filenames** — downloads use form names not IDs
-- **Local only** — no login, no auth, localStorage persistence
+- **Microsoft OAuth sign-in via Supabase.** Single-tenant Azure AD,
+  RLS-gated Postgres storage (`clients`, `matters`, `form_data`,
+  `user_profiles`). David is admin. Blank-page hang fixed 2026-04-22 —
+  see `auth.js` for the staged-state login gate and `[auth]` console
+  logging.
 
 ### What's next (priority order)
 
@@ -296,23 +363,29 @@ David's review on the output before moving to the next form.
   content, but rewrite the layout from scratch.
 - Build one, review with David, iterate, then batch the rest.
 
-**UNRESOLVED DECISION — Revert Supabase/OAuth merge?**
-- Tonight's session shipped Microsoft OAuth + Supabase multi-user
-  storage to main. The sign-in flow is flaky (hang bugs not fully fixed).
-- Jill is non-technical and will bounce if sign-in fails. David called
-  it a night before deciding whether to revert.
-- First thing next session: ask. If yes →
-  `git revert -m 1 9186c07 && git revert 8c897e6 && git push origin main`.
-  Keeps Supabase work alive on branch `supabase-migration`.
+**ARCHITECTURAL TODO — Matter-level data interview (Priority 1b):**
+- Matter facts (guardian name, relatives, assets, addresses, AIP age,
+  preneed, decedent details) should live on the matter itself, not
+  under `matter.formData['P3-0100']` or any other specific form.
+- Today the cross-form sharing is a read-through between forms —
+  fragile: deleting one form wipes shared data for all of them.
+- Target: a "Matter Interview" view per matter type that writes to
+  `matterData`; all forms then read matterData → formData override →
+  client → attorney. Add a `matter_data` schema file (parallel to
+  `forms.json`) with sections for Parties / Relatives / Assets /
+  Addresses / Key dates. Migration script promotes existing
+  per-form data up to matterData.
+- Don't start before Priority 1 (form formatting). Weekend-sized.
 
 **After forms formatting:**
-2. FLSSI catalog build-out (see `FORMS_CATALOG_MAP.md`)
-3. Fix remaining import bugs
-4. Declutter sections
-5. Claude direct generation (v2)
-6. Quick Add Matter for mid-stream matters
-7. Ancillary Broward checklists
-8. Case management system
+2. Matter Interview architectural refactor (Priority 1b above)
+3. FLSSI catalog build-out (see `FORMS_CATALOG_MAP.md`)
+4. Fix remaining import bugs
+5. Declutter sections
+6. Claude direct generation (v2)
+7. Quick Add Matter for mid-stream matters
+8. Ancillary Broward checklists
+9. Case management system
 
 ### Key files
 - `app.js` — all application logic (~2000 lines)
