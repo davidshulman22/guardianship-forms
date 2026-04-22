@@ -1,159 +1,212 @@
 -- ============================================================================
--- Supabase Schema Setup for Guardianship Form Assembly App
+-- Supabase schema for GS Court Forms
 -- ============================================================================
--- This SQL file sets up the database schema for managing clients and form
--- submissions in a guardianship form assembly application.
+-- Hierarchy:  clients → matters → form_data
+--
+-- Authorization model:
+--   - Admin users see every row (for troubleshooting).
+--   - Standard users see only rows they created.
+--   - Role is stored in user_profiles.role ('admin' | 'standard').
+--
+-- The anon key alone cannot read/write; every request must be authenticated.
+--
+-- To apply: Supabase dashboard → SQL editor → paste this file → Run.
+-- Safe to re-run: all objects drop first.
 -- ============================================================================
 
+DROP TABLE IF EXISTS form_data CASCADE;
+DROP TABLE IF EXISTS form_submissions CASCADE;  -- legacy table from old schema
+DROP TABLE IF EXISTS matters CASCADE;
+DROP TABLE IF EXISTS clients CASCADE;
+DROP TABLE IF EXISTS user_profiles CASCADE;
+DROP FUNCTION IF EXISTS is_admin() CASCADE;
+DROP FUNCTION IF EXISTS set_updated_at() CASCADE;
+DROP FUNCTION IF EXISTS handle_new_user() CASCADE;
+
 -- ============================================================================
--- 1. CREATE TABLES
+-- user_profiles — maps auth.users to role + display info
 -- ============================================================================
 
--- Table: clients
--- Stores information about clients (alleged incapacitated persons and cases)
+CREATE TABLE user_profiles (
+  id            uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  email         text NOT NULL UNIQUE,
+  role          text NOT NULL DEFAULT 'standard' CHECK (role IN ('admin', 'standard')),
+  display_name  text,
+  created_at    timestamptz NOT NULL DEFAULT now()
+);
+
+-- Auto-create a standard-role profile the first time a user logs in.
+-- (You promote David to admin manually after seeding — see bottom of file.)
+CREATE OR REPLACE FUNCTION handle_new_user()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  INSERT INTO user_profiles (id, email)
+  VALUES (NEW.id, NEW.email)
+  ON CONFLICT (id) DO NOTHING;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION handle_new_user();
+
+-- Helper: is the current user an admin? Used by every RLS policy below.
+CREATE OR REPLACE FUNCTION is_admin()
+RETURNS boolean
+LANGUAGE sql
+SECURITY DEFINER
+STABLE
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM user_profiles
+    WHERE id = auth.uid() AND role = 'admin'
+  );
+$$;
+
+-- ============================================================================
+-- Data tables
+-- ============================================================================
+
 CREATE TABLE clients (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  created_at timestamptz DEFAULT now(),
-  updated_at timestamptz DEFAULT now(),
-  created_by uuid NOT NULL REFERENCES auth.users(id),
+  id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at   timestamptz NOT NULL DEFAULT now(),
+  updated_at   timestamptz NOT NULL DEFAULT now(),
+  created_by   uuid NOT NULL REFERENCES auth.users(id),
 
-  -- Core case fields
-  county text,
-  file_no text,
-  division text,
-
-  -- Petitioner information
-  petitioner_name text,
-  petitioner_age text,
-  petitioner_address text,
-  petitioner_relationship text,
-
-  -- AIP (Alleged Incapacitated Person) information
-  aip_name text,
-  aip_age text,
-  aip_county text,
-  aip_primary_language text,
-  aip_address text,
-
-  -- Attorney information
-  attorney_name text,
-  attorney_email text,
-  attorney_bar_no text,
-  attorney_address text,
-  attorney_phone text,
-
-  -- Physician information
-  physician_name text,
-  physician_address text,
-  physician_phone text,
-
-  -- Generated/computed field for UI display
-  display_name text GENERATED ALWAYS AS (COALESCE(aip_name, 'Unnamed Client')) STORED
+  first_name   text,
+  last_name    text,
+  address      text,
+  phone        text,
+  email        text
 );
 
--- Table: form_submissions
--- Stores submitted form data for each client
-CREATE TABLE form_submissions (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  client_id uuid NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
-  form_id text NOT NULL,
-  created_at timestamptz DEFAULT now(),
-  updated_at timestamptz DEFAULT now(),
-  created_by uuid NOT NULL REFERENCES auth.users(id),
+CREATE TABLE matters (
+  id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  client_id      uuid NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
+  created_at     timestamptz NOT NULL DEFAULT now(),
+  updated_at     timestamptz NOT NULL DEFAULT now(),
+  created_by     uuid NOT NULL REFERENCES auth.users(id),
 
-  -- JSONB field to store all form-specific data
-  -- This includes checkboxes, text fields, narratives, repeating rows, etc.
-  form_data jsonb DEFAULT '{}'::jsonb
+  type           text NOT NULL CHECK (type IN ('guardianship', 'probate', 'trust_admin', 'other')),
+  subject_name   text,
+  county         text,
+  file_no        text,
+  division       text,
+
+  matter_data    jsonb NOT NULL DEFAULT '{}'::jsonb
+);
+
+CREATE TABLE form_data (
+  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  matter_id   uuid NOT NULL REFERENCES matters(id) ON DELETE CASCADE,
+  form_id     text NOT NULL,
+  created_at  timestamptz NOT NULL DEFAULT now(),
+  updated_at  timestamptz NOT NULL DEFAULT now(),
+  created_by  uuid NOT NULL REFERENCES auth.users(id),
+
+  data        jsonb NOT NULL DEFAULT '{}'::jsonb,
+
+  UNIQUE (matter_id, form_id)
 );
 
 -- ============================================================================
--- 2. CREATE INDEXES
+-- Indexes
 -- ============================================================================
 
--- Index for searching clients by AIP name
-CREATE INDEX idx_clients_aip_name ON clients(aip_name);
-
--- Index for querying form submissions by client
-CREATE INDEX idx_form_submissions_client_id ON form_submissions(client_id);
-
--- Index for querying form submissions by form type
-CREATE INDEX idx_form_submissions_form_id ON form_submissions(form_id);
+CREATE INDEX idx_matters_client_id       ON matters(client_id);
+CREATE INDEX idx_matters_created_by      ON matters(created_by);
+CREATE INDEX idx_clients_created_by      ON clients(created_by);
+CREATE INDEX idx_form_data_matter_id     ON form_data(matter_id);
+CREATE INDEX idx_form_data_form_id       ON form_data(form_id);
+CREATE INDEX idx_clients_last_name       ON clients(last_name);
 
 -- ============================================================================
--- 3. ENABLE ROW-LEVEL SECURITY (RLS)
+-- Row-level security
+-- ============================================================================
+-- Every policy: admin OR created_by = auth.uid()
+
+ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE clients       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE matters       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE form_data     ENABLE ROW LEVEL SECURITY;
+
+-- user_profiles: everyone reads own row; admins read all; nobody writes directly
+-- (the trigger creates the row, and role changes happen via the Supabase dashboard).
+CREATE POLICY "read_own_profile" ON user_profiles
+  FOR SELECT TO authenticated
+  USING (id = auth.uid() OR is_admin());
+
+CREATE POLICY "update_own_display_name" ON user_profiles
+  FOR UPDATE TO authenticated
+  USING (id = auth.uid())
+  WITH CHECK (id = auth.uid() AND role = (SELECT role FROM user_profiles WHERE id = auth.uid()));
+
+-- clients
+CREATE POLICY "select_clients" ON clients
+  FOR SELECT TO authenticated
+  USING (is_admin() OR created_by = auth.uid());
+
+CREATE POLICY "insert_clients" ON clients
+  FOR INSERT TO authenticated
+  WITH CHECK (created_by = auth.uid());
+
+CREATE POLICY "update_clients" ON clients
+  FOR UPDATE TO authenticated
+  USING (is_admin() OR created_by = auth.uid())
+  WITH CHECK (is_admin() OR created_by = auth.uid());
+
+CREATE POLICY "delete_clients" ON clients
+  FOR DELETE TO authenticated
+  USING (is_admin() OR created_by = auth.uid());
+
+-- matters
+CREATE POLICY "select_matters" ON matters
+  FOR SELECT TO authenticated
+  USING (is_admin() OR created_by = auth.uid());
+
+CREATE POLICY "insert_matters" ON matters
+  FOR INSERT TO authenticated
+  WITH CHECK (created_by = auth.uid());
+
+CREATE POLICY "update_matters" ON matters
+  FOR UPDATE TO authenticated
+  USING (is_admin() OR created_by = auth.uid())
+  WITH CHECK (is_admin() OR created_by = auth.uid());
+
+CREATE POLICY "delete_matters" ON matters
+  FOR DELETE TO authenticated
+  USING (is_admin() OR created_by = auth.uid());
+
+-- form_data
+CREATE POLICY "select_form_data" ON form_data
+  FOR SELECT TO authenticated
+  USING (is_admin() OR created_by = auth.uid());
+
+CREATE POLICY "insert_form_data" ON form_data
+  FOR INSERT TO authenticated
+  WITH CHECK (created_by = auth.uid());
+
+CREATE POLICY "update_form_data" ON form_data
+  FOR UPDATE TO authenticated
+  USING (is_admin() OR created_by = auth.uid())
+  WITH CHECK (is_admin() OR created_by = auth.uid());
+
+CREATE POLICY "delete_form_data" ON form_data
+  FOR DELETE TO authenticated
+  USING (is_admin() OR created_by = auth.uid());
+
+-- ============================================================================
+-- updated_at triggers
 -- ============================================================================
 
-ALTER TABLE clients ENABLE ROW LEVEL SECURITY;
-ALTER TABLE form_submissions ENABLE ROW LEVEL SECURITY;
-
--- ============================================================================
--- 4. CREATE RLS POLICIES
--- ============================================================================
-
--- Policy: Authenticated users can SELECT all clients
-CREATE POLICY "Authenticated users can select clients"
-  ON clients
-  FOR SELECT
-  TO authenticated
-  USING (auth.role() = 'authenticated');
-
--- Policy: Authenticated users can INSERT clients
-CREATE POLICY "Authenticated users can insert clients"
-  ON clients
-  FOR INSERT
-  TO authenticated
-  WITH CHECK (auth.role() = 'authenticated');
-
--- Policy: Authenticated users can UPDATE clients
-CREATE POLICY "Authenticated users can update clients"
-  ON clients
-  FOR UPDATE
-  TO authenticated
-  USING (auth.role() = 'authenticated')
-  WITH CHECK (auth.role() = 'authenticated');
-
--- Policy: Authenticated users can DELETE clients
-CREATE POLICY "Authenticated users can delete clients"
-  ON clients
-  FOR DELETE
-  TO authenticated
-  USING (auth.role() = 'authenticated');
-
--- Policy: Authenticated users can SELECT all form submissions
-CREATE POLICY "Authenticated users can select form submissions"
-  ON form_submissions
-  FOR SELECT
-  TO authenticated
-  USING (auth.role() = 'authenticated');
-
--- Policy: Authenticated users can INSERT form submissions
-CREATE POLICY "Authenticated users can insert form submissions"
-  ON form_submissions
-  FOR INSERT
-  TO authenticated
-  WITH CHECK (auth.role() = 'authenticated');
-
--- Policy: Authenticated users can UPDATE form submissions
-CREATE POLICY "Authenticated users can update form submissions"
-  ON form_submissions
-  FOR UPDATE
-  TO authenticated
-  USING (auth.role() = 'authenticated')
-  WITH CHECK (auth.role() = 'authenticated');
-
--- Policy: Authenticated users can DELETE form submissions
-CREATE POLICY "Authenticated users can delete form submissions"
-  ON form_submissions
-  FOR DELETE
-  TO authenticated
-  USING (auth.role() = 'authenticated');
-
--- ============================================================================
--- 5. CREATE FUNCTION AND TRIGGERS FOR updated_at
--- ============================================================================
-
--- Function to update the updated_at timestamp
-CREATE OR REPLACE FUNCTION update_updated_at_column()
+CREATE OR REPLACE FUNCTION set_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
   NEW.updated_at = now();
@@ -161,24 +214,34 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Trigger for clients table
-CREATE TRIGGER trigger_update_clients_updated_at
+CREATE TRIGGER trg_clients_updated_at
   BEFORE UPDATE ON clients
-  FOR EACH ROW
-  EXECUTE FUNCTION update_updated_at_column();
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
--- Trigger for form_submissions table
-CREATE TRIGGER trigger_update_form_submissions_updated_at
-  BEFORE UPDATE ON form_submissions
-  FOR EACH ROW
-  EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER trg_matters_updated_at
+  BEFORE UPDATE ON matters
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+CREATE TRIGGER trg_form_data_updated_at
+  BEFORE UPDATE ON form_data
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 -- ============================================================================
--- 6. GRANTS (Optional - adjust based on your Supabase role setup)
+-- POST-DEPLOYMENT STEPS (do these in the Supabase dashboard)
 -- ============================================================================
--- Note: In Supabase, RLS policies typically handle access control.
--- The following grants are provided for reference if you need to adjust
--- role permissions explicitly.
-
--- GRANT SELECT, INSERT, UPDATE, DELETE ON clients TO authenticated;
--- GRANT SELECT, INSERT, UPDATE, DELETE ON form_submissions TO authenticated;
+-- 1. Auth → Providers: ensure "Email" is enabled, "Confirm email" is ON.
+-- 2. Auth → URL Configuration:
+--      Site URL = https://davidshulman22.github.io/guardianship-forms/
+--      Redirect URLs = https://davidshulman22.github.io/guardianship-forms/
+--                      http://localhost:8765/  (for local dev)
+-- 3. Auth → Providers → Email: DISABLE "Allow new users to sign up".
+--      (This prevents random people from creating accounts.)
+-- 4. Auth → Users → "Add user":
+--      - david@ginsbergshulman.com  (send magic link or auto-confirm)
+--      - jill@ginsbergshulman.com
+-- 5. SQL editor — promote David to admin (do this AFTER step 4):
+--      UPDATE user_profiles SET role = 'admin'
+--      WHERE email = 'david@ginsbergshulman.com';
+-- 6. Verify:
+--      SELECT email, role FROM user_profiles;
+-- ============================================================================

@@ -98,8 +98,10 @@ const formSections = {
 // ============================================
 
 async function initializeApp() {
+    // Wait for Supabase auth before loading any data.
+    await window.ensureAuthenticated();
     await loadFormsConfig();
-    loadClientsFromStorage();
+    await loadClientsFromSupabase();
     renderClientList();
     setupEventListeners();
     setupClaudeImport();
@@ -118,23 +120,144 @@ async function loadFormsConfig() {
 }
 
 // ============================================
-// LOCAL STORAGE
+// PERSISTENCE (Supabase) — localStorage is a fast-paint cache only
 // ============================================
 
-function loadClientsFromStorage() {
-    const saved = localStorage.getItem('gs_court_forms_clients');
-    const seedVersion = '3'; // bump this to force reseed
-    if (saved && localStorage.getItem('gs_seed_version') === seedVersion) {
-        clients = JSON.parse(saved);
+const CLIENTS_CACHE_KEY = 'gs_court_forms_clients_cache';
+
+// Map between the in-memory shape (camelCase, nested) and the DB shape.
+function dbClientToMem(row) {
+    return {
+        id: row.id,
+        firstName: row.first_name || '',
+        lastName: row.last_name || '',
+        address: row.address || '',
+        phone: row.phone || '',
+        email: row.email || '',
+        createdAt: row.created_at,
+        createdBy: row.created_by,
+        matters: []
+    };
+}
+
+function dbMatterToMem(row) {
+    return {
+        id: row.id,
+        clientId: row.client_id,
+        type: row.type,
+        subjectName: row.subject_name || '',
+        county: row.county || '',
+        fileNo: row.file_no || '',
+        division: row.division || '',
+        matterData: row.matter_data || {},
+        formData: {},           // filled in from form_data rows
+        createdAt: row.created_at,
+        createdBy: row.created_by
+    };
+}
+
+function memClientToDb(c) {
+    return {
+        id: c.id,
+        first_name: c.firstName || null,
+        last_name: c.lastName || null,
+        address: c.address || null,
+        phone: c.phone || null,
+        email: c.email || null,
+        created_by: window.currentUser.id
+    };
+}
+
+function memMatterToDb(m, clientId) {
+    return {
+        id: m.id,
+        client_id: clientId,
+        type: m.type,
+        subject_name: m.subjectName || null,
+        county: m.county || null,
+        file_no: m.fileNo || null,
+        division: m.division || null,
+        matter_data: m.matterData || {},
+        created_by: window.currentUser.id
+    };
+}
+
+function isUuid(v) {
+    return typeof v === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
+}
+
+// Ensure every client/matter has a UUID. Legacy cached records used
+// timestamp-based IDs; those won't upsert cleanly to Supabase.
+function ensureUuids() {
+    let changed = false;
+    clients.forEach(c => {
+        if (!isUuid(c.id)) { c.id = crypto.randomUUID(); changed = true; }
+        (c.matters || []).forEach(m => {
+            if (!isUuid(m.id)) { m.id = crypto.randomUUID(); changed = true; }
+        });
+    });
+    return changed;
+}
+
+window.userProfilesById = {};
+
+async function loadClientsFromSupabase() {
+    // Paint cached data immediately for snappy first render.
+    const cached = localStorage.getItem(CLIENTS_CACHE_KEY);
+    if (cached) {
+        try { clients = JSON.parse(cached); } catch (_) { clients = []; }
     } else {
-        // First run or seed version changed — reseed
-        localStorage.removeItem('gs_court_forms_clients');
         clients = [];
     }
-    if (clients.length === 0) {
-        seedTestData();
-        localStorage.setItem('gs_seed_version', seedVersion);
+
+    // Then fetch authoritative state from Supabase. RLS filters this
+    // to the current user's own rows (or everything if admin).
+    const sb = window.supabaseClient;
+
+    const [clientsRes, mattersRes, formDataRes, profilesRes] = await Promise.all([
+        sb.from('clients').select('*').order('created_at', { ascending: true }),
+        sb.from('matters').select('*').order('created_at', { ascending: true }),
+        sb.from('form_data').select('*'),
+        sb.from('user_profiles').select('id, email')
+    ]);
+
+    window.userProfilesById = {};
+    (profilesRes.data || []).forEach(p => {
+        window.userProfilesById[p.id] = p.email || '';
+    });
+
+    if (clientsRes.error) {
+        console.error('Failed to load clients:', clientsRes.error);
+        showNotification('Failed to load clients from server', 'error');
+        return;
     }
+
+    const clientsById = new Map();
+    (clientsRes.data || []).forEach(row => {
+        clientsById.set(row.id, dbClientToMem(row));
+    });
+
+    (mattersRes.data || []).forEach(row => {
+        const client = clientsById.get(row.client_id);
+        if (client) client.matters.push(dbMatterToMem(row));
+    });
+
+    const mattersById = new Map();
+    clientsById.forEach(c => c.matters.forEach(m => mattersById.set(m.id, m)));
+
+    (formDataRes.data || []).forEach(row => {
+        const matter = mattersById.get(row.matter_id);
+        if (matter) matter.formData[row.form_id] = row.data || {};
+    });
+
+    clients = Array.from(clientsById.values());
+    cacheClientsLocally();
+}
+
+function cacheClientsLocally() {
+    try {
+        localStorage.setItem(CLIENTS_CACHE_KEY, JSON.stringify(clients));
+    } catch (_) { /* quota or disabled — ignore */ }
 }
 
 function seedTestData() {
@@ -319,12 +442,81 @@ function seedTestData() {
     saveClientsToStorage();
 }
 
+// Public save function. Callers mutate the `clients` array then invoke this.
+// We cache locally for fast paint and schedule a debounced push to Supabase.
 function saveClientsToStorage() {
-    localStorage.setItem('gs_court_forms_clients', JSON.stringify(clients));
+    ensureUuids();
+    cacheClientsLocally();
+    scheduleSupabaseSync();
+}
+
+let _syncTimer = null;
+let _syncInFlight = null;
+function scheduleSupabaseSync() {
+    clearTimeout(_syncTimer);
+    _syncTimer = setTimeout(async () => {
+        // Serialize syncs so we never overlap two writers.
+        if (_syncInFlight) { await _syncInFlight; }
+        _syncInFlight = pushClientsToSupabase().catch(err => {
+            console.error('Supabase sync failed:', err);
+            showNotification('Save to server failed — working from local cache', 'error');
+        }).finally(() => { _syncInFlight = null; });
+    }, 500);
+}
+
+async function pushClientsToSupabase() {
+    if (!window.currentUser) return;
+    const sb = window.supabaseClient;
+
+    // Upsert clients
+    const clientRows = clients.map(memClientToDb);
+    if (clientRows.length > 0) {
+        const { error } = await sb.from('clients').upsert(clientRows, { onConflict: 'id' });
+        if (error) throw error;
+    }
+
+    // Upsert matters
+    const matterRows = [];
+    clients.forEach(c => {
+        (c.matters || []).forEach(m => {
+            matterRows.push(memMatterToDb(m, c.id));
+        });
+    });
+    if (matterRows.length > 0) {
+        const { error } = await sb.from('matters').upsert(matterRows, { onConflict: 'id' });
+        if (error) throw error;
+    }
+
+    // Upsert form_data (one row per matter × form_id)
+    const formDataRows = [];
+    clients.forEach(c => {
+        (c.matters || []).forEach(m => {
+            const fd = m.formData || {};
+            Object.keys(fd).forEach(formId => {
+                formDataRows.push({
+                    matter_id: m.id,
+                    form_id: formId,
+                    data: fd[formId] || {},
+                    created_by: window.currentUser.id
+                });
+            });
+        });
+    });
+    if (formDataRows.length > 0) {
+        const { error } = await sb.from('form_data').upsert(formDataRows, { onConflict: 'matter_id,form_id' });
+        if (error) throw error;
+    }
 }
 
 function generateId() {
-    return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+    // UUIDs so records can be upserted to Supabase cleanly.
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    // Fallback for older browsers (extremely unlikely in 2026)
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
 }
 
 // ============================================
@@ -500,6 +692,17 @@ function setupEventListeners() {
 // CLIENT LIST
 // ============================================
 
+function ownerLabel(userId) {
+    // Only admins see the owner tag — regular users only see their own rows anyway.
+    if (!window.isAdmin || !window.isAdmin()) return '';
+    if (!userId) return '';
+    const email = (window.userProfilesById && window.userProfilesById[userId]) || '';
+    if (!email) return '';
+    // Short label: "david" / "jill" from the email local-part
+    const short = email.split('@')[0];
+    return '<span class="owner-tag">' + short + '</span>';
+}
+
 function renderClientList() {
     const list = document.getElementById('clientList');
     list.innerHTML = '';
@@ -512,8 +715,9 @@ function renderClientList() {
     clients.forEach(client => {
         const div = document.createElement('div');
         div.className = 'client-item' + (currentClient && currentClient.id === client.id ? ' active' : '');
+        const owner = ownerLabel(client.createdBy);
         div.innerHTML = `
-            <div class="client-item-name">${client.lastName || ''}, ${client.firstName || ''}</div>
+            <div class="client-item-name">${client.lastName || ''}, ${client.firstName || ''} ${owner}</div>
             <div class="client-item-info">${(client.matters || []).length} matter(s)</div>
         `;
         div.addEventListener('click', () => selectClient(client));
@@ -598,7 +802,8 @@ function handleClientFormSubmit(e) {
             id: generateId(),
             ...data,
             matters: [],
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            createdBy: window.currentUser ? window.currentUser.id : null
         };
         clients.unshift(newClient);
         currentClient = newClient;
@@ -760,7 +965,8 @@ function handleMatterFormSubmit(e) {
             id: generateId(),
             ...data,
             formData: {},
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            createdBy: window.currentUser ? window.currentUser.id : null
         };
         currentClient.matters.push(newMatter);
     }
@@ -1982,7 +2188,8 @@ function confirmClaudeImport() {
             phone: data.client.phone || '',
             email: data.client.email || '',
             matters: [],
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            createdBy: window.currentUser ? window.currentUser.id : null
         };
         clients.unshift(client);
     }
@@ -2005,6 +2212,7 @@ function confirmClaudeImport() {
             county: data.matter.county || '',
             fileNo: data.matter.fileNo || '',
             division: data.matter.division || '',
+            createdBy: window.currentUser ? window.currentUser.id : null,
             matterData: data.matter.matterData || {},
             formData: {},
             createdAt: new Date().toISOString()
