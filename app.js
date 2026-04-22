@@ -236,6 +236,84 @@ function seedTestData() {
                     createdAt: new Date().toISOString()
                 }
             ]
+        },
+        {
+            id: 'test-villareal',
+            firstName: 'Juanita',
+            lastName: 'Munoz-Space',
+            address: '14 Canfield Way\nAvon, CT 06001',
+            phone: '',
+            email: '',
+            createdAt: new Date().toISOString(),
+            matters: [
+                {
+                    id: 'matter-guard-villareal',
+                    type: 'guardianship',
+                    subjectName: 'Nancy Aya Villareal',
+                    county: 'Broward',
+                    fileNo: '',
+                    division: 'Probate',
+                    matterData: {
+                        aip_age: '69',
+                        aip_residence: 'Seaside-Hallandale Beach Senior Living, 2091 South Ocean Drive, Hallandale Beach, FL 33009',
+                        aip_address: 'Seaside-Hallandale Beach Senior Living, 2091 South Ocean Drive, Hallandale Beach, FL 33009'
+                    },
+                    formData: {
+                        'G3-025': {
+                            petitioner_residence: 'Avon, CT',
+                            petitioner_address: '14 Canfield Way Avon, CT 06001',
+                            ward_incapacity_nature: 'Delusional disorders and psychosis',
+                            has_alternatives: false,
+                            has_preneed: false,
+                            preneed_reason: 'as the AIP has no preneed documents',
+                            proposed_guardian_name: 'Juanita Munoz-Space',
+                            proposed_guardian_residence: '14 Canfield Way Avon, CT 06001',
+                            proposed_guardian_address: '14 Canfield Way Avon, CT 06001',
+                            is_professional_guardian: false,
+                            proposed_guardian_relationship: 'Daughter',
+                            appointment_reason: 'the proposed Guardian is the daughter of the AIP and the one who is best able to handle the Guardianship and take care of her mother. As her Father and the Husband of the AIP is in an assisted living facility and the other child of the AIP is resident in Spain, the Petitioner is the best person to serve as Guardian',
+                            signing_month: 'April',
+                            signing_year: '2026',
+                            next_of_kin: [
+                                {
+                                    name: 'Jaime Eduardo Munoz Mantilla',
+                                    address: 'The Peninsula Assisted Living, 5100 West Hallandale Beach Blvd., Hollywood, FL 33023',
+                                    relationship: 'Husband'
+                                },
+                                {
+                                    name: 'Estefania Munoz',
+                                    address: 'Madrid, Spain',
+                                    relationship: 'Child'
+                                },
+                                {
+                                    name: 'Juanita Munoz-Space',
+                                    address: '14 Canfield Way Avon, CT 06001',
+                                    relationship: 'Child and proposed Guardian'
+                                }
+                            ],
+                            property_items: [
+                                {
+                                    item_description: 'Homestead Property located at 1945 South Ocean Blvd. #308 Hallandale Florida',
+                                    item_value: '$500,000'
+                                },
+                                {
+                                    item_description: 'Bank Account - Merrill Lynch - JOINT',
+                                    item_value: '$240,000'
+                                },
+                                {
+                                    item_description: 'Bank Account - Checking Bank of America - JOINT',
+                                    item_value: '$500'
+                                },
+                                {
+                                    item_description: 'Bank Account - Savings Bank of America - JOINT',
+                                    item_value: '$200'
+                                }
+                            ]
+                        }
+                    },
+                    createdAt: new Date().toISOString()
+                }
+            ]
         }
     ];
     saveClientsToStorage();
@@ -1238,13 +1316,37 @@ function handleFormSelectionChanged() {
     renderMergedFormFields();
 }
 
+function getAttorneyDefaults(matterType) {
+    // Guardianship matters are Jill's; everything else is David's.
+    if (matterType === 'guardianship') {
+        return {
+            attorney_name: 'Jill R. Ginsberg',
+            attorney_email: 'jill@ginsbergshulman.com',
+            attorney_email_secondary: 'maribel@hflegalsolutions.com',
+            attorney_bar_no: '813850',
+            attorney_firm: 'Ginsberg Shulman, PL',
+            attorney_address: '300 SE 2nd Street, Suite 600\nFort Lauderdale, FL 33301',
+            attorney_phone: '954-990-0896'
+        };
+    }
+    return {
+        attorney_name: 'David A. Shulman',
+        attorney_email: 'david@ginsbergshulman.com',
+        attorney_email_secondary: '',
+        attorney_bar_no: '150762',
+        attorney_firm: 'Ginsberg Shulman PL',
+        attorney_address: '300 SE 2nd St Ste 600\nFort Lauderdale, FL 33301',
+        attorney_phone: '954-990-0896'
+    };
+}
+
 function getAutoPopulateDefaults() {
     /**
      * Build a map of field defaults from three sources (in priority order):
      * 1. Data entered in OTHER forms for this matter (cross-form sharing)
      * 2. Matter-level data (county, subject name, matterData)
      * 3. Client-level data (petitioner name/address)
-     * 4. Attorney defaults
+     * 4. Attorney defaults (varies by matter type — see getAttorneyDefaults)
      *
      * Every field ever entered on any form for this matter is available
      * to every other form. Enter once, populate everywhere.
@@ -1299,13 +1401,11 @@ function getAutoPopulateDefaults() {
     if (!defaults.notary_state) defaults.notary_state = 'Florida';
     if (!defaults.notary_county) defaults.notary_county = currentMatter.county || '';
 
-    // --- Layer 4: Attorney defaults ---
-    if (!defaults.attorney_name) defaults.attorney_name = 'David A. Shulman';
-    if (!defaults.attorney_email) defaults.attorney_email = 'david@ginsbergshulman.com';
-    if (!defaults.attorney_email_secondary) defaults.attorney_email_secondary = '';
-    if (!defaults.attorney_bar_no) defaults.attorney_bar_no = '150762';
-    if (!defaults.attorney_address) defaults.attorney_address = 'Ginsberg Shulman PL\n300 SE 2nd St Ste 600\nFort Lauderdale, FL 33301';
-    if (!defaults.attorney_phone) defaults.attorney_phone = '954-990-0896';
+    // --- Layer 4: Attorney defaults (matter-type-specific) ---
+    const attorneyDefaults = getAttorneyDefaults(currentMatter.type);
+    Object.keys(attorneyDefaults).forEach(key => {
+        if (!defaults[key]) defaults[key] = attorneyDefaults[key];
+    });
 
     return defaults;
 }
@@ -1672,25 +1772,46 @@ function prepareTemplateData() {
     data.county = currentMatter.county || '';
     data.decedent_name = currentMatter.subjectName || '';
     data.aip_name = currentMatter.subjectName || '';
+    data.aip_name_upper = (currentMatter.subjectName || '').toUpperCase();
     data.file_no = currentMatter.fileNo || '';
-    data.division = currentMatter.division || '';
+    data.division = currentMatter.division || 'Probate';
 
     // Client-level fields
-    data.petitioner_name = (currentClient.firstName || '') + ' ' + (currentClient.lastName || '');
+    data.petitioner_name = ((currentClient.firstName || '') + ' ' + (currentClient.lastName || '')).trim();
     data.petitioner_address = currentClient.address || '';
 
-    // Attorney defaults
-    data.attorney_name = 'David A. Shulman';
-    data.attorney_email = 'david@ginsbergshulman.com';
-    data.attorney_bar_no = '150762';
-    data.attorney_address = 'Ginsberg Shulman PL\n300 SE 2nd St Ste 600\nFort Lauderdale, FL 33301';
-    data.attorney_phone = '954-990-0896';
+    // Attorney defaults (matter-type-specific)
+    const attorneyDefaults = getAttorneyDefaults(currentMatter.type);
+    Object.keys(attorneyDefaults).forEach(key => {
+        data[key] = attorneyDefaults[key];
+    });
 
-    // Form-specific fields
+    // Merge matter-level data (ward residence, etc.)
+    const md = currentMatter.matterData || {};
+    Object.keys(md).forEach(key => {
+        if (md[key]) data[key] = md[key];
+    });
+
+    // Pull from sibling forms so this form sees data entered elsewhere in the matter
+    const allFormData = currentMatter.formData || {};
+    Object.keys(allFormData).forEach(formId => {
+        if (formId === currentFormId) return;
+        const saved = allFormData[formId];
+        Object.keys(saved).forEach(key => {
+            const val = saved[key];
+            if (val !== '' && val !== null && val !== undefined) {
+                data[key] = val;
+            }
+        });
+    });
+
+    // Form-specific fields (current form wins over sibling forms)
     Object.keys(currentFormData).forEach(key => {
         const value = currentFormData[key];
         if (typeof value === 'boolean') {
-            data[key] = value ? '(X)' : '(  )';
+            // Keep the raw boolean for docxtemplater conditionals ({#field}...{/field})
+            data[key] = value;
+            // Also emit legacy checkbox-style rendering for older templates that use {field_check}
             data[key + '_check'] = value ? '(X)' : '(  )';
         } else if (Array.isArray(value)) {
             data[key] = value;

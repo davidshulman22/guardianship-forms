@@ -455,17 +455,32 @@
           "fields": [
             {
               "name": "petitioner_residence",
-              "label": "Petitioner's county of residence",
+              "label": "Petitioner's residence (city, state)",
+              "type": "text"
+            },
+            {
+              "name": "petitioner_address",
+              "label": "Petitioner's post office address",
               "type": "text"
             }
           ]
         },
         {
-          "title": "Ward Information",
+          "title": "Ward (AIP) Information",
           "fields": [
             {
+              "name": "aip_age",
+              "label": "Ward's age",
+              "type": "text"
+            },
+            {
               "name": "aip_residence",
-              "label": "Ward's county of residence",
+              "label": "Ward's residence (full address)",
+              "type": "text"
+            },
+            {
+              "name": "aip_address",
+              "label": "Ward's post office address",
               "type": "text"
             },
             {
@@ -476,67 +491,42 @@
           ]
         },
         {
-          "title": "Proposed Guardian",
+          "title": "Alternatives to Guardianship",
           "fields": [
             {
-              "name": "proposed_guardian_name",
-              "label": "Proposed guardian's name",
-              "type": "text"
-            },
-            {
-              "name": "proposed_guardian_residence",
-              "label": "Proposed guardian's county of residence",
-              "type": "text"
-            },
-            {
-              "name": "proposed_guardian_address",
-              "label": "Proposed guardian's post office address",
-              "type": "text"
-            },
-            {
-              "name": "proposed_guardian_professional",
-              "label": "Professional guardian?",
+              "name": "has_alternatives",
+              "label": "Are there alternatives to guardianship (trust, POA, health care surrogate, etc.)?",
               "type": "checkbox"
             },
             {
-              "name": "proposed_guardian_relationship",
-              "label": "Relationship to ward",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Property",
-          "fields": [
-            {
-              "name": "property_description",
-              "label": "Description of property subject to guardianship",
-              "type": "textarea"
-            }
-          ]
-        },
-        {
-          "title": "Alternatives and Appointment",
-          "fields": [
-            {
               "name": "alternatives_description",
-              "label": "Alternatives to guardianship considered",
+              "label": "If yes, describe the alternatives",
               "type": "textarea"
             },
             {
               "name": "alternatives_insufficient_reason",
-              "label": "Why alternatives are insufficient",
+              "label": "If yes, why are the alternatives insufficient?",
               "type": "textarea"
-            },
+            }
+          ]
+        },
+        {
+          "title": "Preneed Guardian",
+          "fields": [
             {
               "name": "has_preneed",
-              "label": "Ward has designated a preneed guardian",
+              "label": "Has the Ward designated a preneed guardian?",
               "type": "checkbox"
             },
             {
-              "name": "appointment_reason",
-              "label": "Reason for appointing proposed guardian",
-              "type": "textarea"
+              "name": "preneed_guardian_name",
+              "label": "If yes, name of designated preneed guardian",
+              "type": "text"
+            },
+            {
+              "name": "preneed_reason",
+              "label": "If no, brief explanation (e.g. 'as the AIP has no preneed documents')",
+              "type": "text"
             }
           ]
         },
@@ -568,13 +558,65 @@
           ]
         },
         {
-          "title": "Signing Information",
+          "title": "Proposed Guardian",
           "fields": [
             {
-              "name": "signing_day",
-              "label": "Day",
+              "name": "proposed_guardian_name",
+              "label": "Proposed guardian's name",
               "type": "text"
             },
+            {
+              "name": "proposed_guardian_residence",
+              "label": "Proposed guardian's residence (full address)",
+              "type": "text"
+            },
+            {
+              "name": "proposed_guardian_address",
+              "label": "Proposed guardian's post office address",
+              "type": "text"
+            },
+            {
+              "name": "is_professional_guardian",
+              "label": "Proposed guardian is a professional guardian",
+              "type": "checkbox"
+            },
+            {
+              "name": "proposed_guardian_relationship",
+              "label": "Relationship to ward",
+              "type": "text"
+            },
+            {
+              "name": "appointment_reason",
+              "label": "Reason for appointing proposed guardian",
+              "type": "textarea"
+            }
+          ]
+        },
+        {
+          "title": "Property Subject to Guardianship",
+          "fields": [
+            {
+              "name": "property_items",
+              "label": "Property items (nature and value)",
+              "type": "repeating_group",
+              "subfields": [
+                {
+                  "name": "item_description",
+                  "label": "Nature of property",
+                  "type": "text"
+                },
+                {
+                  "name": "item_value",
+                  "label": "Value (e.g. $500,000)",
+                  "type": "text"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Signing Information",
+          "fields": [
             {
               "name": "signing_month",
               "label": "Month",
