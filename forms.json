@@ -3483,19 +3483,19 @@
           "title": "Petitioner",
           "fields": [
             {
-              "name": "petitioner_name",
-              "label": "Petitioner name",
-              "type": "text"
-            },
-            {
               "name": "petitioner_interest",
-              "label": "Interest in estate",
+              "label": "Petitioner's interest in estate (e.g. 'the surviving spouse', 'a beneficiary')",
               "type": "text"
             },
             {
               "name": "petitioner_address",
-              "label": "Petitioner address",
+              "label": "Petitioner's address",
               "type": "text"
+            },
+            {
+              "name": "petitioner_has_prior_conviction",
+              "label": "Petitioner has been convicted of elder/disabled abuse, neglect, or exploitation (Fla. Stat. 825.101)",
+              "type": "checkbox"
             }
           ]
         },
@@ -3504,37 +3504,32 @@
           "fields": [
             {
               "name": "decedent_full_name",
-              "label": "Decedent full name",
+              "label": "Decedent full legal name",
               "type": "text"
             },
             {
               "name": "decedent_address",
-              "label": "Last known address",
+              "label": "Decedent's last known address",
               "type": "text"
             },
             {
               "name": "decedent_ssn_last4",
-              "label": "Last 4 digits of SSN",
+              "label": "Last 4 digits of decedent's SSN",
               "type": "text"
             },
             {
               "name": "decedent_death_date",
-              "label": "Date of death",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_year",
-              "label": "Year of death",
+              "label": "Date of death (full: 'March 2, 2026')",
               "type": "text"
             },
             {
               "name": "decedent_death_place",
-              "label": "Place of death",
+              "label": "Place of death (city/county where died)",
               "type": "text"
             },
             {
               "name": "decedent_domicile",
-              "label": "Domicile county at death",
+              "label": "County of domicile at death",
               "type": "text"
             }
           ]
@@ -3544,7 +3539,7 @@
           "fields": [
             {
               "name": "beneficiaries",
-              "label": "Beneficiaries of the estate",
+              "label": "Beneficiaries of the estate (and surviving spouse, if any)",
               "type": "repeating_group",
               "subfields": [
                 {
@@ -3559,7 +3554,7 @@
                 },
                 {
                   "name": "ben_relationship",
-                  "label": "Relationship",
+                  "label": "Relationship to decedent",
                   "type": "text"
                 },
                 {
@@ -3572,26 +3567,11 @@
           ]
         },
         {
-          "title": "Venue and Will",
+          "title": "Venue",
           "fields": [
             {
               "name": "venue_reason",
-              "label": "Reason venue is proper",
-              "type": "text"
-            },
-            {
-              "name": "will_date",
-              "label": "Date of will",
-              "type": "text"
-            },
-            {
-              "name": "will_year",
-              "label": "Year of will",
-              "type": "text"
-            },
-            {
-              "name": "codicil_dates",
-              "label": "Codicil date(s)",
+              "label": "Reason venue is proper in this county",
               "type": "text"
             }
           ]
@@ -3601,27 +3581,77 @@
           "fields": [
             {
               "name": "pr_name",
-              "label": "Proposed PR name",
+              "label": "Proposed PR's name",
               "type": "text"
             },
             {
               "name": "pr_address",
-              "label": "PR address",
+              "label": "PR's address",
               "type": "text"
             },
             {
+              "name": "pr_is_fl_resident",
+              "label": "PR is a Florida resident",
+              "type": "checkbox"
+            },
+            {
               "name": "pr_relationship",
-              "label": "Relationship to decedent (if non-FL resident)",
+              "label": "If non-FL resident, relationship to decedent (spouse, parent, child, sibling, etc.)",
               "type": "text"
             }
           ]
         },
         {
-          "title": "Domiciliary Proceedings",
+          "title": "Preference (\u00a7733.301)",
           "fields": [
             {
+              "name": "higher_preference_exists",
+              "label": "Someone else has equal or higher statutory preference to serve as PR",
+              "type": "checkbox"
+            },
+            {
+              "name": "higher_preference_names",
+              "label": "If yes, name(s) of person(s) with higher preference",
+              "type": "text"
+            },
+            {
+              "name": "higher_preference_formal_notice",
+              "label": "If yes, formal notice will be served on such person(s)",
+              "type": "checkbox"
+            }
+          ]
+        },
+        {
+          "title": "Assets",
+          "fields": [
+            {
+              "name": "estate_assets_description",
+              "label": "Nature and approximate value of estate assets",
+              "type": "textarea"
+            }
+          ]
+        },
+        {
+          "title": "Tax + Ancillary Proceedings",
+          "fields": [
+            {
+              "name": "estate_tax_return_required",
+              "label": "Federal estate tax return will be required",
+              "type": "checkbox"
+            },
+            {
+              "name": "domiciliary_proceedings_pending",
+              "label": "Domiciliary/principal proceedings are pending in another jurisdiction",
+              "type": "checkbox"
+            },
+            {
+              "name": "domiciliary_court_name",
+              "label": "Domiciliary court name (e.g. 'Surrogate's Court, New York County')",
+              "type": "text"
+            },
+            {
               "name": "domiciliary_court_address",
-              "label": "Address of domiciliary court",
+              "label": "Domiciliary court address",
               "type": "text"
             },
             {
@@ -3637,13 +3667,43 @@
           ]
         },
         {
-          "title": "Signing and Attorney",
+          "title": "Will Disposition",
           "fields": [
             {
-              "name": "signing_day",
-              "label": "Day",
+              "name": "will_date",
+              "label": "Will date (e.g. 'January 15')",
               "type": "text"
             },
+            {
+              "name": "will_year",
+              "label": "Will year",
+              "type": "text"
+            },
+            {
+              "name": "codicil_dates",
+              "label": "Codicil date(s) (blank if no codicil)",
+              "type": "text"
+            },
+            {
+              "name": "will_status_original",
+              "label": "Original will is in the possession of the court / accompanies this petition",
+              "type": "checkbox"
+            },
+            {
+              "name": "will_status_authenticated_other",
+              "label": "Authenticated copy from another jurisdiction accompanies this petition",
+              "type": "checkbox"
+            },
+            {
+              "name": "will_status_authenticated_notarial",
+              "label": "Authenticated copy of a notarial will (foreign notary) accompanies this petition",
+              "type": "checkbox"
+            }
+          ]
+        },
+        {
+          "title": "Signing Information",
+          "fields": [
             {
               "name": "signing_month",
               "label": "Month",
@@ -3652,21 +3712,6 @@
             {
               "name": "signing_year",
               "label": "Year",
-              "type": "text"
-            },
-            {
-              "name": "attorney_email",
-              "label": "Attorney email",
-              "type": "text"
-            },
-            {
-              "name": "attorney_bar_no",
-              "label": "Florida Bar No.",
-              "type": "text"
-            },
-            {
-              "name": "attorney_phone",
-              "label": "Telephone",
               "type": "text"
             }
           ]
