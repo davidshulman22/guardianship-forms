@@ -5,3 +5,4 @@ config.js
 *.docx.bak
 __pycache__/
 *.pyc
+Test Documents/

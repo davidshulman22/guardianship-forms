@@ -1204,36 +1204,6 @@
               "name": "codicil_dates",
               "label": "Codicil date(s) (blank if none)",
               "type": "text"
-            },
-            {
-              "name": "will_status_original",
-              "label": "Original will is in the court's possession / accompanies this petition",
-              "type": "checkbox"
-            },
-            {
-              "name": "will_status_authenticated_other",
-              "label": "Authenticated copy from another jurisdiction accompanies this petition",
-              "type": "checkbox"
-            },
-            {
-              "name": "will_status_authenticated_notarial",
-              "label": "Authenticated copy of a notarial will (foreign notary) accompanies this petition",
-              "type": "checkbox"
-            }
-          ]
-        },
-        {
-          "title": "Signing Information",
-          "fields": [
-            {
-              "name": "signing_month",
-              "label": "Month",
-              "type": "text"
-            },
-            {
-              "name": "signing_year",
-              "label": "Year",
-              "type": "text"
             }
           ]
         }
@@ -1300,26 +1270,6 @@
               "type": "text"
             }
           ]
-        },
-        {
-          "title": "Notarization",
-          "fields": [
-            {
-              "name": "notary_online",
-              "label": "Signed via online notarization (vs. physical presence)",
-              "type": "checkbox"
-            },
-            {
-              "name": "signing_month",
-              "label": "Month",
-              "type": "text"
-            },
-            {
-              "name": "signing_year",
-              "label": "Year",
-              "type": "text"
-            }
-          ]
         }
       ]
     },
@@ -1374,11 +1324,6 @@
                   "type": "text"
                 }
               ]
-            },
-            {
-              "name": "bond_required",
-              "label": "PR serves with bond (vs. without)",
-              "type": "checkbox"
             }
           ]
         },

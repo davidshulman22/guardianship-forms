@@ -100,9 +100,12 @@ def _beneficiaries_table(doc):
 
 
 def _add_probate_signature_block(doc):
-    """Signature block: one signer line per petitioner (via loop) + attorney."""
+    """Signature block: one signer line per petitioner (via loop) + attorney.
+
+    Signing date left blank — filler at signing time (won't be known at draft).
+    """
     indent = Inches(0.5)
-    _add_para(doc, 'Signed on this _____ day of {signing_month} {signing_year}.',
+    _add_para(doc, 'Signed on this _____ day of ______________________, 20____.',
               first_indent=indent, space_after=24)
 
     # Per-petitioner signature line (loops over petitioners array; renders a
@@ -262,20 +265,15 @@ def build_p3_petition():
         '{^domiciliary_proceedings_pending}are not known to be pending in another state '
         'or country.{/domiciliary_proceedings_pending}{/is_ancillary}')
 
-    # 11. Will disposition (testate) / Unaware of unrevoked wills (intestate) — ONE paragraph
+    # 11. Will disposition (testate) / Unaware of unrevoked wills (intestate) — ONE paragraph.
+    # Will status (original in court, accompanies petition, authenticated copy, etc.) is a
+    # filing-time fact — omitted here. Clerk-review language defaults to neutral "accompanies
+    # this petition"; revise at filing if the original was previously deposited.
     _pleading_para(doc,
         '{#is_testate}The decedent\u2019s last will dated {will_date}, {will_year}'
         '{#codicil_dates}, and codicil(s) dated {codicil_dates}{/codicil_dates}, '
-        '{#will_status_original}is in the possession of the court or accompanies this '
-        'petition.{/will_status_original}'
-        '{#will_status_authenticated_other}An authenticated copy of the will and/or '
-        'codicil deposited with or probated in another jurisdiction accompanies this '
-        'petition.{/will_status_authenticated_other}'
-        '{#will_status_authenticated_notarial}An authenticated copy of the notarial will '
-        'or codicil, the original of which is in the possession of a foreign notary, '
-        'accompanies this petition.{/will_status_authenticated_notarial} '
-        'Petitioner is unaware of any unrevoked will or codicil of decedent other than '
-        'as set forth above.{/is_testate}'
+        'accompanies this petition. Petitioner is unaware of any unrevoked will or codicil '
+        'of decedent other than as set forth above.{/is_testate}'
         '{^is_testate}After the exercise of reasonable diligence, petitioner is unaware '
         'of any unrevoked wills or codicils of decedent.{/is_testate}')
 
@@ -339,9 +337,8 @@ def build_p3_oath():
     _add_para(doc, '_______________________________________', space_after=0)
     _add_para(doc, '{pr_name}', space_after=18)
     _add_para(doc, 'Sworn to (or affirmed) and subscribed before me by means of '
-                   '{#notary_online}online notarization{/notary_online}'
-                   '{^notary_online}physical presence{/notary_online} this '
-                   '_____ day of {signing_month}, {signing_year}, by {pr_name}, '
+                   '\u2610 online notarization or \u2610 physical presence this '
+                   '_____ day of ______________________, 20____, by {pr_name}, '
                    'who is personally known to me or produced '
                    '______________________________ as identification.', space_after=18)
     _add_para(doc, '_______________________________________', space_after=0)
@@ -433,11 +430,11 @@ def build_p3_order():
         '{^is_testate}The decedent died intestate. Administration of the '
         'decedent\u2019s estate is granted.{/is_testate}')
 
-    # Appoint PR(s)
+    # Appoint PR(s). Bond omitted from the questionnaire — if the court wants bond,
+    # it will enter a separate order requiring it.
     _pleading_para(doc,
         '{pr_names} {pr_verb_is} appointed as {pr_label} of the estate of the decedent, '
-        'to serve without bond{#bond_required} except as the Court may hereafter order'
-        '{/bond_required}.')
+        'to serve without bond.')
 
     # Letters
     _pleading_para(doc,
