@@ -1813,6 +1813,165 @@ function getMatterFlag(name) {
     return !!(currentMatter && currentMatter.matterData && currentMatter.matterData[name]);
 }
 
+// US states for address dropdowns. Alphabetical; includes DC + common
+// territories. Blank default = not yet chosen.
+const US_STATES = [
+    'AL','AK','AZ','AR','CA','CO','CT','DE','DC','FL','GA','HI','ID','IL',
+    'IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE',
+    'NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD',
+    'TN','TX','UT','VT','VA','WA','WV','WI','WY','PR','VI','GU','AS','MP'
+];
+
+// Render a structured address as a compact grid. Shape:
+//   { street, line2, city, state, zip, foreign, foreign_text }
+// Works for both top-level fields and repeating-group subfields. The "Foreign
+// address" toggle swaps the US grid for a free-text textarea so non-US
+// addresses aren't forced into a 50-state dropdown.
+function renderAddressField(opts) {
+    // opts: { value, label, dataBase (object with data-* attrs for inputs),
+    //         addressIdPrefix (unique id prefix) }
+    const wrap = document.createElement('div');
+    wrap.className = 'address-field';
+    if (opts.label) {
+        const labelEl = document.createElement('label');
+        labelEl.className = 'address-label';
+        labelEl.textContent = opts.label;
+        wrap.appendChild(labelEl);
+    }
+
+    const val = (opts.value && typeof opts.value === 'object') ? opts.value : {};
+    const isForeign = val.foreign === true;
+
+    const mkInput = (key, attrs) => {
+        const input = document.createElement('input');
+        input.type = attrs.type || 'text';
+        input.className = 'form-field-input address-sub-input';
+        input.dataset.addressKey = key;
+        Object.keys(opts.dataBase).forEach(k => { input.dataset[k] = opts.dataBase[k]; });
+        if (attrs.placeholder) input.placeholder = attrs.placeholder;
+        if (attrs.maxLength) input.maxLength = attrs.maxLength;
+        if (attrs.pattern) input.pattern = attrs.pattern;
+        if (attrs.inputMode) input.inputMode = attrs.inputMode;
+        const v = val[key];
+        input.value = (v === null || v === undefined) ? '' : v;
+        return input;
+    };
+
+    // US grid
+    const usGrid = document.createElement('div');
+    usGrid.className = 'address-grid';
+    usGrid.style.display = isForeign ? 'none' : '';
+
+    usGrid.appendChild(mkInput('street', { placeholder: 'Street address' }));
+    usGrid.appendChild(mkInput('line2', { placeholder: 'Apt / Suite (optional)' }));
+
+    const row = document.createElement('div');
+    row.className = 'address-row-3';
+    row.appendChild(mkInput('city', { placeholder: 'City' }));
+
+    const stateSelect = document.createElement('select');
+    stateSelect.className = 'form-field-input address-sub-input';
+    stateSelect.dataset.addressKey = 'state';
+    Object.keys(opts.dataBase).forEach(k => { stateSelect.dataset[k] = opts.dataBase[k]; });
+    const blank = document.createElement('option');
+    blank.value = ''; blank.textContent = 'State';
+    stateSelect.appendChild(blank);
+    US_STATES.forEach(s => {
+        const o = document.createElement('option');
+        o.value = s; o.textContent = s;
+        if ((val.state || '') === s) o.selected = true;
+        stateSelect.appendChild(o);
+    });
+    row.appendChild(stateSelect);
+    row.appendChild(mkInput('zip', {
+        placeholder: 'Zip', maxLength: 10, pattern: '\\d{5}(-\\d{4})?', inputMode: 'numeric'
+    }));
+    usGrid.appendChild(row);
+    wrap.appendChild(usGrid);
+
+    // Foreign textarea
+    const foreignWrap = document.createElement('div');
+    foreignWrap.className = 'address-foreign-wrap';
+    foreignWrap.style.display = isForeign ? '' : 'none';
+    const foreignTA = document.createElement('textarea');
+    foreignTA.className = 'form-field-input address-sub-input';
+    foreignTA.dataset.addressKey = 'foreign_text';
+    Object.keys(opts.dataBase).forEach(k => { foreignTA.dataset[k] = opts.dataBase[k]; });
+    foreignTA.placeholder = 'Full foreign address (street, city, region, postal code, country)';
+    foreignTA.rows = 3;
+    foreignTA.value = val.foreign_text || '';
+    foreignWrap.appendChild(foreignTA);
+    wrap.appendChild(foreignWrap);
+
+    // Foreign toggle
+    const toggleWrap = document.createElement('label');
+    toggleWrap.className = 'address-foreign-toggle';
+    const toggle = document.createElement('input');
+    toggle.type = 'checkbox';
+    toggle.className = 'form-field-input address-sub-input';
+    toggle.dataset.addressKey = 'foreign';
+    Object.keys(opts.dataBase).forEach(k => { toggle.dataset[k] = opts.dataBase[k]; });
+    toggle.checked = isForeign;
+    toggle.addEventListener('change', () => {
+        usGrid.style.display = toggle.checked ? 'none' : '';
+        foreignWrap.style.display = toggle.checked ? '' : 'none';
+    });
+    toggleWrap.appendChild(toggle);
+    const toggleLabel = document.createElement('span');
+    toggleLabel.textContent = 'Foreign (non-US) address';
+    toggleWrap.appendChild(toggleLabel);
+    wrap.appendChild(toggleWrap);
+
+    return wrap;
+}
+
+// Format a structured address object into a single-line string for template
+// rendering. Falls back to free-text for foreign addresses. Accepts legacy
+// plain-string addresses unchanged.
+function formatAddressValue(raw) {
+    if (raw === null || raw === undefined || raw === '') return '';
+    if (typeof raw === 'string') return raw;
+    if (typeof raw !== 'object') return String(raw);
+    if (raw.foreign && (raw.foreign_text || '').trim()) {
+        return String(raw.foreign_text).trim();
+    }
+    const parts = [];
+    const streetLine = [raw.street, raw.line2].filter(s => s && s.trim()).join(', ');
+    if (streetLine) parts.push(streetLine);
+    const cityStateZip = [
+        (raw.city || '').trim(),
+        [(raw.state || '').trim(), (raw.zip || '').trim()].filter(Boolean).join(' ')
+    ].filter(Boolean).join(', ');
+    if (cityStateZip) parts.push(cityStateZip);
+    return parts.join(', ');
+}
+
+// Walk every field/subfield declared as type="address" across the currently
+// selected forms, so prepareTemplateData can format them uniformly.
+function collectAddressFieldNames() {
+    const topLevel = new Set();
+    const subfields = new Map();
+    if (!formsConfig) return { topLevel, subfields };
+    selectedFormIds.forEach(formId => {
+        const form = formsConfig.forms.find(f => f.id === formId);
+        if (!form) return;
+        (form.sections || []).forEach(section => {
+            (section.fields || []).forEach(field => {
+                if (field.type === 'address') topLevel.add(field.name);
+                if (field.type === 'repeating_group' && Array.isArray(field.subfields)) {
+                    field.subfields.forEach(sf => {
+                        if (sf.type === 'address') {
+                            if (!subfields.has(field.name)) subfields.set(field.name, new Set());
+                            subfields.get(field.name).add(sf.name);
+                        }
+                    });
+                }
+            });
+        });
+    });
+    return { topLevel, subfields };
+}
+
 // Tag a field container with visibility metadata. applyConditionalVisibility()
 // reads these after every field change and toggles display.
 function applyVisibleIfAttrs(el, visibleIf, scope) {
@@ -1833,6 +1992,15 @@ function renderFormField(field) {
         callout.className = 'field-info-callout field-info-' + (field.severity || 'info');
         callout.innerHTML = field.content;
         container.appendChild(callout);
+    } else if (field.type === 'address') {
+        const fieldDiv = document.createElement('div');
+        fieldDiv.className = 'field';
+        fieldDiv.appendChild(renderAddressField({
+            value: currentFormData[field.name],
+            label: field.label,
+            dataBase: { field: field.name, type: 'address' }
+        }));
+        container.appendChild(fieldDiv);
     } else if (field.type === 'text' || field.type === 'number' || field.type === 'date') {
         const fieldDiv = document.createElement('div');
         fieldDiv.className = 'field';
@@ -1960,7 +2128,20 @@ function renderRepeatingGroupItem(field, item, index) {
         input.dataset.index = index;
         input.dataset.type = subfield.type || 'text';
 
-        if (subfield.type === 'checkbox') {
+        if (subfield.type === 'address') {
+            // Structured address inside a repeating-group row. Label + grid.
+            fieldDiv.classList.add('address-subfield');
+            fieldDiv.appendChild(renderAddressField({
+                value: item[subfield.name],
+                label: subfield.label,
+                dataBase: {
+                    field: field.name,
+                    subfield: subfield.name,
+                    index: index,
+                    type: 'address'
+                }
+            }));
+        } else if (subfield.type === 'checkbox') {
             // Inline checkbox + label, same pattern as top-level checkbox.
             fieldDiv.classList.add('checkbox-item');
             input.type = 'checkbox';
@@ -2076,13 +2257,49 @@ function collectFormData() {
         return input.value;
     };
 
+    // Ensure a structured address object exists at data[fieldName]
+    // (top-level) or inside a repeating-group row.
+    const ensureAddressContainer = (fieldName, indexAttr, subfield) => {
+        if (indexAttr !== undefined && indexAttr !== null && indexAttr !== '') {
+            const idx = parseInt(indexAttr, 10);
+            if (!formData[fieldName]) formData[fieldName] = [];
+            if (!formData[fieldName][idx]) formData[fieldName][idx] = {};
+            if (!formData[fieldName][idx][subfield] || typeof formData[fieldName][idx][subfield] !== 'object') {
+                formData[fieldName][idx][subfield] = {};
+            }
+            return formData[fieldName][idx][subfield];
+        }
+        if (!formData[fieldName] || typeof formData[fieldName] !== 'object' || Array.isArray(formData[fieldName])) {
+            formData[fieldName] = {};
+        }
+        return formData[fieldName];
+    };
+
+    // Sub-inputs of an address field are collected separately — each has
+    // data-address-key identifying which part of the address it fills.
+    document.querySelectorAll('#formFieldsContainer .address-sub-input').forEach(input => {
+        const key = input.dataset.addressKey;
+        const fieldName = input.dataset.field;
+        const subfield = input.dataset.subfield;
+        const indexAttr = input.dataset.index;
+        const container = ensureAddressContainer(fieldName, indexAttr, subfield);
+        if (input.type === 'checkbox') {
+            container[key] = input.checked;
+        } else {
+            container[key] = input.value;
+        }
+    });
+
     document.querySelectorAll('#formFieldsContainer .form-field-input').forEach(input => {
+        // Address sub-inputs are handled above.
+        if (input.classList.contains('address-sub-input')) return;
         if (!input.dataset.index) {
             formData[input.dataset.field] = coerce(input);
         }
     });
 
     document.querySelectorAll('#formFieldsContainer .repeating-group-item-field input').forEach(input => {
+        if (input.classList.contains('address-sub-input')) return;
         const field = input.dataset.field;
         const subfield = input.dataset.subfield;
         const index = parseInt(input.dataset.index, 10);
@@ -2415,6 +2632,25 @@ function prepareTemplateData() {
                 const out = { ...row };
                 subfieldSet.forEach(sf => {
                     out[sf] = formatDateFieldValue(out[sf]);
+                });
+                return out;
+            });
+        }
+    });
+
+    // Structured address object → single-line prose for templates. Falls back
+    // to legacy free-text strings unchanged. Applied AFTER the sibling-form
+    // merge so older plain-string addresses on other forms still work.
+    const addressNames = collectAddressFieldNames();
+    addressNames.topLevel.forEach(name => {
+        data[name] = formatAddressValue(data[name]);
+    });
+    addressNames.subfields.forEach((subfieldSet, parentName) => {
+        if (Array.isArray(data[parentName])) {
+            data[parentName] = data[parentName].map(row => {
+                const out = { ...row };
+                subfieldSet.forEach(sf => {
+                    out[sf] = formatAddressValue(out[sf]);
                 });
                 return out;
             });

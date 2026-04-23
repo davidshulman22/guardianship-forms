@@ -977,7 +977,10 @@
               "label": "Petitioner(s) \u2014 add one row per person filing the petition",
               "type": "repeating_group",
               "row_lock_unless_matter_flag": "multiple_petitioners",
-              "visible_if": { "field": "petitioner_same_as_pr", "not_equals": true },
+              "visible_if": {
+                "field": "petitioner_same_as_pr",
+                "not_equals": true
+              },
               "subfields": [
                 {
                   "name": "pet_name",
@@ -987,7 +990,7 @@
                 {
                   "name": "pet_address",
                   "label": "Address",
-                  "type": "text"
+                  "type": "address"
                 },
                 {
                   "name": "pet_interest",
@@ -1014,7 +1017,7 @@
             {
               "name": "decedent_address",
               "label": "Decedent's last known address",
-              "type": "text"
+              "type": "address"
             },
             {
               "name": "decedent_ssn_last4",
@@ -1063,7 +1066,7 @@
                 {
                   "name": "ben_address",
                   "label": "Address",
-                  "type": "text"
+                  "type": "address"
                 },
                 {
                   "name": "ben_relationship",
@@ -1079,7 +1082,10 @@
                   "name": "ben_year_of_birth",
                   "label": "Year of birth",
                   "type": "text",
-                  "visible_if": { "field": "ben_is_minor", "equals": true }
+                  "visible_if": {
+                    "field": "ben_is_minor",
+                    "equals": true
+                  }
                 }
               ]
             }
@@ -1139,7 +1145,7 @@
                 {
                   "name": "pr_address",
                   "label": "Address",
-                  "type": "text"
+                  "type": "address"
                 },
                 {
                   "name": "pr_is_fl_resident",
@@ -1218,7 +1224,7 @@
             {
               "name": "domiciliary_court_address",
               "label": "Domiciliary court address",
-              "type": "text"
+              "type": "address"
             },
             {
               "name": "domiciliary_representative",
@@ -1228,7 +1234,7 @@
             {
               "name": "domiciliary_representative_address",
               "label": "Domiciliary representative address",
-              "type": "text"
+              "type": "address"
             }
           ]
         },
@@ -1271,7 +1277,7 @@
                 {
                   "name": "pr_address",
                   "label": "Address",
-                  "type": "text"
+                  "type": "address"
                 },
                 {
                   "name": "pr_is_fl_resident",
@@ -1354,7 +1360,7 @@
                 {
                   "name": "pr_address",
                   "label": "Address",
-                  "type": "text"
+                  "type": "address"
                 },
                 {
                   "name": "pr_is_fl_resident",

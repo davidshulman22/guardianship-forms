@@ -1714,3 +1714,47 @@ details[open] .form-selector-toggle::before {
     font-weight: 600;
 }
 
+/* Structured address field (type: "address") */
+.address-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.address-field .address-label {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+.address-field .address-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+.address-field .address-grid > input,
+.address-field .address-grid > select {
+    width: 100%;
+}
+.address-field .address-row-3 {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 0.4rem;
+}
+.address-field .address-foreign-wrap textarea {
+    width: 100%;
+    resize: vertical;
+}
+.address-field .address-foreign-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    color: #555;
+    margin-top: 0.2rem;
+    cursor: pointer;
+}
+.address-field .address-foreign-toggle input[type="checkbox"] {
+    margin: 0;
+}
+.repeating-group-item-field.address-subfield {
+    grid-column: 1 / -1;
+}
+
