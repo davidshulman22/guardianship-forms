@@ -968,9 +968,16 @@
           "title": "Petitioner(s)",
           "fields": [
             {
+              "name": "petitioner_same_as_pr",
+              "label": "Petitioner(s) are the same people as the proposed Personal Representative(s) (most common \u2014 auto-fills from the PR rows below)",
+              "type": "checkbox"
+            },
+            {
               "name": "petitioners",
               "label": "Petitioner(s) \u2014 add one row per person filing the petition",
               "type": "repeating_group",
+              "row_lock_unless_matter_flag": "multiple_petitioners",
+              "visible_if": { "field": "petitioner_same_as_pr", "not_equals": true },
               "subfields": [
                 {
                   "name": "pet_name",
@@ -1060,9 +1067,15 @@
                   "type": "text"
                 },
                 {
+                  "name": "ben_is_minor",
+                  "label": "Is a minor",
+                  "type": "checkbox"
+                },
+                {
                   "name": "ben_year_of_birth",
-                  "label": "Year of birth (if minor)",
-                  "type": "text"
+                  "label": "Year of birth",
+                  "type": "text",
+                  "visible_if": { "field": "ben_is_minor", "equals": true }
                 }
               ]
             }
@@ -1072,8 +1085,29 @@
           "title": "Venue",
           "fields": [
             {
-              "name": "venue_reason",
-              "label": "Reason venue is proper in this county",
+              "name": "_venue_help",
+              "type": "info",
+              "severity": "info",
+              "content": "Check each statutory reason that applies (\u00a7733.101). Multiple may be checked if relevant."
+            },
+            {
+              "name": "venue_reason_type_domicile_fl",
+              "label": "Decedent was domiciled in this county at the time of death",
+              "type": "checkbox"
+            },
+            {
+              "name": "venue_reason_type_property",
+              "label": "Decedent was not a Florida resident but had property in this county at the time of death",
+              "type": "checkbox"
+            },
+            {
+              "name": "venue_reason_type_debtor",
+              "label": "Decedent was not a Florida resident and had no property in Florida, but a debtor of the decedent resides in this county",
+              "type": "checkbox"
+            },
+            {
+              "name": "venue_reason_other",
+              "label": "Other reason (specify)",
               "type": "text"
             }
           ]
@@ -1082,9 +1116,16 @@
           "title": "Proposed Personal Representative(s)",
           "fields": [
             {
+              "name": "_pr_felony_warning",
+              "type": "info",
+              "severity": "danger",
+              "content": "\u26a0 A person who has been convicted of a felony is disqualified from serving as Personal Representative under \u00a7733.303(1)(a), Fla. Stat. Do NOT propose anyone with a felony conviction \u2014 the court will reject the petition."
+            },
+            {
               "name": "prs",
               "label": "Personal Representative(s) \u2014 add one row per PR",
               "type": "repeating_group",
+              "row_lock_unless_matter_flag": "multiple_prs",
               "subfields": [
                 {
                   "name": "pr_name",
@@ -1221,6 +1262,7 @@
               "name": "prs",
               "label": "Personal Representative(s) \u2014 each will sign",
               "type": "repeating_group",
+              "row_lock_unless_matter_flag": "multiple_prs",
               "subfields": [
                 {
                   "name": "pr_name",
@@ -1285,6 +1327,7 @@
               "name": "petitioners",
               "label": "Petitioner(s)",
               "type": "repeating_group",
+              "row_lock_unless_matter_flag": "multiple_petitioners",
               "subfields": [
                 {
                   "name": "pet_name",
@@ -1302,6 +1345,7 @@
               "name": "prs",
               "label": "Personal Representative(s) being appointed",
               "type": "repeating_group",
+              "row_lock_unless_matter_flag": "multiple_prs",
               "subfields": [
                 {
                   "name": "pr_name",

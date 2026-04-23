@@ -35,6 +35,8 @@ AUTO_POPULATED = {
     # Derived display fields for numeric estate assets (from prepareTemplateData)
     "asset_value_formatted",
     "estate_assets_total", "estate_assets_total_formatted",
+    # Venue reason prose composed from venue_reason_type_* checkboxes + other
+    "venue_reason",
 }
 
 TAG_RE = re.compile(r"\{[#/^]?([a-zA-Z0-9_]+)\}")

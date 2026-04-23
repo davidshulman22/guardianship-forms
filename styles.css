@@ -1688,3 +1688,29 @@ details[open] .form-selector-toggle::before {
     width: 100vw;
 }
 
+/* Field-level info/warning callouts (field type "info") */
+.field-info-callout {
+    padding: 0.75rem 1rem;
+    margin: 0.5rem 0 1rem;
+    border-radius: 6px;
+    border-left: 4px solid;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+.field-info-callout.field-info-info {
+    background: #f0f7ff;
+    border-left-color: #2563eb;
+    color: #1e3a8a;
+}
+.field-info-callout.field-info-warning {
+    background: #fef3c7;
+    border-left-color: #d97706;
+    color: #78350f;
+}
+.field-info-callout.field-info-danger {
+    background: #fee2e2;
+    border-left-color: #dc2626;
+    color: #7f1d1d;
+    font-weight: 600;
+}
+

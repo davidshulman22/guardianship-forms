@@ -1230,10 +1230,14 @@ function wizardLoadForms() {
             county: wizardState.county
         };
         // Also propagate wizard booleans to matterData so smart templates
-        // (P3-PETITION/P3-ORDER/P3-LETTERS) get is_testate / is_ancillary.
+        // (P3-PETITION/P3-ORDER/P3-LETTERS) get is_testate / is_ancillary,
+        // and the questionnaire UI gates (row locking, conditional fields)
+        // pick up multiple_petitioners / multiple_prs.
         if (!currentMatter.matterData) currentMatter.matterData = {};
         currentMatter.matterData.is_testate = wizardState.willType === 'testate';
         currentMatter.matterData.is_ancillary = wizardState.jurisdiction === 'ancillary';
+        currentMatter.matterData.multiple_petitioners = wizardState.petitioners === 'multiple';
+        currentMatter.matterData.multiple_prs = wizardState.petitioners === 'multiple';
         saveClientsToStorage();
     }
 
@@ -1799,13 +1803,37 @@ function renderMergedFormFields() {
     }
 
     document.getElementById('formFieldsSection').style.display = 'block';
+    applyConditionalVisibility();
+}
+
+// Read a matter-level boolean flag (from matter.matterData). Used by
+// `row_lock_unless_matter_flag` on repeating groups — e.g. the PR group
+// locks to a single row when the wizard answered "single".
+function getMatterFlag(name) {
+    return !!(currentMatter && currentMatter.matterData && currentMatter.matterData[name]);
+}
+
+// Tag a field container with visibility metadata. applyConditionalVisibility()
+// reads these after every field change and toggles display.
+function applyVisibleIfAttrs(el, visibleIf, scope) {
+    if (!visibleIf || !visibleIf.field) return;
+    el.dataset.visibleIfField = visibleIf.field;
+    el.dataset.visibleIfScope = scope || 'form';
+    if ('equals' in visibleIf) el.dataset.visibleIfEquals = JSON.stringify(visibleIf.equals);
+    if ('not_equals' in visibleIf) el.dataset.visibleIfNotEquals = JSON.stringify(visibleIf.not_equals);
 }
 
 function renderFormField(field) {
     const container = document.createElement('div');
     container.className = 'form-field-container';
+    applyVisibleIfAttrs(container, field.visible_if, 'form');
 
-    if (field.type === 'text' || field.type === 'number') {
+    if (field.type === 'info') {
+        const callout = document.createElement('div');
+        callout.className = 'field-info-callout field-info-' + (field.severity || 'info');
+        callout.innerHTML = field.content;
+        container.appendChild(callout);
+    } else if (field.type === 'text' || field.type === 'number') {
         const fieldDiv = document.createElement('div');
         fieldDiv.className = 'field';
         const label = document.createElement('label');
@@ -1867,22 +1895,32 @@ function renderFormField(field) {
         label.textContent = field.label;
         groupDiv.appendChild(label);
 
+        // Row-lock: wizard-set matter flag (e.g. multiple_prs) determines
+        // whether the user can add extra rows. When false, cap to 1 row and
+        // hide the Add button. Existing extra data is preserved but not
+        // rendered (so flipping the wizard back to "multiple" doesn't lose it).
+        const locked = field.row_lock_unless_matter_flag &&
+                       !getMatterFlag(field.row_lock_unless_matter_flag);
+        const items = currentFormData[field.name] || [];
+        const visibleItems = locked ? items.slice(0, 1) : items;
+
         const itemsContainer = document.createElement('div');
         itemsContainer.className = 'repeating-group-items';
         itemsContainer.id = 'group_' + field.name;
 
-        const items = currentFormData[field.name] || [];
-        items.forEach((item, index) => {
+        visibleItems.forEach((item, index) => {
             itemsContainer.appendChild(renderRepeatingGroupItem(field, item, index));
         });
         groupDiv.appendChild(itemsContainer);
 
-        const addBtn = document.createElement('button');
-        addBtn.type = 'button';
-        addBtn.className = 'add-row-btn';
-        addBtn.textContent = '+ Add Row';
-        addBtn.dataset.field = field.name;
-        groupDiv.appendChild(addBtn);
+        if (!locked) {
+            const addBtn = document.createElement('button');
+            addBtn.type = 'button';
+            addBtn.className = 'add-row-btn';
+            addBtn.textContent = '+ Add Row';
+            addBtn.dataset.field = field.name;
+            groupDiv.appendChild(addBtn);
+        }
         container.appendChild(groupDiv);
     }
 
@@ -1899,25 +1937,46 @@ function renderRepeatingGroupItem(field, item, index) {
     field.subfields.forEach(subfield => {
         const fieldDiv = document.createElement('div');
         fieldDiv.className = 'repeating-group-item-field';
-        const label = document.createElement('label');
-        label.textContent = subfield.label;
-        const input = document.createElement('input');
-        if (subfield.type === 'number') {
-            input.type = 'number';
-            input.inputMode = 'decimal';
-            input.step = subfield.step || 'any';
-        } else {
-            input.type = 'text';
+        // Subfield visibility is per-row — visible_if.subfield references
+        // another subfield name in the same row (e.g. ben_year_of_birth
+        // hidden unless ben_is_minor checked).
+        applyVisibleIfAttrs(fieldDiv, subfield.visible_if, 'row');
+        if (subfield.visible_if) {
+            fieldDiv.dataset.visibleIfRowIndex = index;
+            fieldDiv.dataset.visibleIfParentField = field.name;
         }
+
+        const input = document.createElement('input');
         input.className = 'form-field-input';
         input.dataset.field = field.name;
         input.dataset.subfield = subfield.name;
         input.dataset.index = index;
         input.dataset.type = subfield.type || 'text';
-        const v = item[subfield.name];
-        input.value = (v === null || v === undefined) ? '' : v;
-        fieldDiv.appendChild(label);
-        fieldDiv.appendChild(input);
+
+        if (subfield.type === 'checkbox') {
+            // Inline checkbox + label, same pattern as top-level checkbox.
+            fieldDiv.classList.add('checkbox-item');
+            input.type = 'checkbox';
+            input.checked = item[subfield.name] === true;
+            const label = document.createElement('label');
+            label.textContent = subfield.label;
+            fieldDiv.appendChild(input);
+            fieldDiv.appendChild(label);
+        } else {
+            const label = document.createElement('label');
+            label.textContent = subfield.label;
+            if (subfield.type === 'number') {
+                input.type = 'number';
+                input.inputMode = 'decimal';
+                input.step = subfield.step || 'any';
+            } else {
+                input.type = 'text';
+            }
+            const v = item[subfield.name];
+            input.value = (v === null || v === undefined) ? '' : v;
+            fieldDiv.appendChild(label);
+            fieldDiv.appendChild(input);
+        }
         fieldsContainer.appendChild(fieldDiv);
     });
 
@@ -1932,6 +1991,36 @@ function renderRepeatingGroupItem(field, item, index) {
     itemDiv.appendChild(removeBtn);
 
     return itemDiv;
+}
+
+// Walks visibility-tagged containers and toggles display based on
+// currentFormData (form-scoped) or per-row data (row-scoped). Called after
+// every collectFormData() so toggling a condition field re-evaluates
+// downstream visibility immediately.
+function applyConditionalVisibility() {
+    const container = document.getElementById('formFieldsContainer');
+    if (!container) return;
+    container.querySelectorAll('[data-visible-if-field]').forEach(el => {
+        const fieldName = el.dataset.visibleIfField;
+        const scope = el.dataset.visibleIfScope || 'form';
+        let actual;
+        if (scope === 'row') {
+            const parent = el.dataset.visibleIfParentField;
+            const idx = parseInt(el.dataset.visibleIfRowIndex, 10);
+            const row = (currentFormData[parent] || [])[idx] || {};
+            actual = row[fieldName];
+        } else {
+            actual = currentFormData[fieldName];
+        }
+        let show = true;
+        if ('visibleIfEquals' in el.dataset) {
+            show = actual === JSON.parse(el.dataset.visibleIfEquals);
+        }
+        if ('visibleIfNotEquals' in el.dataset) {
+            show = actual !== JSON.parse(el.dataset.visibleIfNotEquals);
+        }
+        el.style.display = show ? '' : 'none';
+    });
 }
 
 function addRepeatingGroupRow(fieldName) {
@@ -1990,6 +2079,7 @@ function collectFormData() {
     });
 
     currentFormData = formData;
+    applyConditionalVisibility();
     saveFormDataToMatter();
 }
 
@@ -2172,6 +2262,50 @@ function prepareTemplateData() {
                 pr_relationship: data.pr_relationship || ''
             }];
         }
+    }
+
+    // Petitioner == PR: when the "Petitioner is same as PR(s)" checkbox is on,
+    // mirror PR rows into petitioners so the user doesn't enter both.
+    if (data.petitioner_same_as_pr === true && Array.isArray(data.prs)) {
+        data.petitioners = data.prs
+            .filter(pr => (pr.pr_name || '').trim())
+            .map(pr => ({
+                pet_name: pr.pr_name || '',
+                pet_address: pr.pr_address || '',
+                pet_interest: 'the nominated personal representative'
+            }));
+    }
+
+    // Venue reason: compose prose from checkbox selections (§733.101) + free
+    // "Other" text. Multiple boxes can be checked (rare but legal).
+    const venueParts = [];
+    if (data.venue_reason_type_domicile_fl) {
+        venueParts.push('the decedent was domiciled in this county at the time of death');
+    }
+    if (data.venue_reason_type_property) {
+        venueParts.push('the decedent was not a Florida resident but had property in this county at the time of death');
+    }
+    if (data.venue_reason_type_debtor) {
+        venueParts.push('the decedent was not a Florida resident and had no property in Florida, but a debtor of the decedent resides in this county');
+    }
+    if (data.venue_reason_other && String(data.venue_reason_other).trim()) {
+        venueParts.push(String(data.venue_reason_other).trim());
+    }
+    if (venueParts.length) {
+        data.venue_reason = venueParts.join('; also, ');
+    }
+
+    // Beneficiary year-of-birth: emit "N/A" when ben_is_minor is falsy so the
+    // rendered table has a consistent placeholder instead of an empty cell.
+    if (Array.isArray(data.beneficiaries)) {
+        data.beneficiaries = data.beneficiaries.map(ben => {
+            const isMinor = ben.ben_is_minor === true;
+            const year = (ben.ben_year_of_birth || '').toString().trim();
+            return {
+                ...ben,
+                ben_year_of_birth: isMinor ? (year || '') : 'N/A'
+            };
+        });
     }
 
     // Derive joined name strings
