@@ -1833,7 +1833,7 @@ function renderFormField(field) {
         callout.className = 'field-info-callout field-info-' + (field.severity || 'info');
         callout.innerHTML = field.content;
         container.appendChild(callout);
-    } else if (field.type === 'text' || field.type === 'number') {
+    } else if (field.type === 'text' || field.type === 'number' || field.type === 'date') {
         const fieldDiv = document.createElement('div');
         fieldDiv.className = 'field';
         const label = document.createElement('label');
@@ -1844,9 +1844,16 @@ function renderFormField(field) {
             input.type = 'number';
             input.inputMode = 'decimal';
             input.step = field.step || 'any';
+        } else if (field.type === 'date') {
+            input.type = 'date';
         } else {
             input.type = 'text';
         }
+        // Optional per-field input attributes (e.g. SSN last-4 pattern).
+        if (field.pattern) input.pattern = field.pattern;
+        if (field.maxlength) input.maxLength = field.maxlength;
+        if (field.inputmode) input.inputMode = field.inputmode;
+        if (field.placeholder) input.placeholder = field.placeholder;
         input.id = 'form_' + field.name;
         input.className = 'form-field-input';
         input.dataset.field = field.name;
@@ -1969,9 +1976,15 @@ function renderRepeatingGroupItem(field, item, index) {
                 input.type = 'number';
                 input.inputMode = 'decimal';
                 input.step = subfield.step || 'any';
+            } else if (subfield.type === 'date') {
+                input.type = 'date';
             } else {
                 input.type = 'text';
             }
+            if (subfield.pattern) input.pattern = subfield.pattern;
+            if (subfield.maxlength) input.maxLength = subfield.maxlength;
+            if (subfield.inputmode) input.inputMode = subfield.inputmode;
+            if (subfield.placeholder) input.placeholder = subfield.placeholder;
             const v = item[subfield.name];
             input.value = (v === null || v === undefined) ? '' : v;
             fieldDiv.appendChild(label);
@@ -2178,6 +2191,50 @@ async function renderSingleDoc(form, templateData) {
     });
 }
 
+// Format an ISO "YYYY-MM-DD" date string into "Month D, YYYY" for template
+// rendering. Accepts already-formatted strings (returns them unchanged) so
+// legacy free-text date fields still work.
+function formatDateFieldValue(raw) {
+    if (raw === null || raw === undefined || raw === '') return '';
+    const s = String(raw);
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+    if (!m) return s; // Not ISO — pass through.
+    const months = ['January','February','March','April','May','June',
+                    'July','August','September','October','November','December'];
+    const y = parseInt(m[1], 10);
+    const mo = parseInt(m[2], 10);
+    const d = parseInt(m[3], 10);
+    if (!months[mo - 1]) return s;
+    return months[mo - 1] + ' ' + d + ', ' + y;
+}
+
+// Collect every field/subfield name declared as type "date" across the
+// currently selected forms. prepareTemplateData uses this to ISO → prose
+// convert all date inputs uniformly.
+function collectDateFieldNames() {
+    const topLevel = new Set();
+    const subfields = new Map(); // parent -> Set(subfield names)
+    if (!formsConfig) return { topLevel, subfields };
+    selectedFormIds.forEach(formId => {
+        const form = formsConfig.forms.find(f => f.id === formId);
+        if (!form) return;
+        (form.sections || []).forEach(section => {
+            (section.fields || []).forEach(field => {
+                if (field.type === 'date') topLevel.add(field.name);
+                if (field.type === 'repeating_group' && Array.isArray(field.subfields)) {
+                    field.subfields.forEach(sf => {
+                        if (sf.type === 'date') {
+                            if (!subfields.has(field.name)) subfields.set(field.name, new Set());
+                            subfields.get(field.name).add(sf.name);
+                        }
+                    });
+                }
+            });
+        });
+    });
+    return { topLevel, subfields };
+}
+
 function prepareTemplateData() {
     const data = {};
 
@@ -2344,6 +2401,25 @@ function prepareTemplateData() {
     // is_testate / is_ancillary live on matter.matterData; default gracefully
     if (data.is_testate === undefined || data.is_testate === null) data.is_testate = false;
     if (data.is_ancillary === undefined || data.is_ancillary === null) data.is_ancillary = false;
+
+    // ISO "YYYY-MM-DD" → "Month D, YYYY" for every field declared type=date.
+    // Applies to top-level and repeating-group subfields across all selected
+    // forms. Legacy free-text dates pass through unchanged.
+    const dateNames = collectDateFieldNames();
+    dateNames.topLevel.forEach(name => {
+        data[name] = formatDateFieldValue(data[name]);
+    });
+    dateNames.subfields.forEach((subfieldSet, parentName) => {
+        if (Array.isArray(data[parentName])) {
+            data[parentName] = data[parentName].map(row => {
+                const out = { ...row };
+                subfieldSet.forEach(sf => {
+                    out[sf] = formatDateFieldValue(out[sf]);
+                });
+                return out;
+            });
+        }
+    });
 
     // Currency formatting for estate asset rows. Values enter as Numbers; the
     // template gets {asset_value_formatted} (e.g. "$1,500.00") for display

@@ -1019,12 +1019,16 @@
             {
               "name": "decedent_ssn_last4",
               "label": "Last 4 digits of decedent's SSN",
-              "type": "text"
+              "type": "text",
+              "pattern": "\\d{4}",
+              "maxlength": 4,
+              "inputmode": "numeric",
+              "placeholder": "e.g. 1234"
             },
             {
               "name": "decedent_death_date",
-              "label": "Date of death (e.g. 'March 2, 2026')",
-              "type": "text"
+              "label": "Date of death",
+              "type": "date"
             },
             {
               "name": "decedent_death_place",
@@ -1233,17 +1237,12 @@
           "fields": [
             {
               "name": "will_date",
-              "label": "Will date (e.g. 'January 15')",
-              "type": "text"
-            },
-            {
-              "name": "will_year",
-              "label": "Will year",
-              "type": "text"
+              "label": "Will date",
+              "type": "date"
             },
             {
               "name": "codicil_dates",
-              "label": "Codicil date(s) (blank if none)",
+              "label": "Codicil date(s) (blank if none; separate multiple with commas)",
               "type": "text"
             }
           ]
@@ -1382,7 +1381,7 @@
             {
               "name": "decedent_death_date",
               "label": "Date of death",
-              "type": "text"
+              "type": "date"
             },
             {
               "name": "decedent_domicile",
@@ -1402,16 +1401,11 @@
             {
               "name": "will_date",
               "label": "Will date",
-              "type": "text"
-            },
-            {
-              "name": "will_year",
-              "label": "Will year",
-              "type": "text"
+              "type": "date"
             },
             {
               "name": "codicil_dates",
-              "label": "Codicil date(s) (blank if none)",
+              "label": "Codicil date(s) (blank if none; separate multiple with commas)",
               "type": "text"
             },
             {
@@ -1456,7 +1450,7 @@
             {
               "name": "decedent_death_date",
               "label": "Date of death",
-              "type": "text"
+              "type": "date"
             },
             {
               "name": "decedent_domicile",
@@ -1475,7 +1469,7 @@
           "fields": [
             {
               "name": "codicil_dates",
-              "label": "Codicil date(s) (blank if none)",
+              "label": "Codicil date(s) (blank if none; separate multiple with commas)",
               "type": "text"
             }
           ]

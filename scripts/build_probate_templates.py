@@ -270,7 +270,7 @@ def build_p3_petition():
     # filing-time fact — omitted here. Clerk-review language defaults to neutral "accompanies
     # this petition"; revise at filing if the original was previously deposited.
     _pleading_para(doc,
-        '{#is_testate}The decedent\u2019s last will dated {will_date}, {will_year}'
+        '{#is_testate}The decedent\u2019s last will dated {will_date}'
         '{#codicil_dates}, and codicil(s) dated {codicil_dates}{/codicil_dates}, '
         'accompanies this petition. Petitioner is unaware of any unrevoked will or codicil '
         'of decedent other than as set forth above.{/is_testate}'
@@ -423,7 +423,7 @@ def build_p3_order():
 
     # Testate-only: admit will
     _pleading_para(doc,
-        '{#is_testate}The decedent\u2019s last will dated {will_date}, {will_year}'
+        '{#is_testate}The decedent\u2019s last will dated {will_date}'
         '{#codicil_dates}, and codicil(s) dated {codicil_dates}{/codicil_dates} '
         '{#will_is_self_proved}{pr_verb_is} self-proved and {/will_is_self_proved}'
         '{pr_verb_is} admitted to probate according to law.{/is_testate}'
