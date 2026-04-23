@@ -64,8 +64,10 @@ Client (Margaret Torres)
 │   ├── FORMS_CATALOG_MAP.md            # FLSSI 2025 catalog — built vs not-yet-built
 │   ├── CASE_MANAGEMENT_SYSTEM_PLAN.md  # Long-term vision: full case mgmt system
 │   ├── SUPABASE_SETUP.md               # One-time Supabase + OAuth setup instructions
+│   ├── UPDATING_SYSTEM_MAP.md          # How to refresh system-map.html via Claude Design
 │   ├── claude_import_schema.md         # JSON schema for "Import from Claude" modal
-│   └── gs-court-forms-showcase.html    # Standalone marketing/portfolio page
+│   ├── gs-court-forms-showcase.html    # Standalone marketing/portfolio page
+│   └── system-map.html                 # Claude Design interactive system map (public via GH Pages)
 ├── templates/
 │   ├── G2-010.docx .. G3-026.docx   # 5 guardianship templates (REBUILT on new pattern)
 │   ├── P1-0900.docx                  # Notice of Designation of Email Addresses
