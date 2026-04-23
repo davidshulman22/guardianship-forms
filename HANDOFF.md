@@ -45,7 +45,7 @@ Browser-based Florida court form generator for Ginsberg Shulman, PL. Runs client
 - **39 forms** in forms.json (5 guardianship, 24 summary admin / closing / general / inventory / notice, 4 smart formal-admin, 6 Broward local)
 - **9 templates on the new pattern** — G2-010, G2-140, G3-010, G3-025, G3-026, P3-PETITION, P3-OATH, P3-ORDER, P3-LETTERS
 - **~25 legacy templates remain** — all summary admin (`P2-*`), closing (`P5-*`), Broward local (`BW-*`), Inventory (P3-0900), Notice to Creditors (P3-0740), Notice of Designation of Email (P1-0900)
-- **Tag audit passes** across all templates (`python3 audit_tags.py`)
+- **Tag audit passes** across all templates (`python3 scripts/audit_tags.py`)
 - **Supabase live** — 3 tables (clients / matters / form_data) + user_profiles, all RLS-gated
 - **Three lifecycle sections** in matter view (Open Estate / Estate Admin / Close Estate) are now collapsible (state persists in localStorage) and dynamically switch between formal and summary admin
 - **Per-matter attorney selector** wired through matter modal → `ATTORNEY_PROFILES` → `getAttorneyDefaults(matter)` → template output
@@ -142,7 +142,7 @@ Per CLAUDE.md:
 - Do not start before Priority 1 (form formatting) is complete
 
 **Priority 2 — FLSSI catalog build-out (waiting on David):**
-- David marks `[x]` in SKIP column of `FORMS_CATALOG_MAP.md` for forms he doesn't want
+- David marks `[x]` in SKIP column of `docs/FORMS_CATALOG_MAP.md` for forms he doesn't want
 - When David says "ready", build all unmarked forms using the new builder pattern
 - 138 missing forms; realistic batch after skips: ~60–80
 
@@ -163,7 +163,7 @@ Per CLAUDE.md:
 - Build via `build_probate_templates.py` using shared helpers
 
 **Priority 7 — Case management / file management system (LONG-TERM, LATER):**
-- Full planning document at `CASE_MANAGEMENT_SYSTEM_PLAN.md` (created 2026-04-22)
+- Full planning document at `docs/CASE_MANAGEMENT_SYSTEM_PLAN.md` (created 2026-04-22)
 - Covers: matter lifecycle, 17 functional subsystems, cross-cutting concerns, 10 open design decisions, 9-phase roadmap
 - **Do not start until Priority 1 (probate template rebuild) AND Priority 1b (Matter Interview) are complete**
 - North-star vision; current forms app is Phase 0 of this system
@@ -234,13 +234,13 @@ Per CLAUDE.md:
 ### Key files
 - `app.js` — application logic (~2000 lines). `ATTORNEY_PROFILES`, `getAttorneyDefaults(matter)`, `prepareTemplateData()`, `populateFormSections()`
 - `auth.js` — Microsoft OAuth + Supabase session handling
-- `build_guardianship_templates.py` — builder + all shared helpers (`_pleading_para`, `_add_broward_ai_certification`, `_inject_numbering_part`, etc.)
-- `build_probate_templates.py` — probate builder; has `_add_probate_caption`, `_beneficiaries_table`, `_estate_assets_table`, `_add_probate_signature_block`, `_add_order_signature_block`
-- `audit_tags.py` — `python3 audit_tags.py` to verify template tags match forms.json
+- `scripts/build_guardianship_templates.py` — builder + all shared helpers (`_pleading_para`, `_add_broward_ai_certification`, `_inject_numbering_part`, etc.)
+- `scripts/build_probate_templates.py` — probate builder; has `_add_probate_caption`, `_beneficiaries_table`, `_estate_assets_table`, `_add_probate_signature_block`, `_add_order_signature_block`
+- `scripts/audit_tags.py` — `python3 scripts/audit_tags.py` to verify template tags match forms.json
 - `forms.json` — 39 form definitions (post-consolidation)
 - `supabase-setup.sql` — DB schema + trigger allow-list for admin
 - `CLAUDE.md` — full project context with builder pattern notes
-- `FORMS_CATALOG_MAP.md` — FLSSI 2025 catalog with SKIP checkboxes for future batch build
+- `docs/FORMS_CATALOG_MAP.md` — FLSSI 2025 catalog with SKIP checkboxes for future batch build
 
 ### Builder pattern (MUST follow for new forms)
 ```python

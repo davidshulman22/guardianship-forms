@@ -54,12 +54,18 @@ Client (Margaret Torres)
 ├── supabase-setup.sql              # DB schema + RLS + handle_new_user trigger
 ├── CLAUDE.md                       # This file
 ├── HANDOFF.md                      # Resume-ready handoff
-├── audit_tags.py                   # Verify template {tags} match forms.json
-├── build_guardianship_templates.py # Builder for G* templates + shared helpers
-├── build_probate_templates.py      # Builder for P*/BW* templates (imports helpers)
-├── create_broward_templates.py     # LEGACY — generated the original BW-* templates
-├── tag_probate_templates.py        # LEGACY — tagged summary admin forms
-├── tag_formal_admin_templates.py   # LEGACY — tagged formal admin forms
+├── scripts/
+│   ├── audit_tags.py                   # Verify template {tags} match forms.json
+│   ├── build_guardianship_templates.py # Builder for G* templates + shared helpers
+│   ├── build_probate_templates.py      # Builder for P*/BW* templates (imports helpers)
+│   └── serve.py                        # Local dev server on :8765
+├── docs/
+│   ├── PLAN.md                         # Broward local forms + multi-petitioner roadmap
+│   ├── FORMS_CATALOG_MAP.md            # FLSSI 2025 catalog — built vs not-yet-built
+│   ├── CASE_MANAGEMENT_SYSTEM_PLAN.md  # Long-term vision: full case mgmt system
+│   ├── SUPABASE_SETUP.md               # One-time Supabase + OAuth setup instructions
+│   ├── claude_import_schema.md         # JSON schema for "Import from Claude" modal
+│   └── gs-court-forms-showcase.html    # Standalone marketing/portfolio page
 ├── templates/
 │   ├── G2-010.docx .. G3-026.docx   # 5 guardianship templates (REBUILT on new pattern)
 │   ├── P1-0900.docx                  # Notice of Designation of Email Addresses

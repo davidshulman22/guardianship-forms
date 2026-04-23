@@ -9,7 +9,7 @@ import re
 import zipfile
 from pathlib import Path
 
-ROOT = Path(__file__).parent
+ROOT = Path(__file__).parent.parent
 TEMPLATES = ROOT / "templates"
 FORMS_JSON = ROOT / "forms.json"
 

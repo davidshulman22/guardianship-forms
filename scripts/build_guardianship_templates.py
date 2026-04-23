@@ -31,7 +31,7 @@ import shutil
 import zipfile
 import tempfile
 
-TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
+TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), '..', 'templates')
 
 FONT = 'Times New Roman'
 BODY_SIZE = 12

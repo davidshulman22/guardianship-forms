@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GS Court Forms — a custom probate + guardianship form generator</title>
+<meta name="description" content="A custom browser-based Florida court forms application built by David Shulman at Ginsberg Shulman, PL, for his own probate and guardianship practice.">
+<meta property="og:title" content="GS Court Forms — a custom probate + guardianship form generator">
+<meta property="og:description" content="Built by David Shulman for Ginsberg Shulman, PL. Replaces the FLSSI fill-a-form-at-a-time workflow with smart conditional templates, cross-form data sharing, county-specific AI certifications, and a wizard that auto-loads the right filing bundle.">
+<meta property="og:type" content="website">
+<style>
+:root {
+  --bg:           #0a1020;
+  --bg-elev:     #101832;
+  --surface:     #151f3a;
+  --surface-2:   #1a2547;
+  --border:      #2a3454;
+  --border-soft: rgba(201, 169, 97, 0.18);
+  --text:        #f4efe3;
+  --text-2:      #aab3cc;
+  --text-3:      #6b7693;
+  --accent:      #c9a961;
+  --accent-2:    #e0c27a;
+  --accent-soft: rgba(201, 169, 97, 0.12);
+  --danger:      #c85c5c;
+  --success:     #6fa882;
+}
+* { box-sizing: border-box; }
+html, body { margin:0; padding:0; background: var(--bg); color: var(--text); font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
+body { line-height: 1.55; }
+.wrap { max-width: 1000px; margin: 0 auto; padding: 0 24px; }
+
+/* ---------- Top bar ---------- */
+.topbar {
+  padding: 18px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  letter-spacing: 0.03em;
+  color: var(--text-2);
+}
+.topbar-inner { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;}
+.topbar .brand { font-family: Georgia, "Times New Roman", serif; color: var(--accent); letter-spacing: 0.04em; font-size: 14px; }
+.topbar .meta { color: var(--text-3); }
+
+/* ---------- Hero ---------- */
+.hero { padding: 90px 0 60px; text-align: left; }
+.eyebrow {
+  display: inline-block;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  padding: 6px 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: 999px;
+  margin-bottom: 24px;
+}
+.hero h1 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  font-size: clamp(32px, 5vw, 52px);
+  line-height: 1.1;
+  margin: 0 0 20px 0;
+  letter-spacing: -0.01em;
+}
+.hero h1 .accent { color: var(--accent); font-style: italic; }
+.hero .lede {
+  font-size: 18px;
+  color: var(--text-2);
+  max-width: 680px;
+  margin: 0;
+}
+.hero .byline {
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--text-3);
+}
+.hero .byline strong { color: var(--text); font-weight: 500; }
+
+/* ---------- Section shell ---------- */
+section { padding: 60px 0; border-top: 1px solid var(--border); }
+section.first { border-top: 0; }
+h2 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  font-size: 30px;
+  margin: 0 0 10px 0;
+  letter-spacing: -0.005em;
+}
+.section-eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 14px;
+}
+.section-lede { color: var(--text-2); margin: 0 0 36px 0; max-width: 680px; }
+
+/* ---------- Problem list ---------- */
+.problem-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 16px; }
+.problem-list li {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--danger);
+  padding: 18px 22px;
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 15.5px;
+}
+.problem-list li strong { color: var(--accent-2); font-weight: 500; }
+
+/* ---------- Feature grid ---------- */
+.features { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+@media (max-width: 720px) { .features { grid-template-columns: 1fr; } }
+.feature {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  transition: border-color 0.2s;
+}
+.feature:hover { border-color: var(--border-soft); }
+.feature .ico {
+  display: inline-flex;
+  align-items: center; justify-content: center;
+  width: 40px; height: 40px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: 8px;
+  font-size: 18px;
+  margin-bottom: 14px;
+}
+.feature h3 { font-family: Georgia, "Times New Roman", serif; font-weight: 500; font-size: 17px; margin: 0 0 8px 0; color: var(--text); letter-spacing: 0.003em;}
+.feature p { margin: 0; font-size: 14.5px; color: var(--text-2); line-height: 1.55; }
+.feature p code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 12.5px;
+  color: var(--accent-2);
+  background: rgba(201, 169, 97, 0.08);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+/* ---------- Tech callout ---------- */
+.tech-callout {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+@media (max-width: 720px) { .tech-callout { grid-template-columns: 1fr; } }
+.tech-row { display: flex; gap: 12px; align-items: flex-start; }
+.tech-row .key {
+  color: var(--accent);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 12.5px;
+  padding-top: 2px;
+  min-width: 90px;
+  letter-spacing: 0.02em;
+}
+.tech-row .val { color: var(--text); font-size: 14.5px; }
+
+/* ---------- Stat cards ---------- */
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 28px; }
+@media (max-width: 720px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+.stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+}
+.stat .num { font-family: Georgia, "Times New Roman", serif; font-size: 30px; color: var(--accent); line-height: 1; }
+.stat .lbl { font-size: 12px; color: var(--text-3); margin-top: 6px; letter-spacing: 0.02em; }
+
+.scope-list { display: grid; gap: 12px; }
+.scope-item {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 16px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 14.5px;
+}
+.scope-item .badge {
+  font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 9px;
+  border-radius: 4px; font-weight: 600; flex-shrink: 0;
+}
+.badge.done { background: rgba(111, 168, 130, 0.14); color: var(--success); border: 1px solid rgba(111, 168, 130, 0.3); }
+.badge.wip  { background: rgba(201, 169, 97, 0.14); color: var(--accent); border: 1px solid rgba(201, 169, 97, 0.3); }
+.badge.live { background: rgba(201, 169, 97, 0.18); color: var(--accent-2); border: 1px solid rgba(201, 169, 97, 0.4); }
+
+/* ---------- App mockup ---------- */
+.mockup {
+  background: #f7f5ef;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  margin-top: 12px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  font-family: "Inter", system-ui, sans-serif;
+  color: #1f2937;
+}
+.mockup-bar {
+  display: flex; align-items: center; gap: 6px;
+  padding: 11px 14px; background: #e9e5d9; border-bottom: 1px solid #d7d2c3;
+  font-size: 12px; color: #6b6658;
+}
+.mockup-bar .dot { width: 11px; height: 11px; border-radius: 50%; }
+.mockup-bar .dot.r { background: #f56565; } .mockup-bar .dot.y { background: #ecc94b; } .mockup-bar .dot.g { background: #48bb78; }
+.mockup-bar .url { flex: 1; text-align: center; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11.5px; color: #8a8470; }
+.mockup-body { display: grid; grid-template-columns: 220px 1fr; min-height: 560px; }
+@media (max-width: 720px) { .mockup-body { grid-template-columns: 1fr; } }
+
+.m-side { background: #edeae0; border-right: 1px solid #d7d2c3; padding: 16px; font-size: 13px; }
+.m-side .h { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: #8a8470; margin-bottom: 8px;}
+.m-side .client { padding: 9px 11px; border-radius: 6px; margin-bottom: 3px; cursor: default; font-size: 13.5px; }
+.m-side .client.active { background: #1f2b47; color: #f4efe3; }
+.m-side .client:not(.active):hover { background: #e3dfcf; }
+.m-side .matter { font-size: 12px; padding: 6px 11px 6px 24px; color: #6b6658; }
+.m-side .matter.active { color: #c9a961; font-weight: 500; }
+
+.m-main { padding: 22px; background: #f7f5ef; }
+.m-matter-head { padding-bottom: 14px; border-bottom: 1px solid #d7d2c3; margin-bottom: 18px;}
+.m-matter-head h1 { font-family: Georgia, serif; font-size: 22px; margin: 0 0 6px 0; font-weight: 500; color: #1f2b47; }
+.m-matter-head .meta { font-size: 12px; color: #6b6658; }
+
+.m-panel {
+  background: white;
+  border-radius: 10px;
+  border: 1px solid #d7d2c3;
+  border-left: 3px solid #2563eb;
+  padding: 18px 20px;
+  margin-bottom: 14px;
+}
+.m-panel.admin { border-left-color: #059669; }
+.m-panel.close { border-left-color: #dc2626; }
+.m-panel .phead {
+  display: flex; justify-content: space-between; align-items: center; cursor: default;
+}
+.m-panel .phead h3 { font-family: Georgia, serif; font-weight: 500; font-size: 16px; margin: 0; color: #1f2b47; }
+.m-panel .phead .sub { font-size: 12px; color: #6b6658; margin-top: 2px; }
+.m-panel .phead .chev { color: #9aa3b8; font-size: 12px; }
+.m-panel.collapsed .pbody { display: none; }
+
+.m-wizard-q { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px;}
+@media (max-width: 720px) { .m-wizard-q { grid-template-columns: 1fr; } }
+.m-question label { display:block; font-size: 11.5px; color: #6b6658; margin-bottom: 5px; letter-spacing: 0.04em; text-transform: uppercase; }
+.m-toggle { display: flex; border: 1px solid #d7d2c3; border-radius: 6px; overflow: hidden; font-size: 13px; }
+.m-toggle button {
+  flex: 1; padding: 7px 10px; background: white; border: 0; cursor: default;
+  color: #1f2937; font-family: inherit;
+  border-right: 1px solid #d7d2c3;
+}
+.m-toggle button:last-child { border-right: 0; }
+.m-toggle button.on { background: #1f2b47; color: white; }
+.m-select {
+  width: 100%; padding: 7px 10px; background: white; border: 1px solid #d7d2c3; border-radius: 6px;
+  font-size: 13px; color: #1f2937; font-family: inherit;
+}
+.m-loadbtn {
+  margin-top: 16px; background: #c9a961; color: #1a1000; border: 0; padding: 9px 18px;
+  border-radius: 6px; font-weight: 600; font-size: 13.5px; cursor: default;
+}
+
+.m-formlist { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.m-formlist .pill {
+  background: #edeae0; border: 1px solid #d7d2c3; color: #1f2b47;
+  padding: 3px 9px; border-radius: 4px; font-size: 11.5px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+.m-fields {
+  margin-top: 12px;
+  padding: 16px;
+  background: #fcfaf3;
+  border: 1px dashed #d7d2c3;
+  border-radius: 8px;
+}
+.m-fields h4 { font-family: Georgia, serif; font-size: 13.5px; margin: 0 0 10px 0; color: #1f2b47; font-weight: 500; }
+.m-field { display: grid; grid-template-columns: 140px 1fr; gap: 10px; padding: 4px 0; font-size: 12.5px; color: #1f2937; border-bottom: 1px dotted #d7d2c3;}
+.m-field:last-child { border-bottom: 0; }
+.m-field .k { color: #6b6658; font-size: 11.5px; padding-top: 2px; }
+.m-field .v { color: #1f2b47; }
+.m-field .v.num { font-family: ui-monospace, "SF Mono", Menlo, monospace; color: #059669; font-weight: 500; }
+
+.m-aside {
+  margin-top: 12px; font-size: 11.5px; color: #8a8470; font-style: italic;
+}
+
+/* ---------- Quote block ---------- */
+.quote {
+  padding: 32px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: 12px;
+  margin-top: 14px;
+}
+.quote .q {
+  font-family: Georgia, serif;
+  font-size: 20px;
+  font-style: italic;
+  color: var(--text);
+  line-height: 1.5;
+  margin: 0 0 16px 0;
+}
+.quote .attr { font-size: 13px; color: var(--text-3); }
+
+/* ---------- Footer ---------- */
+footer {
+  padding: 50px 0 70px;
+  border-top: 1px solid var(--border);
+  margin-top: 60px;
+  font-size: 13px;
+  color: var(--text-3);
+  line-height: 1.7;
+}
+footer .brand { font-family: Georgia, serif; color: var(--accent); font-size: 15px; margin-bottom: 4px; letter-spacing: 0.01em;}
+footer a { color: var(--accent-2); text-decoration: none; }
+
+.rule { height: 1px; background: linear-gradient(to right, transparent, var(--border-soft), transparent); margin: 4px 0; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-inner">
+    <div class="brand">GINSBERG SHULMAN, PL</div>
+    <div class="meta">Fort Lauderdale, FL · Est. 2013</div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<section class="hero first">
+  <span class="eyebrow">Internal Practice Tool · Not for Sale</span>
+  <h1>GS Court Forms — a custom probate &amp; guardianship <span class="accent">form generator</span> I built for my firm.</h1>
+  <p class="lede">Because filling out the same FLSSI Clio Draft forms by hand, one at a time, was never going to get better on its own.</p>
+  <div class="byline">
+    <div><strong>David A. Shulman</strong> · Fla. Bar 150762</div>
+    <div>Board Certified, Wills Trusts &amp; Estates</div>
+    <div>LLM, Taxation</div>
+  </div>
+</section>
+
+<section>
+  <div class="section-eyebrow">The Problem</div>
+  <h2>Filling FLSSI forms is a tax on every probate matter.</h2>
+  <p class="section-lede">The official 2025 FLSSI forms (delivered through Clio Draft) work, but they make you pay for every petition, oath, and order you file.</p>
+  <ul class="problem-list">
+    <li><strong>Zero data sharing between forms.</strong> Type the decedent's SSN on the Petition, type it again on the Oath, again on the Letters, again on the Notice to Creditors. Nothing talks to anything.</li>
+    <li><strong>One FLSSI form per variant.</strong> Testate vs intestate, single vs multiple petitioners, domiciliary vs ancillary — each combination is its own form ID to hunt down. Twelve different Petition for Administration variants alone.</li>
+    <li><strong>Formatting breaks under real data.</strong> FLSSI's two-column layout looks fine empty. Drop a multi-line address into a justified paragraph and the text spreads across the page with six-word-wide gaps.</li>
+  </ul>
+</section>
+
+<section>
+  <div class="section-eyebrow">What I Built</div>
+  <h2>One app, browser-based, built around how our firm actually files.</h2>
+  <p class="section-lede">Client-side only — documents generate in the browser and never leave my machine. Data lives in Supabase with row-level security.</p>
+
+  <div class="features">
+    <div class="feature">
+      <div class="ico">✺</div>
+      <h3>Smart conditional templates</h3>
+      <p>ONE Petition for Administration template covers testate/intestate × single/multiple petitioners × domiciliary/ancillary. No more hunting through 12 different FLSSI form IDs. The document branches itself based on the matter.</p>
+    </div>
+    <div class="feature">
+      <div class="ico">▸</div>
+      <h3>Open Estate wizard</h3>
+      <p>Five questions — Formal/Summary, Testate/Intestate, Domiciliary/Ancillary, Single/Multiple petitioners, County — and the right filing bundle loads itself. Broward locals auto-attach when the county is Broward.</p>
+    </div>
+    <div class="feature">
+      <div class="ico">↻</div>
+      <h3>Cross-form data sharing</h3>
+      <p>Enter the decedent's SSN once. It populates every form in that matter — petition, oath, letters, notice, inventory. The PR's address. Bar numbers. Dates of death. Type it once, it's everywhere.</p>
+    </div>
+    <div class="feature">
+      <div class="ico">§</div>
+      <h3>Per-matter signing attorney</h3>
+      <p>Switch between David or Jill at the matter level. The signature block, bar number, firm email, and phone all swap automatically. Guardianship defaults to Jill; probate defaults to David; override either way when it matters.</p>
+    </div>
+    <div class="feature">
+      <div class="ico">⚖</div>
+      <h3>County-specific AI certifications</h3>
+      <p>Broward's AO 2026-03-Gen and Miami-Dade's AO 26-04 generative-AI certifications render automatically when (and only when) the matter's county matches. No certification on a Palm Beach filing; full certification on a Broward one.</p>
+    </div>
+    <div class="feature">
+      <div class="ico">$</div>
+      <h3>Typed asset rows with totals</h3>
+      <p>Estate assets are a repeating group with a real numeric field for value. The template renders <code>$485,000.00</code>, and totals compute automatically — available for the petition, the inventory, and anything else I wire into the same matter.</p>
+    </div>
+    <div class="feature">
+      <div class="ico">№</div>
+      <h3>Native Word numbering</h3>
+      <p>Paragraphs use Word's actual numbering engine — not a hardcoded "1." in front of the text. Which means when you or a paralegal edits the generated .docx and inserts a paragraph, the rest of the document renumbers itself. The way a legal document should.</p>
+    </div>
+    <div class="feature">
+      <div class="ico">⊞</div>
+      <h3>Local rules bundled in</h3>
+      <p>Broward and Miami-Dade mandatory checklists, criminal history affidavits, and local-form requirements are part of the filing bundle. Pull Open Estate (intestate, Broward) and you get the Petition, Order, Oath, Letters, Designation of Email, Broward opening checklist, and criminal history affidavit — together.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="section-eyebrow">Under the Hood</div>
+  <h2>Deliberately boring stack.</h2>
+  <p class="section-lede">Nothing fancy. No framework lock-in. Works on any modern browser and will still work in five years.</p>
+  <div class="tech-callout">
+    <div class="tech-row"><div class="key">Frontend</div><div class="val">Vanilla JavaScript. One app.js, one index.html, one styles.css. No React, no build step.</div></div>
+    <div class="tech-row"><div class="key">Docs</div><div class="val">docxtemplater + PizZip, in-browser. .docx files generate client-side — no server ever sees the data.</div></div>
+    <div class="tech-row"><div class="key">Storage</div><div class="val">Supabase Postgres with row-level security. Admin sees all rows; standard users see their own.</div></div>
+    <div class="tech-row"><div class="key">Auth</div><div class="val">Microsoft 365 OAuth. Sign in with your firm email; auto-admin on the allow-list.</div></div>
+    <div class="tech-row"><div class="key">Templates</div><div class="val">Python builder scripts emit .docx templates deterministically — no hand-editing Word files.</div></div>
+    <div class="tech-row"><div class="key">Hosting</div><div class="val">Static site on GitHub Pages. Deploys on <code style="font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:12.5px;color:var(--accent-2);background:rgba(201,169,97,0.08);padding:1px 5px;border-radius:3px;">git push</code>. No backend to babysit.</div></div>
+  </div>
+</section>
+
+<section>
+  <div class="section-eyebrow">Current State</div>
+  <h2>Used daily. Still being built.</h2>
+  <p class="section-lede">Honest scope — this is a working tool, not a demo. Some form families are rebuilt onto the smart-template pattern; the rest are on the legacy pattern and being migrated.</p>
+
+  <div class="stats">
+    <div class="stat"><div class="num">39</div><div class="lbl">forms in catalog</div></div>
+    <div class="stat"><div class="num">9</div><div class="lbl">smart templates</div></div>
+    <div class="stat"><div class="num">3</div><div class="lbl">counties supported</div></div>
+    <div class="stat"><div class="num">2</div><div class="lbl">practice areas</div></div>
+  </div>
+
+  <div class="scope-list">
+    <div class="scope-item"><span class="badge done">Done</span><div>All five guardianship petitions rebuilt on the new pattern — incapacity, emergency temp, property-only, person-and-property.</div></div>
+    <div class="scope-item"><span class="badge done">Done</span><div>Formal administration opening — one Petition, one Order, one Oath, one Letters template covers all eight variants (testate/intestate × domiciliary/ancillary × single/multiple).</div></div>
+    <div class="scope-item"><span class="badge live">Live</span><div>Broward County mandatory checklists, criminal history affidavit, and local requirements — wired into the opening bundle.</div></div>
+    <div class="scope-item"><span class="badge wip">In progress</span><div>Summary administration, discharge, inventory, notice to creditors — still on the legacy pattern, being consolidated onto the smart-template system.</div></div>
+    <div class="scope-item"><span class="badge wip">Next</span><div>Matter Interview — lift shared facts (decedent, beneficiaries, assets, PR) up to the matter itself so no form "owns" the data.</div></div>
+  </div>
+</section>
+
+<section>
+  <div class="section-eyebrow">The Interface</div>
+  <h2>What it actually looks like.</h2>
+  <p class="section-lede">Clients on the left, matter work on the right. The Open Estate wizard picks the filing bundle; the lifecycle accordion holds Open / Administration / Closing.</p>
+
+  <div class="mockup">
+    <div class="mockup-bar">
+      <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+      <div class="url">davidshulman22.github.io/guardianship-forms</div>
+      <div style="width:56px"></div>
+    </div>
+    <div class="mockup-body">
+      <div class="m-side">
+        <div class="h">Clients</div>
+        <div class="client">Doe, Jane</div>
+        <div class="client active">Sherman, Aldo</div>
+          <div class="matter active">▸ Estate of Aldo Sherman</div>
+        <div class="client">Torres, Margaret</div>
+          <div class="matter">Estate of Helen Torres</div>
+          <div class="matter">Guardianship of Robert Torres</div>
+        <div class="client">Villareal, Nancy</div>
+      </div>
+
+      <div class="m-main">
+        <div class="m-matter-head">
+          <h1>Estate of Aldo Sherman</h1>
+          <div class="meta">Probate · Broward County · Attorney: David A. Shulman · File No. pending</div>
+        </div>
+
+        <!-- Open Estate panel -->
+        <div class="m-panel">
+          <div class="phead">
+            <div>
+              <h3>Open Estate</h3>
+              <div class="sub">Answer these questions to load the correct forms</div>
+            </div>
+            <div class="chev">▾</div>
+          </div>
+          <div class="pbody">
+            <div class="m-wizard-q">
+              <div class="m-question">
+                <label>Administration</label>
+                <div class="m-toggle"><button class="on">Formal</button><button>Summary</button></div>
+              </div>
+              <div class="m-question">
+                <label>Will</label>
+                <div class="m-toggle"><button class="on">Testate</button><button>Intestate</button></div>
+              </div>
+              <div class="m-question">
+                <label>Jurisdiction</label>
+                <div class="m-toggle"><button class="on">Domiciliary</button><button>Ancillary</button></div>
+              </div>
+              <div class="m-question">
+                <label>Petitioners</label>
+                <div class="m-toggle"><button class="on">Single</button><button>Multiple</button></div>
+              </div>
+              <div class="m-question">
+                <label>County</label>
+                <select class="m-select" disabled><option>Broward</option></select>
+              </div>
+              <div class="m-question" style="display:flex;align-items:end;">
+                <button class="m-loadbtn">Load Forms</button>
+              </div>
+            </div>
+
+            <div class="m-formlist">
+              <span class="pill">P3-PETITION</span>
+              <span class="pill">P3-ORDER</span>
+              <span class="pill">P3-OATH</span>
+              <span class="pill">P3-LETTERS</span>
+              <span class="pill">P1-0900</span>
+              <span class="pill">BW-0010</span>
+              <span class="pill">BW-0020</span>
+            </div>
+
+            <div class="m-fields">
+              <h4>Sample: Petition for Administration</h4>
+              <div class="m-field"><div class="k">Decedent</div><div class="v">Aldo Sherman</div></div>
+              <div class="m-field"><div class="k">Date of death</div><div class="v">March 12, 2026</div></div>
+              <div class="m-field"><div class="k">Domicile</div><div class="v">Broward County, Florida</div></div>
+              <div class="m-field"><div class="k">Petitioner</div><div class="v">Caroline Sherman — surviving spouse</div></div>
+              <div class="m-field"><div class="k">PR · FL resident</div><div class="v">Caroline Sherman ✓</div></div>
+              <div class="m-field"><div class="k">Asset · home</div><div class="v num">$620,000.00</div></div>
+              <div class="m-field"><div class="k">Asset · accts</div><div class="v num">$84,500.00</div></div>
+              <div class="m-field"><div class="k">Asset · auto</div><div class="v num">$18,000.00</div></div>
+              <div class="m-field"><div class="k">Estate total</div><div class="v num"><strong>$722,500.00</strong></div></div>
+            </div>
+
+            <div class="m-aside">Broward AI certification will render automatically on the Petition · Order · Letters · BW-0010 checklist.</div>
+          </div>
+        </div>
+
+        <!-- Estate Admin panel (collapsed) -->
+        <div class="m-panel admin collapsed">
+          <div class="phead">
+            <div><h3>Estate Administration</h3></div>
+            <div class="chev">▸</div>
+          </div>
+        </div>
+
+        <!-- Close Estate panel (collapsed) -->
+        <div class="m-panel close collapsed">
+          <div class="phead">
+            <div><h3>Close Estate</h3></div>
+            <div class="chev">▸</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="section-eyebrow">The Result</div>
+  <div class="quote">
+    <p class="q">What used to take thirty minutes of copy-pasting between five separate FLSSI forms now takes two minutes from new-matter to zip file. And the numbered paragraphs actually renumber when you edit them.</p>
+    <div class="attr">— The whole point of building this.</div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="brand">GINSBERG SHULMAN, PL</div>
+    <div>Built by David A. Shulman · Fla. Bar 150762 · Board Certified, Wills Trusts &amp; Estates</div>
+    <div>300 SE 2nd St, Suite 600 · Fort Lauderdale, FL 33301 · 954-990-0896 · <a href="https://ginsbergshulman.com">ginsbergshulman.com</a></div>
+    <div class="rule" style="margin: 14px 0"></div>
+    <div style="font-size: 12px; color: var(--text-3);">Internal practice tool. Not for distribution or sale. FLSSI forms are subject to their own licensing terms. This page is a description of the tool; it is not the tool itself.</div>
+  </div>
+</footer>
+
+</div>
+</body>
+</html>
