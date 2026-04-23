@@ -1839,7 +1839,18 @@ function renderAddressField(opts) {
         wrap.appendChild(labelEl);
     }
 
-    const val = (opts.value && typeof opts.value === 'object') ? opts.value : {};
+    // Legacy migration: matters created before the structured-address rollout
+    // store addresses as plain strings. Show them as a "foreign" (free-text)
+    // entry so the user doesn't lose the data on first interaction — they can
+    // re-type into the US grid later if the address is actually domestic.
+    let val;
+    if (opts.value && typeof opts.value === 'object') {
+        val = opts.value;
+    } else if (typeof opts.value === 'string' && opts.value.trim()) {
+        val = { foreign: true, foreign_text: opts.value };
+    } else {
+        val = {};
+    }
     const isForeign = val.foreign === true;
 
     const mkInput = (key, attrs) => {
