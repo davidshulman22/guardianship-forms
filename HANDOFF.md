@@ -1,20 +1,38 @@
 # CHAT HANDOFF — RESUME-READY
 **Generated:** 2026-04-23 (evening)
 **Source:** Claude Code session — questionnaire UX overhaul (Phases 1–4)
-**Status:** 4 phases of UX cleanup committed on branch `phase1-2-questionnaire-cleanup` — UNMERGED, needs live test before merging to main
+**Status:** 4 phases of UX cleanup committed + pushed on branch `phase1-2-questionnaire-cleanup` — UNMERGED, needs live test before merging to main
 
 ---
 
 # 0. READ FIRST — State as of 2026-04-23 evening
 
-**Major branch of work done today, sitting on `phase1-2-questionnaire-cleanup`.** Five commits based on live-test feedback from the `Bush, George 2026-04-23` bundle. All four phases audit-clean and syntax-clean; verified visually in a preview render. **Not tested end-to-end through the real OAuth'd app yet.**
+**Major branch of work done today, sitting on `phase1-2-questionnaire-cleanup`.** Six commits based on live-test feedback from the `Bush, George 2026-04-23` bundle. All four phases audit-clean and syntax-clean; verified visually in a preview render. **Not tested end-to-end through the real OAuth'd app yet.**
+
+**Branch is pushed to GitHub:** `origin/phase1-2-questionnaire-cleanup`
+Compare/merge URL: https://github.com/davidshulman22/guardianship-forms/compare/main...phase1-2-questionnaire-cleanup
+
+**To pick up on another computer or in a new session:**
+```bash
+cd "/Users/davidshulman/Library/CloudStorage/Dropbox-GinsbergShulman,PL/David Shulman/FLSSI Forms/Forms Project"
+git fetch origin
+git checkout phase1-2-questionnaire-cleanup
+git pull   # ensure up to date
+```
+If the project isn't cloned on the other machine yet:
+```bash
+git clone https://github.com/davidshulman22/guardianship-forms.git
+cd guardianship-forms
+git checkout phase1-2-questionnaire-cleanup
+```
 
 Branch commits (newest first):
-1. `aedd90b` Phase 4 fix: preserve legacy string addresses on migration
-2. `77c96cf` Phase 4: Structured address field type with foreign toggle
-3. `b5fbff6` Phase 3: Date field type + SSN pattern input
-4. `e505ef8` Phase 2: Questionnaire UX improvements
-5. `5a23de3` Phase 1: Drop draft-time-unknown fields from formal-admin
+1. `b405852` Update HANDOFF for Phase 1-4 questionnaire UX branch
+2. `aedd90b` Phase 4 fix: preserve legacy string addresses on migration
+3. `77c96cf` Phase 4: Structured address field type with foreign toggle
+4. `b5fbff6` Phase 3: Date field type + SSN pattern input
+5. `e505ef8` Phase 2: Questionnaire UX improvements
+6. `5a23de3` Phase 1: Drop draft-time-unknown fields from formal-admin
 
 Diff summary: 10 files, +650 / −134.
 
@@ -129,16 +147,49 @@ Unchanged from prior handoff:
 
 # 6. Remaining Work
 
-**Priority 0 — Merge this branch (IMMEDIATE):**
-- Live test the branch in the browser end-to-end. Checkout `phase1-2-questionnaire-cleanup`, hard-refresh `http://localhost:8765`, run the wizard on a fresh matter, exercise each new feature:
-  - Petitioner-same-as-PR auto-copy (check → verify rendering shows PR names as petitioners)
-  - Structured address (fill out all fields, try foreign toggle)
-  - Date inputs, SSN pattern, minor gate on beneficiary year-of-birth
-  - Venue checkboxes → prose composition in output
-  - Row lock on PRs (should NOT have +Add Row when single-PR wizard answer)
-- Generate a full bundle, open each .docx, verify grammar is intact.
-- If everything's clean: `git checkout main && git merge phase1-2-questionnaire-cleanup && git push`.
-- If bugs found: fix on the branch, re-test, then merge.
+**Priority 0 — Live test + merge the branch (IMMEDIATE):**
+
+Steps (cold-start friendly — works on Mac Studio, MacBook Air, or a fresh clone):
+
+1. Get onto the branch:
+   ```bash
+   cd "/Users/davidshulman/Library/CloudStorage/Dropbox-GinsbergShulman,PL/David Shulman/FLSSI Forms/Forms Project"
+   git fetch origin
+   git checkout phase1-2-questionnaire-cleanup
+   git pull
+   ```
+2. Start local server if needed: `python3 -m http.server 8765` (or use `scripts/serve.py`). Open `http://localhost:8765`. Hard-refresh (Cmd+Shift+R).
+3. Sign in with Microsoft OAuth.
+4. Create a new test matter (any decedent name, Broward county, testate, single petitioner, domiciliary).
+5. Run the Open Estate wizard, load forms.
+6. Exercise each new feature in the questionnaire:
+   - **Petitioner-same-as-PR** checkbox at top of Petitioners section — toggle it, verify the Petitioners repeating group hides/shows
+   - **Structured address** (Decedent's last known address) — fill out street, city, state dropdown (try picking FL), zip. Also try the "Foreign" toggle.
+   - **SSN last 4** — should reject more than 4 chars and non-digits
+   - **Date of death** — native date picker
+   - **Venue** — three §733.101 checkboxes + "Other" free-text
+   - **Red warning above Proposed PR section** about felony disqualification (visually distinctive)
+   - **PR row lock** — should NOT show "+ Add Row" (single-PR wizard answer)
+   - **Beneficiaries** — add a row, check "Is a minor" → year-of-birth field should appear. Uncheck → disappears.
+7. Click Generate, open the .docx files. Verify:
+   - Petitioner names auto-filled from PR (if same-as-PR was checked)
+   - Address renders as `"123 Main St, Apt 4, Miami, FL 33101"` (or free-text if foreign)
+   - Dates render as `"March 2, 2026"` not ISO
+   - Venue section reads as prose (composed from the checkbox selections)
+   - Signing date blank is `___ day of __________, 20__`
+   - Notary mode has both `☐ online notarization or ☐ physical presence`
+   - Order says "to serve without bond" (no bond question anymore)
+   - Beneficiary table shows `N/A` for non-minors
+8. If clean: merge + push.
+   ```bash
+   git checkout main
+   git merge phase1-2-questionnaire-cleanup
+   git push
+   ```
+   GitHub Pages will redeploy automatically.
+9. If bugs found: tell the new Claude session what's broken, fix on the branch, re-test, then merge.
+
+**Rollback plan if merge was a mistake:** `git reset --hard HEAD~1 && git push --force-with-lease` on main (or better, `git revert <merge-commit>` for a forward-only fix).
 
 **Priority 1 — Complete probate template rebuild (IN PROGRESS):**
 - [x] Formal admin opening — **DONE** via 4 smart templates (P3-PETITION / P3-OATH / P3-ORDER / P3-LETTERS)
@@ -202,17 +253,31 @@ Unchanged from prior handoff:
 
 ## Handoff — GS Court Forms
 
-**Where it is:** `/Users/davidshulman/Library/CloudStorage/Dropbox-GinsbergShulman,PL/David Shulman/FLSSI Forms/Forms Project`
-**Repo:** `https://github.com/davidshulman22/guardianship-forms`
-**Live:** `https://davidshulman22.github.io/guardianship-forms/`
-**Local:** `cd` to project dir, existing Python server usually running on `http://localhost:8765`. Hard-refresh (Cmd+Shift+R) to bust cached forms.json / app.js.
+**Where it is (Mac Studio / MacBook Air):** `/Users/davidshulman/Library/CloudStorage/Dropbox-GinsbergShulman,PL/David Shulman/FLSSI Forms/Forms Project`
+**Repo:** `https://github.com/davidshulman22/guardianship-forms` (username: `davidshulman22`)
+**Live:** `https://davidshulman22.github.io/guardianship-forms/` (GitHub Pages, deploys from `main`)
+**Local dev:** `cd` to project dir, run `python3 -m http.server 8765` (or use the running one). Open `http://localhost:8765`. Hard-refresh (Cmd+Shift+R) to bust cached forms.json / app.js.
 
 ### Current branch state
 
-- **`main`** — pre-Bush-feedback state (2026-04-23 morning). 4 smart formal-admin templates + 5 guardianship on new pattern.
-- **`phase1-2-questionnaire-cleanup`** — UNMERGED branch with 5 commits implementing the Bush-feedback UX overhaul. Needs live test before merging.
+- **`main`** (origin synced) — pre-Bush-feedback state (2026-04-23 morning). 4 smart formal-admin templates + 5 guardianship on new pattern. **This is what the live GitHub Pages site serves.**
+- **`phase1-2-questionnaire-cleanup`** (origin synced) — UNMERGED branch with 6 commits implementing the Bush-feedback UX overhaul. Needs live test before merging.
+  - GitHub: https://github.com/davidshulman22/guardianship-forms/tree/phase1-2-questionnaire-cleanup
+  - Compare: https://github.com/davidshulman22/guardianship-forms/compare/main...phase1-2-questionnaire-cleanup
 
-**To pick up the branch work:** `git checkout phase1-2-questionnaire-cleanup`, refresh localhost:8765, exercise the new questionnaire (see HANDOFF §6 Priority 0 for the test checklist), merge to main if clean.
+**To pick up the branch on any machine:**
+```bash
+cd "/Users/davidshulman/Library/CloudStorage/Dropbox-GinsbergShulman,PL/David Shulman/FLSSI Forms/Forms Project"
+git fetch origin
+git checkout phase1-2-questionnaire-cleanup
+git pull
+```
+Then refresh `http://localhost:8765`, exercise the new questionnaire (see §6 Priority 0 test checklist below), merge to main if clean:
+```bash
+git checkout main
+git merge phase1-2-questionnaire-cleanup
+git push
+```
 
 ### What's in the branch (summary)
 - Dropped draft-time-unknown fields (signing dates, notary mode, bond, will-status checkboxes). Templates render blanks/defaults.
