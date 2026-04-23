@@ -960,6 +960,540 @@
       ]
     },
     {
+      "id": "P3-PETITION",
+      "name": "Petition for Administration",
+      "template": "templates/P3-PETITION.docx",
+      "sections": [
+        {
+          "title": "Petitioner(s)",
+          "fields": [
+            {
+              "name": "petitioners",
+              "label": "Petitioner(s) \u2014 add one row per person filing the petition",
+              "type": "repeating_group",
+              "subfields": [
+                {
+                  "name": "pet_name",
+                  "label": "Name",
+                  "type": "text"
+                },
+                {
+                  "name": "pet_address",
+                  "label": "Address",
+                  "type": "text"
+                },
+                {
+                  "name": "pet_interest",
+                  "label": "Interest in estate (e.g. 'surviving spouse', 'a beneficiary')",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "name": "petitioner_has_prior_conviction",
+              "label": "Any petitioner has been convicted of elder/disabled abuse, neglect, or exploitation (Fla. Stat. 825.101)",
+              "type": "checkbox"
+            }
+          ]
+        },
+        {
+          "title": "Decedent Information",
+          "fields": [
+            {
+              "name": "decedent_full_name",
+              "label": "Decedent full legal name",
+              "type": "text"
+            },
+            {
+              "name": "decedent_address",
+              "label": "Decedent's last known address",
+              "type": "text"
+            },
+            {
+              "name": "decedent_ssn_last4",
+              "label": "Last 4 digits of decedent's SSN",
+              "type": "text"
+            },
+            {
+              "name": "decedent_death_date",
+              "label": "Date of death (e.g. 'March 2, 2026')",
+              "type": "text"
+            },
+            {
+              "name": "decedent_death_place",
+              "label": "Place of death (city/county where died)",
+              "type": "text"
+            },
+            {
+              "name": "decedent_domicile",
+              "label": "County of domicile at death (FL residents only)",
+              "type": "text"
+            },
+            {
+              "name": "decedent_domicile_state",
+              "label": "State/country of domicile (ancillary only)",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "title": "Beneficiaries",
+          "fields": [
+            {
+              "name": "beneficiaries",
+              "label": "Beneficiaries of the estate (and surviving spouse, if any)",
+              "type": "repeating_group",
+              "subfields": [
+                {
+                  "name": "ben_name",
+                  "label": "Name",
+                  "type": "text"
+                },
+                {
+                  "name": "ben_address",
+                  "label": "Address",
+                  "type": "text"
+                },
+                {
+                  "name": "ben_relationship",
+                  "label": "Relationship to decedent",
+                  "type": "text"
+                },
+                {
+                  "name": "ben_year_of_birth",
+                  "label": "Year of birth (if minor)",
+                  "type": "text"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Venue",
+          "fields": [
+            {
+              "name": "venue_reason",
+              "label": "Reason venue is proper in this county",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "title": "Proposed Personal Representative(s)",
+          "fields": [
+            {
+              "name": "prs",
+              "label": "Personal Representative(s) \u2014 add one row per PR",
+              "type": "repeating_group",
+              "subfields": [
+                {
+                  "name": "pr_name",
+                  "label": "Name",
+                  "type": "text"
+                },
+                {
+                  "name": "pr_address",
+                  "label": "Address",
+                  "type": "text"
+                },
+                {
+                  "name": "pr_is_fl_resident",
+                  "label": "FL resident",
+                  "type": "checkbox"
+                },
+                {
+                  "name": "pr_relationship",
+                  "label": "Relationship to decedent (non-FL resident only)",
+                  "type": "text"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Preference (\u00a7733.301)",
+          "fields": [
+            {
+              "name": "higher_preference_exists",
+              "label": "Someone else has equal or higher statutory preference to serve as PR",
+              "type": "checkbox"
+            },
+            {
+              "name": "higher_preference_names",
+              "label": "If yes, name(s) of person(s) with higher preference",
+              "type": "text"
+            },
+            {
+              "name": "higher_preference_formal_notice",
+              "label": "If yes, formal notice will be served on such person(s)",
+              "type": "checkbox"
+            }
+          ]
+        },
+        {
+          "title": "Assets",
+          "fields": [
+            {
+              "name": "estate_assets",
+              "label": "Estate assets \u2014 add one row per asset",
+              "type": "repeating_group",
+              "subfields": [
+                {
+                  "name": "asset_description",
+                  "label": "Description",
+                  "type": "text"
+                },
+                {
+                  "name": "asset_value",
+                  "label": "Approximate value ($)",
+                  "type": "number"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Tax + Ancillary Proceedings",
+          "fields": [
+            {
+              "name": "estate_tax_return_required",
+              "label": "Federal estate tax return will be required",
+              "type": "checkbox"
+            },
+            {
+              "name": "domiciliary_proceedings_pending",
+              "label": "Domiciliary/principal proceedings pending in another jurisdiction (auto-set for ancillary)",
+              "type": "checkbox"
+            },
+            {
+              "name": "domiciliary_court_name",
+              "label": "Domiciliary court name (e.g. 'Surrogate's Court, New York County')",
+              "type": "text"
+            },
+            {
+              "name": "domiciliary_court_address",
+              "label": "Domiciliary court address",
+              "type": "text"
+            },
+            {
+              "name": "domiciliary_representative",
+              "label": "Domiciliary representative name",
+              "type": "text"
+            },
+            {
+              "name": "domiciliary_representative_address",
+              "label": "Domiciliary representative address",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "title": "Will Disposition (testate only)",
+          "fields": [
+            {
+              "name": "will_date",
+              "label": "Will date (e.g. 'January 15')",
+              "type": "text"
+            },
+            {
+              "name": "will_year",
+              "label": "Will year",
+              "type": "text"
+            },
+            {
+              "name": "codicil_dates",
+              "label": "Codicil date(s) (blank if none)",
+              "type": "text"
+            },
+            {
+              "name": "will_status_original",
+              "label": "Original will is in the court's possession / accompanies this petition",
+              "type": "checkbox"
+            },
+            {
+              "name": "will_status_authenticated_other",
+              "label": "Authenticated copy from another jurisdiction accompanies this petition",
+              "type": "checkbox"
+            },
+            {
+              "name": "will_status_authenticated_notarial",
+              "label": "Authenticated copy of a notarial will (foreign notary) accompanies this petition",
+              "type": "checkbox"
+            }
+          ]
+        },
+        {
+          "title": "Signing Information",
+          "fields": [
+            {
+              "name": "signing_month",
+              "label": "Month",
+              "type": "text"
+            },
+            {
+              "name": "signing_year",
+              "label": "Year",
+              "type": "text"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P3-OATH",
+      "name": "Oath of Personal Representative and Designation of Resident Agent",
+      "template": "templates/P3-OATH.docx",
+      "sections": [
+        {
+          "title": "Personal Representative(s)",
+          "fields": [
+            {
+              "name": "prs",
+              "label": "Personal Representative(s) \u2014 each will sign",
+              "type": "repeating_group",
+              "subfields": [
+                {
+                  "name": "pr_name",
+                  "label": "Name",
+                  "type": "text"
+                },
+                {
+                  "name": "pr_address",
+                  "label": "Address",
+                  "type": "text"
+                },
+                {
+                  "name": "pr_is_fl_resident",
+                  "label": "FL resident",
+                  "type": "checkbox"
+                },
+                {
+                  "name": "pr_relationship",
+                  "label": "Relationship to decedent (non-FL resident only)",
+                  "type": "text"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Resident Agent",
+          "fields": [
+            {
+              "name": "resident_agent_name",
+              "label": "Resident agent name (usually the attorney)",
+              "type": "text"
+            },
+            {
+              "name": "resident_agent_address",
+              "label": "Resident agent business address (Florida)",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "title": "Decedent",
+          "fields": [
+            {
+              "name": "decedent_full_name",
+              "label": "Decedent full legal name",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "title": "Notarization",
+          "fields": [
+            {
+              "name": "notary_online",
+              "label": "Signed via online notarization (vs. physical presence)",
+              "type": "checkbox"
+            },
+            {
+              "name": "signing_month",
+              "label": "Month",
+              "type": "text"
+            },
+            {
+              "name": "signing_year",
+              "label": "Year",
+              "type": "text"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P3-ORDER",
+      "name": "Order Admitting Will / Appointing Personal Representative",
+      "template": "templates/P3-ORDER.docx",
+      "sections": [
+        {
+          "title": "Petitioner(s)",
+          "fields": [
+            {
+              "name": "petitioners",
+              "label": "Petitioner(s)",
+              "type": "repeating_group",
+              "subfields": [
+                {
+                  "name": "pet_name",
+                  "label": "Name",
+                  "type": "text"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Personal Representative(s)",
+          "fields": [
+            {
+              "name": "prs",
+              "label": "Personal Representative(s) being appointed",
+              "type": "repeating_group",
+              "subfields": [
+                {
+                  "name": "pr_name",
+                  "label": "Name",
+                  "type": "text"
+                },
+                {
+                  "name": "pr_address",
+                  "label": "Address",
+                  "type": "text"
+                },
+                {
+                  "name": "pr_is_fl_resident",
+                  "label": "FL resident",
+                  "type": "checkbox"
+                },
+                {
+                  "name": "pr_relationship",
+                  "label": "Relationship to decedent (non-FL resident only)",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "name": "bond_required",
+              "label": "PR serves with bond (vs. without)",
+              "type": "checkbox"
+            }
+          ]
+        },
+        {
+          "title": "Decedent",
+          "fields": [
+            {
+              "name": "decedent_full_name",
+              "label": "Decedent full legal name",
+              "type": "text"
+            },
+            {
+              "name": "decedent_death_date",
+              "label": "Date of death",
+              "type": "text"
+            },
+            {
+              "name": "decedent_domicile",
+              "label": "County of domicile at death (FL residents only)",
+              "type": "text"
+            },
+            {
+              "name": "decedent_domicile_state",
+              "label": "State/country of domicile (ancillary only)",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "title": "Will Disposition (testate only)",
+          "fields": [
+            {
+              "name": "will_date",
+              "label": "Will date",
+              "type": "text"
+            },
+            {
+              "name": "will_year",
+              "label": "Will year",
+              "type": "text"
+            },
+            {
+              "name": "codicil_dates",
+              "label": "Codicil date(s) (blank if none)",
+              "type": "text"
+            },
+            {
+              "name": "will_is_self_proved",
+              "label": "Will is self-proved",
+              "type": "checkbox"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P3-LETTERS",
+      "name": "Letters of Administration",
+      "template": "templates/P3-LETTERS.docx",
+      "sections": [
+        {
+          "title": "Personal Representative(s)",
+          "fields": [
+            {
+              "name": "prs",
+              "label": "Personal Representative(s) being issued letters",
+              "type": "repeating_group",
+              "subfields": [
+                {
+                  "name": "pr_name",
+                  "label": "Name",
+                  "type": "text"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Decedent",
+          "fields": [
+            {
+              "name": "decedent_full_name",
+              "label": "Decedent full legal name",
+              "type": "text"
+            },
+            {
+              "name": "decedent_death_date",
+              "label": "Date of death",
+              "type": "text"
+            },
+            {
+              "name": "decedent_domicile",
+              "label": "County of domicile at death (FL residents only)",
+              "type": "text"
+            },
+            {
+              "name": "decedent_domicile_state",
+              "label": "State/country of domicile (ancillary only)",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "title": "Will Disposition (testate only)",
+          "fields": [
+            {
+              "name": "codicil_dates",
+              "label": "Codicil date(s) (blank if none)",
+              "type": "text"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "P2-0204",
       "name": "Petition for Summary Administration (testate, single petitioner)",
       "template": "templates/P2-0204.docx",
@@ -3468,737 +4002,6 @@
             {
               "name": "attorney_phone",
               "label": "Telephone",
-              "type": "text"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "P3-0100",
-      "name": "Petition for Administration (testate, FL resident, single petitioner)",
-      "template": "templates/P3-0100.docx",
-      "sections": [
-        {
-          "title": "Petitioner",
-          "fields": [
-            {
-              "name": "petitioner_interest",
-              "label": "Petitioner's interest in estate (e.g. 'the surviving spouse', 'a beneficiary')",
-              "type": "text"
-            },
-            {
-              "name": "petitioner_address",
-              "label": "Petitioner's address",
-              "type": "text"
-            },
-            {
-              "name": "petitioner_has_prior_conviction",
-              "label": "Petitioner has been convicted of elder/disabled abuse, neglect, or exploitation (Fla. Stat. 825.101)",
-              "type": "checkbox"
-            }
-          ]
-        },
-        {
-          "title": "Decedent Information",
-          "fields": [
-            {
-              "name": "decedent_full_name",
-              "label": "Decedent full legal name",
-              "type": "text"
-            },
-            {
-              "name": "decedent_address",
-              "label": "Decedent's last known address",
-              "type": "text"
-            },
-            {
-              "name": "decedent_ssn_last4",
-              "label": "Last 4 digits of decedent's SSN",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_date",
-              "label": "Date of death (full: 'March 2, 2026')",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_place",
-              "label": "Place of death (city/county where died)",
-              "type": "text"
-            },
-            {
-              "name": "decedent_domicile",
-              "label": "County of domicile at death",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Beneficiaries",
-          "fields": [
-            {
-              "name": "beneficiaries",
-              "label": "Beneficiaries of the estate (and surviving spouse, if any)",
-              "type": "repeating_group",
-              "subfields": [
-                {
-                  "name": "ben_name",
-                  "label": "Name",
-                  "type": "text"
-                },
-                {
-                  "name": "ben_address",
-                  "label": "Address",
-                  "type": "text"
-                },
-                {
-                  "name": "ben_relationship",
-                  "label": "Relationship to decedent",
-                  "type": "text"
-                },
-                {
-                  "name": "ben_year_of_birth",
-                  "label": "Year of birth (if minor)",
-                  "type": "text"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "title": "Venue",
-          "fields": [
-            {
-              "name": "venue_reason",
-              "label": "Reason venue is proper in this county",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Proposed Personal Representative",
-          "fields": [
-            {
-              "name": "pr_name",
-              "label": "Proposed PR's name",
-              "type": "text"
-            },
-            {
-              "name": "pr_address",
-              "label": "PR's address",
-              "type": "text"
-            },
-            {
-              "name": "pr_is_fl_resident",
-              "label": "PR is a Florida resident",
-              "type": "checkbox"
-            },
-            {
-              "name": "pr_relationship",
-              "label": "If non-FL resident, relationship to decedent (spouse, parent, child, sibling, etc.)",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Preference (\u00a7733.301)",
-          "fields": [
-            {
-              "name": "higher_preference_exists",
-              "label": "Someone else has equal or higher statutory preference to serve as PR",
-              "type": "checkbox"
-            },
-            {
-              "name": "higher_preference_names",
-              "label": "If yes, name(s) of person(s) with higher preference",
-              "type": "text"
-            },
-            {
-              "name": "higher_preference_formal_notice",
-              "label": "If yes, formal notice will be served on such person(s)",
-              "type": "checkbox"
-            }
-          ]
-        },
-        {
-          "title": "Assets",
-          "fields": [
-            {
-              "name": "estate_assets_description",
-              "label": "Nature and approximate value of estate assets",
-              "type": "textarea"
-            }
-          ]
-        },
-        {
-          "title": "Tax + Ancillary Proceedings",
-          "fields": [
-            {
-              "name": "estate_tax_return_required",
-              "label": "Federal estate tax return will be required",
-              "type": "checkbox"
-            },
-            {
-              "name": "domiciliary_proceedings_pending",
-              "label": "Domiciliary/principal proceedings are pending in another jurisdiction",
-              "type": "checkbox"
-            },
-            {
-              "name": "domiciliary_court_name",
-              "label": "Domiciliary court name (e.g. 'Surrogate's Court, New York County')",
-              "type": "text"
-            },
-            {
-              "name": "domiciliary_court_address",
-              "label": "Domiciliary court address",
-              "type": "text"
-            },
-            {
-              "name": "domiciliary_representative",
-              "label": "Domiciliary representative name",
-              "type": "text"
-            },
-            {
-              "name": "domiciliary_representative_address",
-              "label": "Domiciliary representative address",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Will Disposition",
-          "fields": [
-            {
-              "name": "will_date",
-              "label": "Will date (e.g. 'January 15')",
-              "type": "text"
-            },
-            {
-              "name": "will_year",
-              "label": "Will year",
-              "type": "text"
-            },
-            {
-              "name": "codicil_dates",
-              "label": "Codicil date(s) (blank if no codicil)",
-              "type": "text"
-            },
-            {
-              "name": "will_status_original",
-              "label": "Original will is in the possession of the court / accompanies this petition",
-              "type": "checkbox"
-            },
-            {
-              "name": "will_status_authenticated_other",
-              "label": "Authenticated copy from another jurisdiction accompanies this petition",
-              "type": "checkbox"
-            },
-            {
-              "name": "will_status_authenticated_notarial",
-              "label": "Authenticated copy of a notarial will (foreign notary) accompanies this petition",
-              "type": "checkbox"
-            }
-          ]
-        },
-        {
-          "title": "Signing Information",
-          "fields": [
-            {
-              "name": "signing_month",
-              "label": "Month",
-              "type": "text"
-            },
-            {
-              "name": "signing_year",
-              "label": "Year",
-              "type": "text"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "P3-0120",
-      "name": "Petition for Administration (intestate, FL resident, single petitioner)",
-      "template": "templates/P3-0120.docx",
-      "sections": [
-        {
-          "title": "Petitioner",
-          "fields": [
-            {
-              "name": "petitioner_name",
-              "label": "Petitioner name",
-              "type": "text"
-            },
-            {
-              "name": "petitioner_interest",
-              "label": "Interest in estate",
-              "type": "text"
-            },
-            {
-              "name": "petitioner_address",
-              "label": "Petitioner address",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Decedent Information",
-          "fields": [
-            {
-              "name": "decedent_full_name",
-              "label": "Decedent full name",
-              "type": "text"
-            },
-            {
-              "name": "decedent_address",
-              "label": "Last known address",
-              "type": "text"
-            },
-            {
-              "name": "decedent_ssn_last4",
-              "label": "Last 4 digits of SSN",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_date",
-              "label": "Date of death",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_year",
-              "label": "Year of death",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_place",
-              "label": "Place of death",
-              "type": "text"
-            },
-            {
-              "name": "decedent_domicile",
-              "label": "Domicile county at death",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Beneficiaries",
-          "fields": [
-            {
-              "name": "beneficiaries",
-              "label": "Beneficiaries of the estate",
-              "type": "repeating_group",
-              "subfields": [
-                {
-                  "name": "ben_name",
-                  "label": "Name",
-                  "type": "text"
-                },
-                {
-                  "name": "ben_address",
-                  "label": "Address",
-                  "type": "text"
-                },
-                {
-                  "name": "ben_relationship",
-                  "label": "Relationship",
-                  "type": "text"
-                },
-                {
-                  "name": "ben_year_of_birth",
-                  "label": "Year of birth (if minor)",
-                  "type": "text"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "title": "Venue",
-          "fields": [
-            {
-              "name": "venue_reason",
-              "label": "Reason venue is proper",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Proposed Personal Representative",
-          "fields": [
-            {
-              "name": "pr_name",
-              "label": "Proposed PR name",
-              "type": "text"
-            },
-            {
-              "name": "pr_address",
-              "label": "PR address",
-              "type": "text"
-            },
-            {
-              "name": "pr_relationship",
-              "label": "Relationship to decedent (if non-FL resident)",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Domiciliary Proceedings",
-          "fields": [
-            {
-              "name": "domiciliary_court_address",
-              "label": "Address of domiciliary court",
-              "type": "text"
-            },
-            {
-              "name": "domiciliary_representative",
-              "label": "Domiciliary representative name",
-              "type": "text"
-            },
-            {
-              "name": "domiciliary_representative_address",
-              "label": "Domiciliary representative address",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Signing and Attorney",
-          "fields": [
-            {
-              "name": "signing_day",
-              "label": "Day",
-              "type": "text"
-            },
-            {
-              "name": "signing_month",
-              "label": "Month",
-              "type": "text"
-            },
-            {
-              "name": "signing_year",
-              "label": "Year",
-              "type": "text"
-            },
-            {
-              "name": "attorney_email",
-              "label": "Attorney email",
-              "type": "text"
-            },
-            {
-              "name": "attorney_bar_no",
-              "label": "Florida Bar No.",
-              "type": "text"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "P3-0420",
-      "name": "Order Admitting Will and Appointing PR (self-proved, single)",
-      "template": "templates/P3-0420.docx",
-      "sections": [
-        {
-          "title": "Case Information",
-          "fields": [
-            {
-              "name": "decedent_full_name",
-              "label": "Decedent full name",
-              "type": "text"
-            },
-            {
-              "name": "pr_name",
-              "label": "Personal representative name",
-              "type": "text"
-            },
-            {
-              "name": "will_date",
-              "label": "Date of will",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_date",
-              "label": "Date of death",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_year",
-              "label": "Year of death",
-              "type": "text"
-            },
-            {
-              "name": "will_year",
-              "label": "Year of will",
-              "type": "text"
-            },
-            {
-              "name": "witnesses",
-              "label": "Attesting witnesses",
-              "type": "text"
-            },
-            {
-              "name": "bond_amount",
-              "label": "Bond amount",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Order",
-          "fields": [
-            {
-              "name": "order_date",
-              "label": "Order date",
-              "type": "text"
-            },
-            {
-              "name": "order_year",
-              "label": "Order year",
-              "type": "text"
-            },
-            {
-              "name": "judge_name",
-              "label": "Circuit Judge name",
-              "type": "text"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "P3-0440",
-      "name": "Order Appointing Personal Representative (intestate, single)",
-      "template": "templates/P3-0440.docx",
-      "sections": [
-        {
-          "title": "Case Information",
-          "fields": [
-            {
-              "name": "petitioner_name",
-              "label": "Petitioner name",
-              "type": "text"
-            },
-            {
-              "name": "decedent_full_name",
-              "label": "Decedent full name",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_date",
-              "label": "Date of death",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_year",
-              "label": "Year of death",
-              "type": "text"
-            },
-            {
-              "name": "pr_name",
-              "label": "Personal representative name",
-              "type": "text"
-            },
-            {
-              "name": "pr_entitlement_reason",
-              "label": "Reason PR is entitled to appointment",
-              "type": "text"
-            },
-            {
-              "name": "bond_amount",
-              "label": "Bond amount",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Order",
-          "fields": [
-            {
-              "name": "order_date",
-              "label": "Order date",
-              "type": "text"
-            },
-            {
-              "name": "order_year",
-              "label": "Order year",
-              "type": "text"
-            },
-            {
-              "name": "judge_name",
-              "label": "Circuit Judge name",
-              "type": "text"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "P3-0600",
-      "name": "Oath of Personal Representative and Designation of Resident Agent",
-      "template": "templates/P3-0600.docx",
-      "sections": [
-        {
-          "title": "Oath",
-          "fields": [
-            {
-              "name": "oath_state",
-              "label": "State",
-              "type": "text"
-            },
-            {
-              "name": "oath_county",
-              "label": "County",
-              "type": "text"
-            },
-            {
-              "name": "decedent_full_name",
-              "label": "Decedent full name",
-              "type": "text"
-            },
-            {
-              "name": "pr_residence",
-              "label": "PR place of residence",
-              "type": "text"
-            },
-            {
-              "name": "pr_po_address",
-              "label": "PR post office address",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Resident Agent",
-          "fields": [
-            {
-              "name": "agent_name",
-              "label": "Agent name",
-              "type": "text"
-            },
-            {
-              "name": "agent_county",
-              "label": "Agent county",
-              "type": "text"
-            },
-            {
-              "name": "agent_address",
-              "label": "Agent address",
-              "type": "text"
-            },
-            {
-              "name": "agent_po_address",
-              "label": "Agent PO address",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Notary",
-          "fields": [
-            {
-              "name": "notary_date",
-              "label": "Notary date",
-              "type": "text"
-            },
-            {
-              "name": "notary_identification",
-              "label": "Identification produced",
-              "type": "text"
-            },
-            {
-              "name": "notary_state",
-              "label": "Notary state",
-              "type": "text"
-            },
-            {
-              "name": "notary_commission_expires",
-              "label": "Commission expires",
-              "type": "text"
-            },
-            {
-              "name": "notary_commission_number",
-              "label": "Commission number",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Acceptance",
-          "fields": [
-            {
-              "name": "agent_acceptance_county",
-              "label": "Agent county of residence",
-              "type": "text"
-            },
-            {
-              "name": "acceptance_date",
-              "label": "Acceptance date",
-              "type": "text"
-            },
-            {
-              "name": "acceptance_year",
-              "label": "Acceptance year",
-              "type": "text"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "P3-0700",
-      "name": "Letters of Administration (single PR)",
-      "template": "templates/P3-0700.docx",
-      "sections": [
-        {
-          "title": "Case Information",
-          "fields": [
-            {
-              "name": "decedent_full_name",
-              "label": "Decedent full name",
-              "type": "text"
-            },
-            {
-              "name": "decedent_residence",
-              "label": "Decedent residence",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_date",
-              "label": "Date of death",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_year",
-              "label": "Year of death",
-              "type": "text"
-            },
-            {
-              "name": "pr_name",
-              "label": "Personal representative name",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Order",
-          "fields": [
-            {
-              "name": "order_date",
-              "label": "Order date",
-              "type": "text"
-            },
-            {
-              "name": "order_year",
-              "label": "Order year",
-              "type": "text"
-            },
-            {
-              "name": "judge_name",
-              "label": "Circuit Judge name",
               "type": "text"
             }
           ]

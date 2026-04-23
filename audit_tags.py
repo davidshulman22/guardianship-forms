@@ -24,6 +24,17 @@ AUTO_POPULATED = {
     "attorney_email", "attorney_email_secondary",
     "attorney_bar_no", "attorney_address", "attorney_phone",
     "petitioners",
+    # Smart-template derived grammar fields (computed in prepareTemplateData)
+    "multiple_petitioners", "multiple_prs",
+    "petitioner_label", "petitioner_poss",
+    "petitioner_verb_alleges", "petitioner_verb_has", "petitioner_verb_is",
+    "pr_names", "pr_label", "pr_label_title", "pr_label_caps", "pr_verb_is",
+    "pr_pronoun_he_she", "pr_pronoun_his_her",
+    # Matter-level booleans (set on matter.matterData, not per-form)
+    "is_testate", "is_ancillary",
+    # Derived display fields for numeric estate assets (from prepareTemplateData)
+    "asset_value_formatted",
+    "estate_assets_total", "estate_assets_total_formatted",
 }
 
 TAG_RE = re.compile(r"\{[#/^]?([a-zA-Z0-9_]+)\}")

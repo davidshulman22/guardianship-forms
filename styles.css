@@ -603,6 +603,44 @@ body {
     gap: 0.5rem;
 }
 
+/* Collapsible lifecycle sections (wizard, admin, close) */
+.panel-card.collapsible > .section-header,
+.panel-card.collapsible > .wizard-header {
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    padding-right: 1.8rem;
+}
+
+.panel-card.collapsible > .section-header::after,
+.panel-card.collapsible > .wizard-header::after {
+    content: '\25BE'; /* down chevron */
+    position: absolute;
+    right: 0.2rem;
+    top: 0.1rem;
+    color: #6b7280;
+    font-size: 0.9rem;
+    transition: transform 0.15s ease;
+}
+
+.panel-card.collapsible.is-collapsed > .section-header::after,
+.panel-card.collapsible.is-collapsed > .wizard-header::after {
+    transform: rotate(-90deg);
+}
+
+.panel-card.collapsible.is-collapsed > :not(.section-header):not(.wizard-header) {
+    display: none;
+}
+
+.panel-card.collapsible.is-collapsed > .section-header .section-subtitle,
+.panel-card.collapsible.is-collapsed > .wizard-header .wizard-subtitle {
+    display: none;
+}
+
+.panel-card.collapsible.is-collapsed {
+    padding-bottom: 0.6rem;
+}
+
 .section-form-btn {
     display: flex;
     flex-direction: column;

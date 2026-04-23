@@ -22,11 +22,11 @@ const formBundles = {
     probate: [
         {
             name: 'Open Estate (testate)',
-            formIds: ['P3-0100', 'P3-0420', 'P3-0600', 'P3-0700', 'P1-0900', 'BW-0010', 'BW-0020']
+            formIds: ['P3-PETITION', 'P3-ORDER', 'P3-OATH', 'P3-LETTERS', 'P1-0900', 'BW-0010', 'BW-0020']
         },
         {
             name: 'Open Estate (intestate)',
-            formIds: ['P3-0120', 'P3-0440', 'P3-0600', 'P3-0700', 'P1-0900', 'BW-0010']
+            formIds: ['P3-PETITION', 'P3-ORDER', 'P3-OATH', 'P3-LETTERS', 'P1-0900', 'BW-0010']
         },
         {
             name: 'Notice to Creditors',
@@ -308,41 +308,45 @@ function seedTestData() {
                     fileNo: '',
                     division: '',
                     matterData: {
+                        is_testate: true,
+                        is_ancillary: false,
+                        decedent_full_name: 'Helen Marie Torres',
                         decedent_address: '1200 SW 3rd St, Apt 204, Fort Lauderdale, FL 33312',
-                        decedent_death_date: 'March 2',
-                        decedent_death_year: '2026',
-                        decedent_death_place: 'Fort Lauderdale, FL',
+                        decedent_death_date: 'March 2, 2026',
+                        decedent_death_place: 'Fort Lauderdale, Broward County, Florida',
                         decedent_domicile: 'Broward',
                         decedent_ssn_last4: '4829'
                     },
                     formData: {
-                        'P3-0100': {
-                            petitioner_name: 'Margaret Torres',
-                            petitioner_interest: 'surviving daughter and sole beneficiary under the will',
-                            petitioner_address: '4521 NE 12th Ave, Fort Lauderdale, FL 33334',
-                            decedent_full_name: 'Helen Marie Torres',
-                            decedent_address: '1200 SW 3rd St, Apt 204, Fort Lauderdale, FL 33312',
-                            decedent_ssn_last4: '4829',
-                            decedent_death_date: 'March 2',
-                            decedent_death_year: '2026',
-                            decedent_death_place: 'Fort Lauderdale, Broward County, Florida',
-                            decedent_domicile: 'Broward',
-                            venue_reason: 'the decedent was domiciled in Broward County, Florida at the time of death',
+                        'P3-PETITION': {
+                            petitioners: [
+                                {
+                                    pet_name: 'Margaret Torres',
+                                    pet_address: '4521 NE 12th Ave, Fort Lauderdale, FL 33334',
+                                    pet_interest: 'surviving daughter and sole beneficiary under the will'
+                                }
+                            ],
+                            prs: [
+                                {
+                                    pr_name: 'Margaret Torres',
+                                    pr_address: '4521 NE 12th Ave, Fort Lauderdale, FL 33334',
+                                    pr_is_fl_resident: true,
+                                    pr_relationship: ''
+                                }
+                            ],
+                            petitioner_has_prior_conviction: false,
+                            higher_preference_exists: false,
+                            higher_preference_formal_notice: false,
+                            estate_tax_return_required: false,
+                            domiciliary_proceedings_pending: false,
                             will_date: 'June 15',
                             will_year: '2019',
                             codicil_dates: '',
-                            pr_name: 'Margaret Torres',
-                            pr_address: '4521 NE 12th Ave, Fort Lauderdale, FL 33334',
-                            pr_relationship: '',
-                            domiciliary_court_address: '',
-                            domiciliary_representative: '',
-                            domiciliary_representative_address: '',
-                            signing_day: '',
-                            signing_month: '',
-                            signing_year: '',
-                            attorney_email: 'david@ginsbergshulman.com',
-                            attorney_bar_no: '150762',
-                            attorney_phone: '954-990-0896',
+                            will_status_original: true,
+                            will_status_authenticated_other: false,
+                            will_status_authenticated_notarial: false,
+                            venue_reason: 'the decedent was domiciled in Broward County, Florida at the time of death',
+                            estate_assets_description: 'residential real property in Broward County, a 2018 Toyota Camry, two bank accounts, and tangible personal property, with an aggregate approximate value of $485,000',
                             beneficiaries: [
                                 {
                                     ben_name: 'Margaret Torres',
@@ -624,6 +628,38 @@ function renderHomepage() {
 // EVENT LISTENERS
 // ============================================
 
+function setupCollapsibleSections() {
+    const SECTIONS = ['openEstateWizard', 'adminSection', 'closingSection'];
+    const STORAGE_KEY = 'gs_court_forms_collapsed_sections';
+
+    // Restore saved collapsed state so the layout doesn't jump on load.
+    let collapsed = [];
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) collapsed = JSON.parse(saved) || [];
+    } catch (_) { collapsed = []; }
+
+    SECTIONS.forEach(id => {
+        const panel = document.getElementById(id);
+        if (!panel) return;
+        if (collapsed.includes(id)) panel.classList.add('is-collapsed');
+
+        const header = panel.querySelector('.section-header, .wizard-header');
+        if (!header) return;
+        header.addEventListener('click', (e) => {
+            // Don't collapse when clicking something interactive inside the header.
+            if (e.target.closest('button, a, input, select')) return;
+            panel.classList.toggle('is-collapsed');
+
+            const nowCollapsed = SECTIONS.filter(s => {
+                const el = document.getElementById(s);
+                return el && el.classList.contains('is-collapsed');
+            });
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(nowCollapsed)); } catch (_) { }
+        });
+    });
+}
+
 function setupEventListeners() {
     // App title — click to go home
     document.getElementById('appTitleLink').addEventListener('click', navigateHome);
@@ -661,6 +697,9 @@ function setupEventListeners() {
 
     // Open Estate Wizard
     setupWizard();
+
+    // Collapsible lifecycle sections (Open Estate / Estate Admin / Close Estate)
+    setupCollapsibleSections();
 
     // Modal close buttons (all of them)
     document.querySelectorAll('.modal-close-btn').forEach(btn => {
@@ -995,23 +1034,41 @@ function handleMatterFormSubmit(e) {
 // ============================================
 
 const wizardFormMatrix = {
-    // Formal Administration — Domiciliary
+    // Formal Administration — same smart templates cover every variant.
+    // The templates branch internally on is_testate / is_ancillary /
+    // multiple_petitioners / multiple_prs (set from matter.matterData /
+    // petitioners array length).
     'formal|testate|domiciliary|single': {
-        forms: ['P3-0100', 'P3-0420', 'P3-0600', 'P3-0700', 'P1-0900'],
+        forms: ['P3-PETITION', 'P3-ORDER', 'P3-OATH', 'P3-LETTERS', 'P1-0900'],
+        broward: ['BW-0010', 'BW-0020']
+    },
+    'formal|testate|domiciliary|multiple': {
+        forms: ['P3-PETITION', 'P3-ORDER', 'P3-OATH', 'P3-LETTERS', 'P1-0900'],
         broward: ['BW-0010', 'BW-0020']
     },
     'formal|intestate|domiciliary|single': {
-        forms: ['P3-0120', 'P3-0440', 'P3-0600', 'P3-0700', 'P1-0900'],
+        forms: ['P3-PETITION', 'P3-ORDER', 'P3-OATH', 'P3-LETTERS', 'P1-0900'],
         broward: ['BW-0010', 'BW-0030', 'BW-0060']
-    },
-    // Formal Admin — multiple petitioners (use same forms, multi-petitioner is rare in formal)
-    'formal|testate|domiciliary|multiple': {
-        forms: ['P3-0100', 'P3-0420', 'P3-0600', 'P3-0700', 'P1-0900'],
-        broward: ['BW-0010', 'BW-0020']
     },
     'formal|intestate|domiciliary|multiple': {
-        forms: ['P3-0120', 'P3-0440', 'P3-0600', 'P3-0700', 'P1-0900'],
+        forms: ['P3-PETITION', 'P3-ORDER', 'P3-OATH', 'P3-LETTERS', 'P1-0900'],
         broward: ['BW-0010', 'BW-0030', 'BW-0060']
+    },
+    'formal|testate|ancillary|single': {
+        forms: ['P3-PETITION', 'P3-ORDER', 'P3-OATH', 'P3-LETTERS', 'P1-0900'],
+        broward: ['BW-0010']
+    },
+    'formal|testate|ancillary|multiple': {
+        forms: ['P3-PETITION', 'P3-ORDER', 'P3-OATH', 'P3-LETTERS', 'P1-0900'],
+        broward: ['BW-0010']
+    },
+    'formal|intestate|ancillary|single': {
+        forms: ['P3-PETITION', 'P3-ORDER', 'P3-OATH', 'P3-LETTERS', 'P1-0900'],
+        broward: ['BW-0010']
+    },
+    'formal|intestate|ancillary|multiple': {
+        forms: ['P3-PETITION', 'P3-ORDER', 'P3-OATH', 'P3-LETTERS', 'P1-0900'],
+        broward: ['BW-0010']
     },
 
     // Summary Administration — Domiciliary
@@ -1094,18 +1151,11 @@ function setupWizard() {
 }
 
 function updateWizardUI() {
-    // Show/hide petitioners question (only relevant for summary)
+    // Petitioners applies to BOTH formal and summary admin — the smart
+    // templates (P3-PETITION / P3-ORDER / P3-LETTERS) branch on
+    // multiple_petitioners / multiple_prs at render time.
     const petGroup = document.getElementById('wizPetitionerGroup');
-    if (wizardState.adminType === 'formal') {
-        petGroup.style.opacity = '0.4';
-        // Default to single for formal
-        if (!wizardState.petitioners) {
-            wizardState.petitioners = 'single';
-            document.querySelector('#wizPetitioners .wiz-btn[data-value="single"]').classList.add('active');
-        }
-    } else {
-        petGroup.style.opacity = '1';
-    }
+    if (petGroup) petGroup.style.opacity = '1';
 
     // Enable/disable Load Forms button
     const btn = document.getElementById('wizLoadFormsBtn');
@@ -1179,6 +1229,11 @@ function wizardLoadForms() {
             petitioners: wizardState.petitioners,
             county: wizardState.county
         };
+        // Also propagate wizard booleans to matterData so smart templates
+        // (P3-PETITION/P3-ORDER/P3-LETTERS) get is_testate / is_ancillary.
+        if (!currentMatter.matterData) currentMatter.matterData = {};
+        currentMatter.matterData.is_testate = wizardState.willType === 'testate';
+        currentMatter.matterData.is_ancillary = wizardState.jurisdiction === 'ancillary';
         saveClientsToStorage();
     }
 
@@ -1750,18 +1805,26 @@ function renderFormField(field) {
     const container = document.createElement('div');
     container.className = 'form-field-container';
 
-    if (field.type === 'text') {
+    if (field.type === 'text' || field.type === 'number') {
         const fieldDiv = document.createElement('div');
         fieldDiv.className = 'field';
         const label = document.createElement('label');
         label.htmlFor = 'form_' + field.name;
         label.textContent = field.label;
         const input = document.createElement('input');
-        input.type = 'text';
+        if (field.type === 'number') {
+            input.type = 'number';
+            input.inputMode = 'decimal';
+            input.step = field.step || 'any';
+        } else {
+            input.type = 'text';
+        }
         input.id = 'form_' + field.name;
         input.className = 'form-field-input';
         input.dataset.field = field.name;
-        input.value = currentFormData[field.name] || '';
+        input.dataset.type = field.type;
+        const v = currentFormData[field.name];
+        input.value = (v === null || v === undefined) ? '' : v;
         fieldDiv.appendChild(label);
         fieldDiv.appendChild(input);
         container.appendChild(fieldDiv);
@@ -1839,12 +1902,20 @@ function renderRepeatingGroupItem(field, item, index) {
         const label = document.createElement('label');
         label.textContent = subfield.label;
         const input = document.createElement('input');
-        input.type = 'text';
+        if (subfield.type === 'number') {
+            input.type = 'number';
+            input.inputMode = 'decimal';
+            input.step = subfield.step || 'any';
+        } else {
+            input.type = 'text';
+        }
         input.className = 'form-field-input';
         input.dataset.field = field.name;
         input.dataset.subfield = subfield.name;
         input.dataset.index = index;
-        input.value = item[subfield.name] || '';
+        input.dataset.type = subfield.type || 'text';
+        const v = item[subfield.name];
+        input.value = (v === null || v === undefined) ? '' : v;
         fieldDiv.appendChild(label);
         fieldDiv.appendChild(input);
         fieldsContainer.appendChild(fieldDiv);
@@ -1889,14 +1960,23 @@ function removeRepeatingGroupRow(fieldName, index) {
 function collectFormData() {
     const formData = {};
 
+    // Coerce a raw input value based on the declared field type. Number
+    // fields store as a real Number (or null when blank) so later
+    // calculations (e.g. estate total) don't need to reparse strings.
+    const coerce = (input) => {
+        if (input.type === 'checkbox') return input.checked;
+        if (input.dataset.type === 'number' || input.type === 'number') {
+            const raw = input.value;
+            if (raw === '' || raw === null || raw === undefined) return null;
+            const n = Number(raw);
+            return Number.isFinite(n) ? n : null;
+        }
+        return input.value;
+    };
+
     document.querySelectorAll('#formFieldsContainer .form-field-input').forEach(input => {
         if (!input.dataset.index) {
-            const field = input.dataset.field;
-            if (input.type === 'checkbox') {
-                formData[field] = input.checked;
-            } else {
-                formData[field] = input.value;
-            }
+            formData[input.dataset.field] = coerce(input);
         }
     });
 
@@ -1906,7 +1986,7 @@ function collectFormData() {
         const index = parseInt(input.dataset.index, 10);
         if (!formData[field]) formData[field] = [];
         if (!formData[field][index]) formData[field][index] = {};
-        formData[field][index][subfield] = input.value;
+        formData[field][index][subfield] = coerce(input);
     });
 
     currentFormData = formData;
@@ -2071,11 +2151,80 @@ function prepareTemplateData() {
         }
     });
 
-    // Derive petitioner_names from petitioners array for backward compatibility
-    if (data.petitioners && Array.isArray(data.petitioners)) {
-        if (!data.petitioner_names) {
-            data.petitioner_names = data.petitioners.map(p => p.pet_name).filter(Boolean).join(' and ');
+    // ---- Smart-template derived fields ----
+    // Synthesize petitioners/prs arrays from single-name fallbacks so smart
+    // templates (P3-PETITION/P3-ORDER/P3-LETTERS/P3-OATH) work uniformly.
+    if (!Array.isArray(data.petitioners) || data.petitioners.length === 0) {
+        if (data.petitioner_name) {
+            data.petitioners = [{
+                pet_name: data.petitioner_name,
+                pet_address: data.petitioner_address || '',
+                pet_interest: data.petitioner_interest || ''
+            }];
         }
+    }
+    if (!Array.isArray(data.prs) || data.prs.length === 0) {
+        if (data.pr_name) {
+            data.prs = [{
+                pr_name: data.pr_name,
+                pr_address: data.pr_address || '',
+                pr_is_fl_resident: data.pr_is_fl_resident !== false,
+                pr_relationship: data.pr_relationship || ''
+            }];
+        }
+    }
+
+    // Derive joined name strings
+    if (!data.petitioner_names) {
+        data.petitioner_names = Array.isArray(data.petitioners)
+            ? data.petitioners.map(p => p.pet_name).filter(Boolean).join(' and ')
+            : (data.petitioner_name || '');
+    }
+    if (!data.pr_names) {
+        data.pr_names = Array.isArray(data.prs)
+            ? data.prs.map(p => p.pr_name).filter(Boolean).join(' and ')
+            : (data.pr_name || '');
+    }
+
+    // Pre-compute grammar strings so templates read clean instead of nesting
+    // conditionals for every "Petitioner / Petitioners" / "alleges / allege" choice.
+    const petCount = Array.isArray(data.petitioners) ? data.petitioners.filter(p => (p.pet_name || '').trim()).length : 0;
+    const multiPet = petCount > 1;
+    data.multiple_petitioners = multiPet;
+    if (!data.petitioner_label) data.petitioner_label = multiPet ? 'Petitioners' : 'Petitioner';
+    if (!data.petitioner_poss) data.petitioner_poss = multiPet ? 'petitioners\u2019' : 'petitioner\u2019s';
+    if (!data.petitioner_verb_alleges) data.petitioner_verb_alleges = multiPet ? 'allege' : 'alleges';
+    if (!data.petitioner_verb_has) data.petitioner_verb_has = multiPet ? 'have' : 'has';
+    if (!data.petitioner_verb_is) data.petitioner_verb_is = multiPet ? 'are' : 'is';
+
+    const prCount = Array.isArray(data.prs) ? data.prs.filter(p => (p.pr_name || '').trim()).length : 0;
+    const multiPr = prCount > 1;
+    data.multiple_prs = multiPr;
+    if (!data.pr_label) data.pr_label = multiPr ? 'personal representatives' : 'personal representative';
+    if (!data.pr_label_title) data.pr_label_title = multiPr ? 'Personal Representatives' : 'Personal Representative';
+    if (!data.pr_label_caps) data.pr_label_caps = multiPr ? 'PERSONAL REPRESENTATIVES' : 'PERSONAL REPRESENTATIVE';
+    if (!data.pr_verb_is) data.pr_verb_is = multiPr ? 'are' : 'is';
+    if (!data.pr_pronoun_he_she) data.pr_pronoun_he_she = multiPr ? 'they' : 'he or she';
+    if (!data.pr_pronoun_his_her) data.pr_pronoun_his_her = multiPr ? 'their' : 'his or her';
+
+    // is_testate / is_ancillary live on matter.matterData; default gracefully
+    if (data.is_testate === undefined || data.is_testate === null) data.is_testate = false;
+    if (data.is_ancillary === undefined || data.is_ancillary === null) data.is_ancillary = false;
+
+    // Currency formatting for estate asset rows. Values enter as Numbers; the
+    // template gets {asset_value_formatted} (e.g. "$1,500.00") for display
+    // while the raw Number stays on asset_value for later math.
+    if (Array.isArray(data.estate_assets)) {
+        const fmt = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+        let total = 0;
+        data.estate_assets = data.estate_assets.map(row => {
+            const v = typeof row.asset_value === 'number' ? row.asset_value : Number(row.asset_value);
+            const valid = Number.isFinite(v);
+            if (valid) total += v;
+            return { ...row, asset_value_formatted: valid ? fmt.format(v) : '' };
+        });
+        data.estate_assets_total = total;
+        data.estate_assets_total_formatted = fmt.format(total);
     }
 
     return data;
