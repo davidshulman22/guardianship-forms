@@ -1752,7 +1752,7 @@ function renderMergedFormFields() {
         const form = formsConfig.forms.find(f => f.id === formId);
         if (!form) return;
 
-        form.sections.forEach(section => {
+        (form.sections || []).forEach(section => {
             const newFields = [];
             section.fields.forEach(field => {
                 const fieldKey = field.type === 'repeating_group' ? field.name : field.name;
@@ -2232,7 +2232,7 @@ function addRepeatingGroupRow(fieldName) {
     if (!currentFormData[fieldName]) currentFormData[fieldName] = [];
 
     const form = formsConfig.forms.find(f => f.id === currentFormId);
-    const field = form.sections.flatMap(s => s.fields).find(f => f.name === fieldName);
+    const field = (form.sections || []).flatMap(s => s.fields).find(f => f.name === fieldName);
     const newItem = {};
     field.subfields.forEach(sf => { newItem[sf.name] = ''; });
     currentFormData[fieldName].push(newItem);
@@ -2403,6 +2403,14 @@ async function renderSingleDoc(form, templateData) {
     const response = await fetch(form.template);
     if (!response.ok) throw new Error('Failed to fetch template: ' + form.id);
     const arrayBuffer = await response.arrayBuffer();
+
+    // PDF passthrough: the clerk's official PDF is bundled unchanged.
+    // Used for Broward mandatory checklists and affidavits where questionnaire
+    // fields would be unanswerable at drafting time. Future phase: re-integrate
+    // as a pre-filing review step with rule-violation warnings.
+    if (form.delivery === 'pdf_passthrough') {
+        return new Blob([arrayBuffer], { type: 'application/pdf' });
+    }
 
     const zip = new window.PizZip(arrayBuffer);
     const doc = new window.docxtemplater(zip, {
@@ -2691,7 +2699,8 @@ function makeDocFileName(subjectName, form, dateStr) {
     // Use the form's human-readable name instead of the ID
     // e.g. "Lorraine_Ann_Muscara_Petition_for_Administration_2026-04-15.docx"
     const formName = (form.name || form.id).replace(/[^a-zA-Z0-9 ]/g, '').replace(/\s+/g, '_');
-    return subjectName + '_' + formName + '_' + dateStr + '.docx';
+    const ext = form.delivery === 'pdf_passthrough' ? '.pdf' : '.docx';
+    return subjectName + '_' + formName + '_' + dateStr + ext;
 }
 
 // ============================================

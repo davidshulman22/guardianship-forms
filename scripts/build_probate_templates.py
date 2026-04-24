@@ -512,9 +512,67 @@ def build_p3_letters():
     print(f'Wrote {out_path}')
 
 
+# ---------------------------------------------------------------------------
+# P1-0900  Notice of Designation of Email Addresses for Service
+# ---------------------------------------------------------------------------
+
+def build_p1_0900():
+    """Rule 2.516(b)(1)(A) notice of primary/secondary service emails.
+    Attorney-signed only (no petitioner signature). Signing date left blank
+    (filled at signing).
+    """
+    doc = Document()
+    _apply_page_setup(doc)
+    _apply_running_header(doc, 'Estate of {decedent_name}')
+    _ensure_pleading_numbering(doc)
+
+    _add_probate_caption(doc)
+
+    _add_para(doc, 'NOTICE OF DESIGNATION OF EMAIL ADDRESSES',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=0)
+    _add_para(doc, 'FOR SERVICE OF DOCUMENTS',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=18)
+
+    indent = Inches(0.5)
+    _add_para(doc,
+        'Pursuant to Florida Rule of General Practice and Judicial Administration '
+        '2.516(b)(1)(A), the undersigned counsel gives notice of the following '
+        'primary and secondary e-mail addresses for service in this matter:',
+        first_indent=indent, space_after=12)
+
+    _add_para(doc, 'Primary Email Address: {attorney_email}',
+              first_indent=indent, space_after=6)
+    _add_para(doc,
+        'Secondary Email Address: '
+        '{#attorney_email_secondary}{attorney_email_secondary}{/attorney_email_secondary}'
+        '{^attorney_email_secondary}N/A{/attorney_email_secondary}',
+        first_indent=indent, space_after=18)
+
+    _add_broward_ai_certification(doc, 'Notice of Designation of Email Addresses')
+
+    # Attorney-only signature block (no petitioner sig on a service notice).
+    _add_para(doc, 'Signed on this _____ day of ______________________, 20____.',
+              first_indent=indent, space_after=24)
+    _add_para(doc, '_______________________________________', space_after=0)
+    _add_para(doc, '{attorney_name}, Attorney for {petitioner_label}', space_after=18)
+    _add_para(doc, 'Email Addresses:', space_after=0)
+    _add_para(doc, '{attorney_email}', space_after=0)
+    _add_para(doc, '{#attorney_email_secondary}{attorney_email_secondary}{/attorney_email_secondary}', space_after=0)
+    _add_para(doc, 'Florida Bar No. {attorney_bar_no}', space_after=12)
+    _add_para(doc, '{attorney_firm}', space_after=0)
+    _add_para(doc, '{attorney_address}', space_after=12)
+    _add_para(doc, 'Telephone {attorney_phone}', space_after=0)
+
+    out_path = os.path.join(TEMPLATE_DIR, 'P1-0900.docx')
+    doc.save(out_path)
+    _inject_numbering_part(out_path)
+    print(f'Wrote {out_path}')
+
+
 if __name__ == '__main__':
     os.makedirs(TEMPLATE_DIR, exist_ok=True)
     build_p3_petition()
     build_p3_oath()
     build_p3_order()
     build_p3_letters()
+    build_p1_0900()
