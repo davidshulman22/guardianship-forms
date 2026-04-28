@@ -968,8 +968,6 @@ function openMatterModal(matter) {
     document.getElementById('matterType').value = matter ? matter.type || '' : '';
     document.getElementById('matterCounty').value = matter ? matter.county || '' : '';
     document.getElementById('matterSubjectName').value = matter ? matter.subjectName || '' : '';
-    document.getElementById('matterFileNo').value = matter ? matter.fileNo || '' : '';
-    document.getElementById('matterDivision').value = matter ? matter.division || '' : '';
     document.getElementById('matterAttorneyId').value = matter ? matter.attorneyId || '' : '';
     updateMatterSubjectHint();
     document.getElementById('newMatterModal').style.display = 'flex';
@@ -991,12 +989,14 @@ function handleMatterFormSubmit(e) {
     e.preventDefault();
     if (!currentClient) return;
 
+    // File No. and Division are not collected at intake — they're assigned
+    // by the clerk after filing. Existing matters keep whatever they have;
+    // new matters start blank and templates render `{file_no}` / `{division}`
+    // as empty strings.
     const data = {
         type: document.getElementById('matterType').value,
         county: document.getElementById('matterCounty').value,
         subjectName: document.getElementById('matterSubjectName').value,
-        fileNo: document.getElementById('matterFileNo').value,
-        division: document.getElementById('matterDivision').value,
         attorneyId: document.getElementById('matterAttorneyId').value || null,
     };
 
@@ -1709,6 +1709,16 @@ function getAutoPopulateDefaults() {
         if (!defaults[key]) defaults[key] = attorneyDefaults[key];
     });
 
+    // --- Layer 4a: Resident agent defaults to the signing attorney ---
+    // Always David or Jill in practice; user can still override the text
+    // fields if a specific matter calls for someone else.
+    if (!defaults.resident_agent_name) {
+        defaults.resident_agent_name = attorneyDefaults.attorney_name || '';
+    }
+    if (!defaults.resident_agent_address) {
+        defaults.resident_agent_address = attorneyDefaults.attorney_address || '';
+    }
+
     return defaults;
 }
 
@@ -1822,11 +1832,33 @@ const US_STATES = [
     'TN','TX','UT','VT','VA','WA','WV','WI','WY','PR','VI','GU','AS','MP'
 ];
 
+// Parse a free-text address (auto-populated client default, legacy matter
+// data, or pasted string) into the structured shape. Returns null on
+// formats we can't confidently split — caller decides the fallback.
+// Accepts comma- and newline-separated forms:
+//   "4521 NE 12th Ave, Fort Lauderdale, FL 33334"
+//   "4521 NE 12th Ave\nFort Lauderdale, FL 33334"
+//   "1200 SW 3rd St, Apt 204, Fort Lauderdale, FL 33312"
+function parseStringToStructuredAddress(s) {
+    if (!s || typeof s !== 'string') return null;
+    const trimmed = s.trim();
+    if (!trimmed) return null;
+    const normalized = trimmed.replace(/\s*\n+\s*/g, ', ');
+    const m = normalized.match(/^(.+),\s*([^,]+),\s*([A-Z]{2})\s+(\d{5}(?:-\d{4})?)\s*$/);
+    if (!m) return null;
+    const [, beforeCity, city, state, zip] = m;
+    const parts = beforeCity.split(',').map(p => p.trim()).filter(Boolean);
+    const street = parts[0] || '';
+    const line2 = parts.length >= 2 ? parts.slice(1).join(', ') : '';
+    return { street, line2, city: city.trim(), state, zip, foreign: false };
+}
+
 // Render a structured address as a compact grid. Shape:
 //   { street, line2, city, state, zip, foreign, foreign_text }
-// Works for both top-level fields and repeating-group subfields. The "Foreign
-// address" toggle swaps the US grid for a free-text textarea so non-US
-// addresses aren't forced into a 50-state dropdown.
+// Works for both top-level fields and repeating-group subfields. The
+// free-text toggle swaps the US grid for a textarea — for non-US
+// addresses or anything that doesn't fit the standard street/city/state/zip
+// shape.
 function renderAddressField(opts) {
     // opts: { value, label, dataBase (object with data-* attrs for inputs),
     //         addressIdPrefix (unique id prefix) }
@@ -1839,15 +1871,19 @@ function renderAddressField(opts) {
         wrap.appendChild(labelEl);
     }
 
-    // Legacy migration: matters created before the structured-address rollout
-    // store addresses as plain strings. Show them as a "foreign" (free-text)
-    // entry so the user doesn't lose the data on first interaction — they can
-    // re-type into the US grid later if the address is actually domestic.
+    // String values come from two places: (a) auto-populate (the seed
+    // client.address is a string), and (b) legacy matters created before the
+    // structured-address rollout. Try to parse "street, city, ST zip" into
+    // structured fields first — almost every US address we see fits that
+    // pattern. Only fall back to the free-text path if parsing fails, so the
+    // user doesn't see the foreign-address textarea by default for normal
+    // domestic addresses.
     let val;
     if (opts.value && typeof opts.value === 'object') {
         val = opts.value;
     } else if (typeof opts.value === 'string' && opts.value.trim()) {
-        val = { foreign: true, foreign_text: opts.value };
+        val = parseStringToStructuredAddress(opts.value)
+            || { foreign: true, foreign_text: opts.value };
     } else {
         val = {};
     }
@@ -1929,7 +1965,7 @@ function renderAddressField(opts) {
     });
     toggleWrap.appendChild(toggle);
     const toggleLabel = document.createElement('span');
-    toggleLabel.textContent = 'Foreign (non-US) address';
+    toggleLabel.textContent = 'Use free-text (foreign or non-standard address)';
     toggleWrap.appendChild(toggleLabel);
     wrap.appendChild(toggleWrap);
 
@@ -1985,10 +2021,19 @@ function collectAddressFieldNames() {
 
 // Tag a field container with visibility metadata. applyConditionalVisibility()
 // reads these after every field change and toggles display.
+// Two sources are supported:
+//   { field: 'other_field', equals: true }       — read currentFormData
+//   { matter_flag: 'is_ancillary', equals: true } — read currentMatter.matterData
 function applyVisibleIfAttrs(el, visibleIf, scope) {
-    if (!visibleIf || !visibleIf.field) return;
-    el.dataset.visibleIfField = visibleIf.field;
-    el.dataset.visibleIfScope = scope || 'form';
+    if (!visibleIf) return;
+    if (visibleIf.matter_flag) {
+        el.dataset.visibleIfMatterFlag = visibleIf.matter_flag;
+    } else if (visibleIf.field) {
+        el.dataset.visibleIfField = visibleIf.field;
+        el.dataset.visibleIfScope = scope || 'form';
+    } else {
+        return;
+    }
     if ('equals' in visibleIf) el.dataset.visibleIfEquals = JSON.stringify(visibleIf.equals);
     if ('not_equals' in visibleIf) el.dataset.visibleIfNotEquals = JSON.stringify(visibleIf.not_equals);
 }
@@ -2085,10 +2130,14 @@ function renderFormField(field) {
         // whether the user can add extra rows. When false, cap to 1 row and
         // hide the Add button. Existing extra data is preserved but not
         // rendered (so flipping the wizard back to "multiple" doesn't lose it).
+        // When locked AND no rows exist, render one empty row so the user
+        // always has somewhere to type — otherwise the field disappears.
         const locked = field.row_lock_unless_matter_flag &&
                        !getMatterFlag(field.row_lock_unless_matter_flag);
         const items = currentFormData[field.name] || [];
-        const visibleItems = locked ? items.slice(0, 1) : items;
+        const visibleItems = locked
+            ? (items.length > 0 ? items.slice(0, 1) : [{}])
+            : items;
 
         const itemsContainer = document.createElement('div');
         itemsContainer.className = 'repeating-group-items';
@@ -2205,17 +2254,23 @@ function renderRepeatingGroupItem(field, item, index) {
 function applyConditionalVisibility() {
     const container = document.getElementById('formFieldsContainer');
     if (!container) return;
-    container.querySelectorAll('[data-visible-if-field]').forEach(el => {
-        const fieldName = el.dataset.visibleIfField;
-        const scope = el.dataset.visibleIfScope || 'form';
+    container.querySelectorAll('[data-visible-if-field], [data-visible-if-matter-flag]').forEach(el => {
         let actual;
-        if (scope === 'row') {
-            const parent = el.dataset.visibleIfParentField;
-            const idx = parseInt(el.dataset.visibleIfRowIndex, 10);
-            const row = (currentFormData[parent] || [])[idx] || {};
-            actual = row[fieldName];
+        const matterFlag = el.dataset.visibleIfMatterFlag;
+        if (matterFlag) {
+            const md = (currentMatter && currentMatter.matterData) || {};
+            actual = md[matterFlag];
         } else {
-            actual = currentFormData[fieldName];
+            const fieldName = el.dataset.visibleIfField;
+            const scope = el.dataset.visibleIfScope || 'form';
+            if (scope === 'row') {
+                const parent = el.dataset.visibleIfParentField;
+                const idx = parseInt(el.dataset.visibleIfRowIndex, 10);
+                const row = (currentFormData[parent] || [])[idx] || {};
+                actual = row[fieldName];
+            } else {
+                actual = currentFormData[fieldName];
+            }
         }
         let show = true;
         if ('visibleIfEquals' in el.dataset) {

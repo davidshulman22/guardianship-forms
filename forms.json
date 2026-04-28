@@ -1214,27 +1214,32 @@
             {
               "name": "domiciliary_proceedings_pending",
               "label": "Domiciliary/principal proceedings pending in another jurisdiction (auto-set for ancillary)",
-              "type": "checkbox"
+              "type": "checkbox",
+              "visible_if": { "matter_flag": "is_ancillary", "equals": true }
             },
             {
               "name": "domiciliary_court_name",
               "label": "Domiciliary court name (e.g. 'Surrogate's Court, New York County')",
-              "type": "text"
+              "type": "text",
+              "visible_if": { "matter_flag": "is_ancillary", "equals": true }
             },
             {
               "name": "domiciliary_court_address",
               "label": "Domiciliary court address",
-              "type": "address"
+              "type": "address",
+              "visible_if": { "matter_flag": "is_ancillary", "equals": true }
             },
             {
               "name": "domiciliary_representative",
               "label": "Domiciliary representative name",
-              "type": "text"
+              "type": "text",
+              "visible_if": { "matter_flag": "is_ancillary", "equals": true }
             },
             {
               "name": "domiciliary_representative_address",
               "label": "Domiciliary representative address",
-              "type": "address"
+              "type": "address",
+              "visible_if": { "matter_flag": "is_ancillary", "equals": true }
             }
           ]
         },
