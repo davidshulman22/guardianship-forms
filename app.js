@@ -1709,6 +1709,13 @@ function getAutoPopulateDefaults() {
         }];
     }
 
+    // --- Layer 3a-ter: Guardianship — proposed guardian is almost always
+    // the petitioner. Auto-populate the flat proposed_guardian_* fields
+    // from currentClient on first render. User can edit if a third party
+    // is being proposed. ---
+    if (!defaults.proposed_guardian_name) defaults.proposed_guardian_name = fullName;
+    if (!defaults.proposed_guardian_address) defaults.proposed_guardian_address = currentClient.address || '';
+
     // --- Layer 3b: Auto-derive fields ---
     if (!defaults.affiant_name) defaults.affiant_name = defaults.petitioner_name || fullName;
     if (!defaults.notary_state) defaults.notary_state = 'Florida';

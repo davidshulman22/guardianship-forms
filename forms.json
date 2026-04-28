@@ -16,7 +16,7 @@
             {
               "name": "petitioner_address",
               "label": "Petitioner's present address",
-              "type": "text"
+              "type": "address"
             },
             {
               "name": "petitioner_relationship",
@@ -46,7 +46,7 @@
             {
               "name": "aip_address",
               "label": "AIP's present address",
-              "type": "text"
+              "type": "address"
             }
           ]
         },
@@ -196,7 +196,7 @@
                 {
                   "name": "address",
                   "label": "Address",
-                  "type": "text"
+                  "type": "address"
                 },
                 {
                   "name": "relationship",
@@ -218,7 +218,7 @@
             {
               "name": "physician_address",
               "label": "Physician's address",
-              "type": "text"
+              "type": "address"
             },
             {
               "name": "physician_phone",
@@ -307,7 +307,7 @@
             {
               "name": "petitioner_address",
               "label": "Petitioner's post office address",
-              "type": "text"
+              "type": "address"
             },
             {
               "name": "petitioner_phone",
@@ -347,7 +347,7 @@
             {
               "name": "aip_address",
               "label": "AIP's post office address",
-              "type": "text"
+              "type": "address"
             },
             {
               "name": "aip_incapacity_nature",
@@ -382,7 +382,7 @@
                 {
                   "name": "address",
                   "label": "Address",
-                  "type": "text"
+                  "type": "address"
                 },
                 {
                   "name": "relationship",
@@ -397,6 +397,12 @@
           "title": "Proposed Emergency Temporary Guardian",
           "fields": [
             {
+              "name": "_proposed_guardian_felony_warning",
+              "type": "info",
+              "severity": "danger",
+              "content": "<strong>F.S. §744.309(3) — felony disqualification.</strong> A person convicted of a felony is <em>not qualified</em> to serve as guardian. Confirm with the proposed guardian before proceeding."
+            },
+            {
               "name": "proposed_guardian_name",
               "label": "Proposed guardian's name",
               "type": "text"
@@ -409,7 +415,7 @@
             {
               "name": "proposed_guardian_address",
               "label": "Proposed guardian's post office address",
-              "type": "text"
+              "type": "address"
             },
             {
               "name": "is_professional_guardian",
@@ -461,7 +467,8 @@
             {
               "name": "alternatives_description",
               "label": "If yes, describe the alternatives",
-              "type": "textarea"
+              "type": "textarea",
+              "visible_if": { "field": "has_alternatives", "equals": true }
             }
           ]
         },
@@ -476,12 +483,14 @@
             {
               "name": "preneed_guardian_name",
               "label": "If yes, name of designated preneed guardian",
-              "type": "text"
+              "type": "text",
+              "visible_if": { "field": "has_preneed", "equals": true }
             },
             {
               "name": "preneed_reason",
               "label": "If no, brief explanation (e.g. 'as the AIP has no preneed documents')",
-              "type": "text"
+              "type": "text",
+              "visible_if": { "field": "has_preneed", "not_equals": true }
             }
           ]
         },
@@ -528,7 +537,7 @@
             {
               "name": "petitioner_address",
               "label": "Petitioner's post office address",
-              "type": "text"
+              "type": "address"
             }
           ]
         },
@@ -548,7 +557,7 @@
             {
               "name": "aip_address",
               "label": "Ward's post office address",
-              "type": "text"
+              "type": "address"
             },
             {
               "name": "ward_incapacity_nature",
@@ -568,12 +577,14 @@
             {
               "name": "alternatives_description",
               "label": "If yes, describe the alternatives",
-              "type": "textarea"
+              "type": "textarea",
+              "visible_if": { "field": "has_alternatives", "equals": true }
             },
             {
               "name": "alternatives_insufficient_reason",
               "label": "If yes, why are the alternatives insufficient?",
-              "type": "textarea"
+              "type": "textarea",
+              "visible_if": { "field": "has_alternatives", "equals": true }
             }
           ]
         },
@@ -588,12 +599,14 @@
             {
               "name": "preneed_guardian_name",
               "label": "If yes, name of designated preneed guardian",
-              "type": "text"
+              "type": "text",
+              "visible_if": { "field": "has_preneed", "equals": true }
             },
             {
               "name": "preneed_reason",
               "label": "If no, brief explanation (e.g. 'as the AIP has no preneed documents')",
-              "type": "text"
+              "type": "text",
+              "visible_if": { "field": "has_preneed", "not_equals": true }
             }
           ]
         },
@@ -613,7 +626,7 @@
                 {
                   "name": "address",
                   "label": "Address",
-                  "type": "text"
+                  "type": "address"
                 },
                 {
                   "name": "relationship",
@@ -628,6 +641,12 @@
           "title": "Proposed Guardian",
           "fields": [
             {
+              "name": "_proposed_guardian_felony_warning",
+              "type": "info",
+              "severity": "danger",
+              "content": "<strong>F.S. §744.309(3) — felony disqualification.</strong> A person convicted of a felony is <em>not qualified</em> to serve as guardian. Confirm with the proposed guardian before proceeding."
+            },
+            {
               "name": "proposed_guardian_name",
               "label": "Proposed guardian's name",
               "type": "text"
@@ -640,7 +659,7 @@
             {
               "name": "proposed_guardian_address",
               "label": "Proposed guardian's post office address",
-              "type": "text"
+              "type": "address"
             },
             {
               "name": "is_professional_guardian",
@@ -714,7 +733,7 @@
             {
               "name": "petitioner_address",
               "label": "Petitioner's post office address",
-              "type": "text"
+              "type": "address"
             }
           ]
         },
@@ -734,7 +753,7 @@
             {
               "name": "aip_address",
               "label": "Ward's post office address",
-              "type": "text"
+              "type": "address"
             }
           ]
         },
@@ -851,12 +870,14 @@
             {
               "name": "alternatives_description",
               "label": "If yes, describe the alternatives",
-              "type": "textarea"
+              "type": "textarea",
+              "visible_if": { "field": "has_alternatives", "equals": true }
             },
             {
               "name": "alternatives_insufficient_reason",
               "label": "If yes, why are the alternatives insufficient?",
-              "type": "textarea"
+              "type": "textarea",
+              "visible_if": { "field": "has_alternatives", "equals": true }
             }
           ]
         },
@@ -871,12 +892,14 @@
             {
               "name": "preneed_guardian_name",
               "label": "If yes, name of designated preneed guardian",
-              "type": "text"
+              "type": "text",
+              "visible_if": { "field": "has_preneed", "equals": true }
             },
             {
               "name": "preneed_reason",
               "label": "If no, brief explanation (e.g. 'as the AIP has no preneed documents')",
-              "type": "text"
+              "type": "text",
+              "visible_if": { "field": "has_preneed", "not_equals": true }
             }
           ]
         },
@@ -896,7 +919,7 @@
                 {
                   "name": "address",
                   "label": "Address",
-                  "type": "text"
+                  "type": "address"
                 },
                 {
                   "name": "relationship",
@@ -911,6 +934,12 @@
           "title": "Proposed Guardian",
           "fields": [
             {
+              "name": "_proposed_guardian_felony_warning",
+              "type": "info",
+              "severity": "danger",
+              "content": "<strong>F.S. §744.309(3) — felony disqualification.</strong> A person convicted of a felony is <em>not qualified</em> to serve as guardian. Confirm with the proposed guardian before proceeding."
+            },
+            {
               "name": "proposed_guardian_name",
               "label": "Proposed guardian's name",
               "type": "text"
@@ -923,7 +952,7 @@
             {
               "name": "proposed_guardian_address",
               "label": "Proposed guardian's post office address",
-              "type": "text"
+              "type": "address"
             },
             {
               "name": "is_professional_guardian",
