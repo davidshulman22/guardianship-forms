@@ -1303,8 +1303,12 @@
           "fields": [
             {
               "name": "resident_agent_name",
-              "label": "Resident agent name (usually the attorney)",
-              "type": "text"
+              "label": "Resident agent",
+              "type": "select",
+              "options": [
+                { "value": "David A. Shulman", "label": "David A. Shulman" },
+                { "value": "Jill R. Ginsberg", "label": "Jill R. Ginsberg" }
+              ]
             },
             {
               "name": "resident_agent_address",

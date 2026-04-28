@@ -1698,6 +1698,17 @@ function getAutoPopulateDefaults() {
         }];
     }
 
+    // --- Layer 3a-bis: Auto-populate prs array (PR is almost always the
+    // petitioner; user can edit if not). ---
+    if (!defaults.prs || !Array.isArray(defaults.prs) || defaults.prs.length === 0) {
+        defaults.prs = [{
+            pr_name: fullName,
+            pr_address: currentClient.address || '',
+            pr_is_fl_resident: true,
+            pr_relationship: ''
+        }];
+    }
+
     // --- Layer 3b: Auto-derive fields ---
     if (!defaults.affiant_name) defaults.affiant_name = defaults.petitioner_name || fullName;
     if (!defaults.notary_state) defaults.notary_state = 'Florida';
@@ -1962,6 +1973,29 @@ function renderAddressField(opts) {
     toggle.addEventListener('change', () => {
         usGrid.style.display = toggle.checked ? 'none' : '';
         foreignWrap.style.display = toggle.checked ? '' : 'none';
+
+        // Switching FROM free-text back to the structured grid: if the
+        // structured fields are empty, prefill from (a) whatever the user
+        // typed in the free-text box (if it parses), or (b) the value the
+        // field was originally populated with — typically the client's
+        // address. This recovers from cases where the parser didn't catch
+        // the format on first render.
+        if (!toggle.checked) {
+            const inputs = usGrid.querySelectorAll('[data-address-key]');
+            const allEmpty = Array.from(inputs).every(i => !i.value);
+            if (allEmpty) {
+                const candidate = parseStringToStructuredAddress(foreignTA.value)
+                    || parseStringToStructuredAddress(typeof opts.value === 'string' ? opts.value : '');
+                if (candidate) {
+                    inputs.forEach(input => {
+                        const key = input.dataset.addressKey;
+                        if (candidate[key] !== undefined && candidate[key] !== '') {
+                            input.value = candidate[key];
+                        }
+                    });
+                }
+            }
+        }
     });
     toggleWrap.appendChild(toggle);
     const toggleLabel = document.createElement('span');
@@ -2100,6 +2134,38 @@ function renderFormField(field) {
         textarea.value = currentFormData[field.name] || '';
         fieldDiv.appendChild(label);
         fieldDiv.appendChild(textarea);
+        container.appendChild(fieldDiv);
+    } else if (field.type === 'select') {
+        // Validated dropdown — `options` is an array of { value, label }
+        // (label optional; falls back to value). Used for fields where the
+        // answer is one of a small fixed set, e.g. the resident agent must
+        // be either David or Jill.
+        const fieldDiv = document.createElement('div');
+        fieldDiv.className = 'field';
+        const label = document.createElement('label');
+        label.htmlFor = 'form_' + field.name;
+        label.textContent = field.label;
+        const select = document.createElement('select');
+        select.id = 'form_' + field.name;
+        select.className = 'form-field-input';
+        select.dataset.field = field.name;
+        select.dataset.type = 'select';
+        const currentVal = currentFormData[field.name];
+        if (field.placeholder || !field.options || field.options.length === 0) {
+            const blank = document.createElement('option');
+            blank.value = '';
+            blank.textContent = field.placeholder || '-- Select --';
+            select.appendChild(blank);
+        }
+        (field.options || []).forEach(opt => {
+            const o = document.createElement('option');
+            o.value = opt.value;
+            o.textContent = opt.label || opt.value;
+            if (currentVal === opt.value) o.selected = true;
+            select.appendChild(o);
+        });
+        fieldDiv.appendChild(label);
+        fieldDiv.appendChild(select);
         container.appendChild(fieldDiv);
     } else if (field.type === 'checkbox') {
         const fieldDiv = document.createElement('div');
