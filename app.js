@@ -793,7 +793,13 @@ function renderClientView() {
 
     const info = document.getElementById('clientContactInfo');
     const parts = [];
-    if (currentClient.address) parts.push(currentClient.address.replace(/\n/g, '<br>'));
+    // client.address may now be an object (structured) or string (legacy /
+    // imported). formatAddressValue normalizes either to a single-line string
+    // suitable for inline display.
+    if (currentClient.address) {
+        const addrStr = formatAddressValue(currentClient.address);
+        if (addrStr) parts.push(addrStr.replace(/\n/g, '<br>'));
+    }
     if (currentClient.phone) parts.push('Phone: ' + currentClient.phone);
     if (currentClient.email) parts.push('Email: ' + currentClient.email);
     info.innerHTML = parts.join('<br>') || '<span class="empty-state">No contact info</span>';
@@ -819,18 +825,44 @@ function openClientModal(client) {
     document.getElementById('clientModalTitle').textContent = client ? 'Edit Client' : 'New Client';
     document.getElementById('clientFirstName').value = client ? client.firstName || '' : '';
     document.getElementById('clientLastName').value = client ? client.lastName || '' : '';
-    document.getElementById('clientAddress').value = client ? client.address || '' : '';
     document.getElementById('clientPhone').value = client ? client.phone || '' : '';
     document.getElementById('clientEmail').value = client ? client.email || '' : '';
+
+    // Render the structured address picker. Accepts either an object (new
+    // shape) or a string (legacy / freshly-typed) — renderAddressField
+    // parses strings on the fly via parseStringToStructuredAddress so the
+    // structured grid populates automatically.
+    const addressContainer = document.getElementById('clientAddressContainer');
+    addressContainer.innerHTML = '';
+    addressContainer.appendChild(renderAddressField({
+        value: client ? client.address : null,
+        label: '',
+        dataBase: { context: 'client' }
+    }));
+
     document.getElementById('newClientModal').style.display = 'flex';
+}
+
+// Walk the .address-sub-input elements in a container and assemble the
+// structured address object (no docxtemplater coupling — used by the
+// client modal where there's no formData scope).
+function readAddressFromContainer(containerEl) {
+    const out = {};
+    containerEl.querySelectorAll('.address-sub-input').forEach(input => {
+        const key = input.dataset.addressKey;
+        if (!key) return;
+        out[key] = (input.type === 'checkbox') ? input.checked : input.value;
+    });
+    return out;
 }
 
 function handleClientFormSubmit(e) {
     e.preventDefault();
+    const addressContainer = document.getElementById('clientAddressContainer');
     const data = {
         firstName: document.getElementById('clientFirstName').value,
         lastName: document.getElementById('clientLastName').value,
-        address: document.getElementById('clientAddress').value,
+        address: readAddressFromContainer(addressContainer),
         phone: document.getElementById('clientPhone').value,
         email: document.getElementById('clientEmail').value,
     };
@@ -1851,24 +1883,45 @@ const US_STATES = [
 ];
 
 // Parse a free-text address (auto-populated client default, legacy matter
-// data, or pasted string) into the structured shape. Returns null on
-// formats we can't confidently split — caller decides the fallback.
-// Accepts comma- and newline-separated forms:
-//   "4521 NE 12th Ave, Fort Lauderdale, FL 33334"
-//   "4521 NE 12th Ave\nFort Lauderdale, FL 33334"
-//   "1200 SW 3rd St, Apt 204, Fort Lauderdale, FL 33312"
+// data, or pasted string) into the structured shape. Returns null only when
+// no US state + zip pattern can be found at all. Lenient about commas:
+// users often type "14 Canfield Way Avon, CT 06001" or even "...Avon CT
+// 06001" without separators. The parser anchors on the trailing 2-letter
+// state + 5-digit zip and best-effort splits everything before that.
+//   "4521 NE 12th Ave, Fort Lauderdale, FL 33334"     → fully structured
+//   "4521 NE 12th Ave\nFort Lauderdale, FL 33334"     → fully structured
+//   "1200 SW 3rd St, Apt 204, Fort Lauderdale, FL 33312" → with line2
+//   "14 Canfield Way Avon, CT 06001"                  → city left blank
+//                                                       (user moves it)
 function parseStringToStructuredAddress(s) {
     if (!s || typeof s !== 'string') return null;
     const trimmed = s.trim();
     if (!trimmed) return null;
     const normalized = trimmed.replace(/\s*\n+\s*/g, ', ');
-    const m = normalized.match(/^(.+),\s*([^,]+),\s*([A-Z]{2})\s+(\d{5}(?:-\d{4})?)\s*$/);
-    if (!m) return null;
-    const [, beforeCity, city, state, zip] = m;
-    const parts = beforeCity.split(',').map(p => p.trim()).filter(Boolean);
-    const street = parts[0] || '';
-    const line2 = parts.length >= 2 ? parts.slice(1).join(', ') : '';
-    return { street, line2, city: city.trim(), state, zip, foreign: false };
+
+    // Anchor on the trailing state + zip — required for a US match.
+    const tail = normalized.match(/\b([A-Z]{2})\s+(\d{5}(?:-\d{4})?)\s*$/);
+    if (!tail) return null;
+    const state = tail[1];
+    const zip = tail[2];
+    const before = normalized.slice(0, tail.index).replace(/[,\s]+$/, '').trim();
+    if (!before) return null;
+
+    // If there are commas, the last comma-separated chunk is the city and
+    // the rest is street (+ optional line2). Without commas, we can't
+    // reliably split city out — dump the whole thing into street and let
+    // the user move pieces around. Better than refusing to parse.
+    let street = '', line2 = '', city = '';
+    const parts = before.split(',').map(p => p.trim()).filter(Boolean);
+    if (parts.length >= 2) {
+        city = parts[parts.length - 1];
+        const beforeCity = parts.slice(0, -1);
+        street = beforeCity[0] || '';
+        line2 = beforeCity.length > 1 ? beforeCity.slice(1).join(', ') : '';
+    } else {
+        street = parts[0] || before;
+    }
+    return { street, line2, city, state, zip, foreign: false };
 }
 
 // Render a structured address as a compact grid. Shape:
@@ -1891,17 +1944,31 @@ function renderAddressField(opts) {
 
     // String values come from two places: (a) auto-populate (the seed
     // client.address is a string), and (b) legacy matters created before the
-    // structured-address rollout. Try to parse "street, city, ST zip" into
-    // structured fields first — almost every US address we see fits that
-    // pattern. Only fall back to the free-text path if parsing fails, so the
-    // user doesn't see the foreign-address textarea by default for normal
-    // domestic addresses.
+    // structured-address rollout. The lenient parser anchors on the trailing
+    // state + zip and almost always extracts something usable.
+    //
+    // The free-text toggle defaults to UNCHECKED — David's explicit
+    // preference. Genuine US addresses are virtually universal here; the
+    // toggle is for the rare non-US / non-standard case. For saved values
+    // that came in as { foreign: true, foreign_text: "..." }, try to upgrade
+    // them to structured by re-running the parser on the stored text — this
+    // converts older foreign-marked records that were really just
+    // unrecognized US formats.
     let val;
     if (opts.value && typeof opts.value === 'object') {
-        val = opts.value;
+        val = { ...opts.value };
+        const hasStructured = val.street || val.city || val.state || val.zip;
+        if (val.foreign === true && val.foreign_text && !hasStructured) {
+            const parsed = parseStringToStructuredAddress(val.foreign_text);
+            if (parsed) {
+                // keep the original text on the object too, so toggling back
+                // to free-text recovers it verbatim
+                val = { ...parsed, foreign_text: val.foreign_text };
+            }
+        }
     } else if (typeof opts.value === 'string' && opts.value.trim()) {
         val = parseStringToStructuredAddress(opts.value)
-            || { foreign: true, foreign_text: opts.value };
+            || { foreign_text: opts.value };  // toggle unchecked, data preserved
     } else {
         val = {};
     }
@@ -2620,7 +2687,11 @@ function prepareTemplateData() {
 
     // Client-level fields
     data.petitioner_name = ((currentClient.firstName || '') + ' ' + (currentClient.lastName || '')).trim();
-    data.petitioner_address = currentClient.address || '';
+    // currentClient.address can be string (legacy) or object (structured) —
+    // normalize to a single-line string for template rendering. Forms whose
+    // own petitioner_address field is type=address get this re-normalized
+    // by the formatAddressValue pass later, which is idempotent on strings.
+    data.petitioner_address = formatAddressValue(currentClient.address);
 
     // Attorney defaults (per-matter attorneyId, falls back to type)
     const attorneyDefaults = getAttorneyDefaults(currentMatter);
