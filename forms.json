@@ -968,9 +968,19 @@
           "title": "Petitioner(s)",
           "fields": [
             {
+              "name": "petitioner_same_as_pr",
+              "label": "Petitioner(s) are the same people as the proposed Personal Representative(s) (most common \u2014 auto-fills from the PR rows below)",
+              "type": "checkbox"
+            },
+            {
               "name": "petitioners",
               "label": "Petitioner(s) \u2014 add one row per person filing the petition",
               "type": "repeating_group",
+              "row_lock_unless_matter_flag": "multiple_petitioners",
+              "visible_if": {
+                "field": "petitioner_same_as_pr",
+                "not_equals": true
+              },
               "subfields": [
                 {
                   "name": "pet_name",
@@ -980,7 +990,7 @@
                 {
                   "name": "pet_address",
                   "label": "Address",
-                  "type": "text"
+                  "type": "address"
                 },
                 {
                   "name": "pet_interest",
@@ -1007,17 +1017,21 @@
             {
               "name": "decedent_address",
               "label": "Decedent's last known address",
-              "type": "text"
+              "type": "address"
             },
             {
               "name": "decedent_ssn_last4",
               "label": "Last 4 digits of decedent's SSN",
-              "type": "text"
+              "type": "text",
+              "pattern": "\\d{4}",
+              "maxlength": 4,
+              "inputmode": "numeric",
+              "placeholder": "e.g. 1234"
             },
             {
               "name": "decedent_death_date",
-              "label": "Date of death (e.g. 'March 2, 2026')",
-              "type": "text"
+              "label": "Date of death",
+              "type": "date"
             },
             {
               "name": "decedent_death_place",
@@ -1052,7 +1066,7 @@
                 {
                   "name": "ben_address",
                   "label": "Address",
-                  "type": "text"
+                  "type": "address"
                 },
                 {
                   "name": "ben_relationship",
@@ -1060,9 +1074,18 @@
                   "type": "text"
                 },
                 {
+                  "name": "ben_is_minor",
+                  "label": "Is a minor",
+                  "type": "checkbox"
+                },
+                {
                   "name": "ben_year_of_birth",
-                  "label": "Year of birth (if minor)",
-                  "type": "text"
+                  "label": "Year of birth",
+                  "type": "text",
+                  "visible_if": {
+                    "field": "ben_is_minor",
+                    "equals": true
+                  }
                 }
               ]
             }
@@ -1072,8 +1095,29 @@
           "title": "Venue",
           "fields": [
             {
-              "name": "venue_reason",
-              "label": "Reason venue is proper in this county",
+              "name": "_venue_help",
+              "type": "info",
+              "severity": "info",
+              "content": "Check each statutory reason that applies (\u00a7733.101). Multiple may be checked if relevant."
+            },
+            {
+              "name": "venue_reason_type_domicile_fl",
+              "label": "Decedent was domiciled in this county at the time of death",
+              "type": "checkbox"
+            },
+            {
+              "name": "venue_reason_type_property",
+              "label": "Decedent was not a Florida resident but had property in this county at the time of death",
+              "type": "checkbox"
+            },
+            {
+              "name": "venue_reason_type_debtor",
+              "label": "Decedent was not a Florida resident and had no property in Florida, but a debtor of the decedent resides in this county",
+              "type": "checkbox"
+            },
+            {
+              "name": "venue_reason_other",
+              "label": "Other reason (specify)",
               "type": "text"
             }
           ]
@@ -1082,9 +1126,16 @@
           "title": "Proposed Personal Representative(s)",
           "fields": [
             {
+              "name": "_pr_felony_warning",
+              "type": "info",
+              "severity": "danger",
+              "content": "\u26a0 A person who has been convicted of a felony is disqualified from serving as Personal Representative under \u00a7733.303(1)(a), Fla. Stat. Do NOT propose anyone with a felony conviction \u2014 the court will reject the petition."
+            },
+            {
               "name": "prs",
               "label": "Personal Representative(s) \u2014 add one row per PR",
               "type": "repeating_group",
+              "row_lock_unless_matter_flag": "multiple_prs",
               "subfields": [
                 {
                   "name": "pr_name",
@@ -1094,7 +1145,7 @@
                 {
                   "name": "pr_address",
                   "label": "Address",
-                  "type": "text"
+                  "type": "address"
                 },
                 {
                   "name": "pr_is_fl_resident",
@@ -1163,27 +1214,32 @@
             {
               "name": "domiciliary_proceedings_pending",
               "label": "Domiciliary/principal proceedings pending in another jurisdiction (auto-set for ancillary)",
-              "type": "checkbox"
+              "type": "checkbox",
+              "visible_if": { "matter_flag": "is_ancillary", "equals": true }
             },
             {
               "name": "domiciliary_court_name",
               "label": "Domiciliary court name (e.g. 'Surrogate's Court, New York County')",
-              "type": "text"
+              "type": "text",
+              "visible_if": { "matter_flag": "is_ancillary", "equals": true }
             },
             {
               "name": "domiciliary_court_address",
               "label": "Domiciliary court address",
-              "type": "text"
+              "type": "address",
+              "visible_if": { "matter_flag": "is_ancillary", "equals": true }
             },
             {
               "name": "domiciliary_representative",
               "label": "Domiciliary representative name",
-              "type": "text"
+              "type": "text",
+              "visible_if": { "matter_flag": "is_ancillary", "equals": true }
             },
             {
               "name": "domiciliary_representative_address",
               "label": "Domiciliary representative address",
-              "type": "text"
+              "type": "address",
+              "visible_if": { "matter_flag": "is_ancillary", "equals": true }
             }
           ]
         },
@@ -1192,47 +1248,12 @@
           "fields": [
             {
               "name": "will_date",
-              "label": "Will date (e.g. 'January 15')",
-              "type": "text"
-            },
-            {
-              "name": "will_year",
-              "label": "Will year",
-              "type": "text"
+              "label": "Will date",
+              "type": "date"
             },
             {
               "name": "codicil_dates",
-              "label": "Codicil date(s) (blank if none)",
-              "type": "text"
-            },
-            {
-              "name": "will_status_original",
-              "label": "Original will is in the court's possession / accompanies this petition",
-              "type": "checkbox"
-            },
-            {
-              "name": "will_status_authenticated_other",
-              "label": "Authenticated copy from another jurisdiction accompanies this petition",
-              "type": "checkbox"
-            },
-            {
-              "name": "will_status_authenticated_notarial",
-              "label": "Authenticated copy of a notarial will (foreign notary) accompanies this petition",
-              "type": "checkbox"
-            }
-          ]
-        },
-        {
-          "title": "Signing Information",
-          "fields": [
-            {
-              "name": "signing_month",
-              "label": "Month",
-              "type": "text"
-            },
-            {
-              "name": "signing_year",
-              "label": "Year",
+              "label": "Codicil date(s) (blank if none; separate multiple with commas)",
               "type": "text"
             }
           ]
@@ -1251,6 +1272,7 @@
               "name": "prs",
               "label": "Personal Representative(s) \u2014 each will sign",
               "type": "repeating_group",
+              "row_lock_unless_matter_flag": "multiple_prs",
               "subfields": [
                 {
                   "name": "pr_name",
@@ -1260,7 +1282,7 @@
                 {
                   "name": "pr_address",
                   "label": "Address",
-                  "type": "text"
+                  "type": "address"
                 },
                 {
                   "name": "pr_is_fl_resident",
@@ -1281,8 +1303,12 @@
           "fields": [
             {
               "name": "resident_agent_name",
-              "label": "Resident agent name (usually the attorney)",
-              "type": "text"
+              "label": "Resident agent",
+              "type": "select",
+              "options": [
+                { "value": "David A. Shulman", "label": "David A. Shulman" },
+                { "value": "Jill R. Ginsberg", "label": "Jill R. Ginsberg" }
+              ]
             },
             {
               "name": "resident_agent_address",
@@ -1297,26 +1323,6 @@
             {
               "name": "decedent_full_name",
               "label": "Decedent full legal name",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Notarization",
-          "fields": [
-            {
-              "name": "notary_online",
-              "label": "Signed via online notarization (vs. physical presence)",
-              "type": "checkbox"
-            },
-            {
-              "name": "signing_month",
-              "label": "Month",
-              "type": "text"
-            },
-            {
-              "name": "signing_year",
-              "label": "Year",
               "type": "text"
             }
           ]
@@ -1335,6 +1341,7 @@
               "name": "petitioners",
               "label": "Petitioner(s)",
               "type": "repeating_group",
+              "row_lock_unless_matter_flag": "multiple_petitioners",
               "subfields": [
                 {
                   "name": "pet_name",
@@ -1352,6 +1359,7 @@
               "name": "prs",
               "label": "Personal Representative(s) being appointed",
               "type": "repeating_group",
+              "row_lock_unless_matter_flag": "multiple_prs",
               "subfields": [
                 {
                   "name": "pr_name",
@@ -1361,7 +1369,7 @@
                 {
                   "name": "pr_address",
                   "label": "Address",
-                  "type": "text"
+                  "type": "address"
                 },
                 {
                   "name": "pr_is_fl_resident",
@@ -1374,11 +1382,6 @@
                   "type": "text"
                 }
               ]
-            },
-            {
-              "name": "bond_required",
-              "label": "PR serves with bond (vs. without)",
-              "type": "checkbox"
             }
           ]
         },
@@ -1393,7 +1396,7 @@
             {
               "name": "decedent_death_date",
               "label": "Date of death",
-              "type": "text"
+              "type": "date"
             },
             {
               "name": "decedent_domicile",
@@ -1413,16 +1416,11 @@
             {
               "name": "will_date",
               "label": "Will date",
-              "type": "text"
-            },
-            {
-              "name": "will_year",
-              "label": "Will year",
-              "type": "text"
+              "type": "date"
             },
             {
               "name": "codicil_dates",
-              "label": "Codicil date(s) (blank if none)",
+              "label": "Codicil date(s) (blank if none; separate multiple with commas)",
               "type": "text"
             },
             {
@@ -1467,7 +1465,7 @@
             {
               "name": "decedent_death_date",
               "label": "Date of death",
-              "type": "text"
+              "type": "date"
             },
             {
               "name": "decedent_domicile",
@@ -1486,7 +1484,7 @@
           "fields": [
             {
               "name": "codicil_dates",
-              "label": "Codicil date(s) (blank if none)",
+              "label": "Codicil date(s) (blank if none; separate multiple with commas)",
               "type": "text"
             }
           ]
@@ -3960,53 +3958,7 @@
       "id": "P1-0900",
       "name": "Notice of Designation of Email Addresses for Service",
       "template": "templates/P1-0900.docx",
-      "sections": [
-        {
-          "title": "Email Addresses",
-          "fields": [
-            {
-              "name": "attorney_email",
-              "label": "Primary email for service",
-              "type": "text"
-            },
-            {
-              "name": "attorney_email_secondary",
-              "label": "Secondary email for service",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Signing and Attorney",
-          "fields": [
-            {
-              "name": "signing_day",
-              "label": "Day",
-              "type": "text"
-            },
-            {
-              "name": "signing_month",
-              "label": "Month",
-              "type": "text"
-            },
-            {
-              "name": "signing_year",
-              "label": "Year",
-              "type": "text"
-            },
-            {
-              "name": "attorney_bar_no",
-              "label": "Florida Bar No.",
-              "type": "text"
-            },
-            {
-              "name": "attorney_phone",
-              "label": "Telephone",
-              "type": "text"
-            }
-          ]
-        }
-      ]
+      "sections": []
     },
     {
       "id": "P3-0740",
@@ -4301,762 +4253,42 @@
     {
       "id": "BW-0010",
       "name": "Affidavit Regarding Criminal History (Broward)",
-      "template": "templates/BW-0010.docx",
+      "delivery": "pdf_passthrough",
+      "template": "reference/Broward-Affidavit-Criminal-History.pdf",
       "county": "Broward",
-      "sections": [
-        {
-          "title": "Affiant Information",
-          "fields": [
-            {
-              "name": "affiant_name",
-              "label": "Affiant name (person swearing)",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Criminal History",
-          "fields": [
-            {
-              "name": "no_felony",
-              "label": "I have NOT been convicted of a felony",
-              "type": "checkbox"
-            },
-            {
-              "name": "has_felony",
-              "label": "I HAVE been convicted of a felony",
-              "type": "checkbox"
-            },
-            {
-              "name": "felony_offenses",
-              "label": "Offense(s)",
-              "type": "text"
-            },
-            {
-              "name": "felony_dates",
-              "label": "Date(s) of conviction",
-              "type": "text"
-            },
-            {
-              "name": "felony_court_case",
-              "label": "Court & case number",
-              "type": "text"
-            },
-            {
-              "name": "felony_state_county",
-              "label": "State & County of the court",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Notary",
-          "fields": [
-            {
-              "name": "notary_state",
-              "label": "State",
-              "type": "text"
-            },
-            {
-              "name": "notary_county",
-              "label": "County",
-              "type": "text"
-            },
-            {
-              "name": "notary_means",
-              "label": "Means (check or X)",
-              "type": "text"
-            },
-            {
-              "name": "notary_day",
-              "label": "Day",
-              "type": "text"
-            },
-            {
-              "name": "notary_month",
-              "label": "Month",
-              "type": "text"
-            },
-            {
-              "name": "notary_year_short",
-              "label": "Year (last 2 digits)",
-              "type": "text"
-            },
-            {
-              "name": "notary_personally_known",
-              "label": "Personally known",
-              "type": "checkbox"
-            },
-            {
-              "name": "notary_produced_id",
-              "label": "Produced identification",
-              "type": "checkbox"
-            },
-            {
-              "name": "notary_identification",
-              "label": "Type of identification",
-              "type": "text"
-            }
-          ]
-        }
-      ]
+      "sections": []
     },
     {
       "id": "BW-0020",
       "name": "Mandatory Checklist \u2014 Formal Admin Testate (Broward)",
-      "template": "templates/BW-0020.docx",
+      "delivery": "pdf_passthrough",
+      "template": "reference/Broward-Checklist-Formal-Admin-Testate.pdf",
       "county": "Broward",
-      "sections": [
-        {
-          "title": "Hearing",
-          "fields": [
-            {
-              "name": "hearing_exparte",
-              "label": "Pursuing on ex-parte, motion, or special set calendar",
-              "type": "checkbox"
-            },
-            {
-              "name": "hearing_no_hearing",
-              "label": "Submitted to Judge without a hearing",
-              "type": "checkbox"
-            }
-          ]
-        },
-        {
-          "title": "Filing Verification",
-          "fields": [
-            {
-              "name": "cl_death_cert",
-              "label": "Death certificate was filed",
-              "type": "checkbox"
-            },
-            {
-              "name": "cl_criminal_history",
-              "label": "Affidavit Regarding Criminal History was filed",
-              "type": "checkbox"
-            },
-            {
-              "name": "cl_residence",
-              "label": "Death cert reflects Broward residence (or property situs in Petition)",
-              "type": "checkbox"
-            },
-            {
-              "name": "cl_petition_verified",
-              "label": "Petition is verified, signed by Petitioner and attorney",
-              "type": "checkbox"
-            },
-            {
-              "name": "cl_interest_address",
-              "label": "Petitioner's interest and address are in the Petition",
-              "type": "checkbox"
-            },
-            {
-              "name": "cl_will_filed",
-              "label": "Will/codicil was e-filed and original deposited with Clerk",
-              "type": "checkbox"
-            },
-            {
-              "name": "cl_lost_will",
-              "label": "OR: Petition to Establish Lost/Destroyed Will was filed",
-              "type": "checkbox"
-            },
-            {
-              "name": "cl_self_proved",
-              "label": "Will is self-proven (or oath of witness filed)",
-              "type": "checkbox"
-            },
-            {
-              "name": "cl_will_conformity",
-              "label": "OR: Non-FL resident \u2014 will conformity affidavit filed",
-              "type": "checkbox"
-            },
-            {
-              "name": "cl_petitioner_qualified",
-              "label": "Petitioner is not a felon and is FL resident (or related if non-FL)",
-              "type": "checkbox"
-            },
-            {
-              "name": "cl_beneficiaries",
-              "label": "Beneficiaries listed with minor birthdates",
-              "type": "checkbox"
-            },
-            {
-              "name": "cl_assets",
-              "label": "Assets and approximate values listed in Petition",
-              "type": "checkbox"
-            },
-            {
-              "name": "cl_preference",
-              "label": "PR has preference of appointment (renunciations filed if needed)",
-              "type": "checkbox"
-            },
-            {
-              "name": "cl_oath_filed",
-              "label": "Oath of PR and designation of resident agent filed",
-              "type": "checkbox"
-            },
-            {
-              "name": "cl_order_filed",
-              "label": "Proposed order filed (4+ lines of text + case no. on sig page)",
-              "type": "checkbox"
-            },
-            {
-              "name": "cl_letters_filed",
-              "label": "Proposed letters filed (4+ lines of text + case no. on sig page)",
-              "type": "checkbox"
-            },
-            {
-              "name": "cl_no_trust",
-              "label": "A trust is NOT a beneficiary of the decedent",
-              "type": "checkbox"
-            },
-            {
-              "name": "cl_trust_beneficiary",
-              "label": "OR: Trust is a beneficiary \u2014 disclosure of trust beneficiaries filed",
-              "type": "checkbox"
-            }
-          ]
-        },
-        {
-          "title": "Certification B (if any items unchecked)",
-          "fields": [
-            {
-              "name": "cert_b_missing_items",
-              "label": "List items not checked above",
-              "type": "textarea"
-            }
-          ]
-        }
-      ]
+      "sections": []
     },
     {
       "id": "BW-0030",
       "name": "Mandatory Checklist \u2014 Formal Admin Intestate (Broward)",
-      "template": "templates/BW-0030.docx",
+      "delivery": "pdf_passthrough",
+      "template": "reference/Broward-Checklist-Formal-Admin-Intestate.pdf",
       "county": "Broward",
-      "sections": [
-        {
-          "title": "Hearing",
-          "fields": [
-            {
-              "name": "hearing_exparte",
-              "label": "Pursuing on ex-parte, motion, or special set calendar",
-              "type": "checkbox"
-            },
-            {
-              "name": "hearing_no_hearing",
-              "label": "Submitted to Judge without a hearing",
-              "type": "checkbox"
-            }
-          ]
-        },
-        {
-          "title": "Filing Verification",
-          "fields": [
-            {
-              "name": "cl_death_cert",
-              "label": "Death certificate was filed",
-              "type": "checkbox"
-            },
-            {
-              "name": "cl_criminal_history",
-              "label": "Affidavit Concerning Criminal History was filed",
-              "type": "checkbox"
-            },
-            {
-              "name": "cl_affidavit_heirs",
-              "label": "Affidavit of Heirs was filed",
-              "type": "checkbox"
-            },
-            {
-              "name": "cl_petition_verified",
-              "label": "Petition is verified",
-              "type": "checkbox"
-            },
-            {
-              "name": "cl_petition_signed_interested",
-              "label": "Petition is signed by the interested person(s)",
-              "type": "checkbox"
-            },
-            {
-              "name": "cl_petition_signed_attorney",
-              "label": "Petition is signed by an attorney of record",
-              "type": "checkbox"
-            },
-            {
-              "name": "cl_petitioner_relationship",
-              "label": "Petition includes Petitioner's relationship and residence",
-              "type": "checkbox"
-            },
-            {
-              "name": "cl_petitioner_qualified",
-              "label": "Petitioner is not a felon and is FL resident (or related if non-FL)",
-              "type": "checkbox"
-            },
-            {
-              "name": "cl_beneficiaries",
-              "label": "Correct beneficiaries listed with minor birthdates",
-              "type": "checkbox"
-            },
-            {
-              "name": "cl_pr_intestate_preference",
-              "label": "PR has preference of appointment in intestate administration",
-              "type": "checkbox"
-            },
-            {
-              "name": "cl_assets",
-              "label": "Assets and approximate values listed in Petition",
-              "type": "checkbox"
-            },
-            {
-              "name": "cl_oath_filed",
-              "label": "Oath of PR and designation of resident agent filed",
-              "type": "checkbox"
-            },
-            {
-              "name": "cl_order_filed",
-              "label": "Proposed order appointing PR filed (with space for bond)",
-              "type": "checkbox"
-            },
-            {
-              "name": "cl_order_sig_page",
-              "label": "Order signature page has 4+ lines and case number",
-              "type": "checkbox"
-            },
-            {
-              "name": "cl_letters_filed",
-              "label": "Proposed letters of administration filed (4+ lines on sig page)",
-              "type": "checkbox"
-            }
-          ]
-        },
-        {
-          "title": "Certification B (if any items unchecked)",
-          "fields": [
-            {
-              "name": "cert_b_missing_items",
-              "label": "List items not checked above",
-              "type": "textarea"
-            }
-          ]
-        }
-      ]
+      "sections": []
     },
     {
       "id": "BW-0040",
       "name": "Mandatory Checklist \u2014 Summary Admin Testate (Broward)",
-      "template": "templates/BW-0040.docx",
+      "delivery": "pdf_passthrough",
+      "template": "reference/Broward-Checklist-Summary-Admin-Testate.pdf",
       "county": "Broward",
-      "sections": [
-        {
-          "title": "Hearing",
-          "fields": [
-            {
-              "name": "hearing_exparte",
-              "label": "Pursuing on ex-parte, motion, or special set calendar",
-              "type": "checkbox"
-            },
-            {
-              "name": "hearing_no_hearing",
-              "label": "Submitted to Judge without a hearing",
-              "type": "checkbox"
-            }
-          ]
-        },
-        {
-          "title": "Filing & Expenses",
-          "fields": [
-            {
-              "name": "scl_death_cert",
-              "label": "Death certificate was filed",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_medical_bills",
-              "label": "Proof of payment of medical bills (last 60 days of last illness)",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_no_medical",
-              "label": "OR: No such medical expenses \u2014 stated in Petition",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_funeral_expenses",
-              "label": "Proof of payment of reasonable funeral expenses",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_criminal_history",
-              "label": "Affidavit Regarding Criminal History filed",
-              "type": "checkbox"
-            }
-          ]
-        },
-        {
-          "title": "Petition Content",
-          "fields": [
-            {
-              "name": "scl_beneficiary_info",
-              "label": "Petition includes spouse, beneficiary names/addresses/relationships, minor birthdates",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_venue",
-              "label": "Petition includes statement showing venue",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_domiciliary_proceedings",
-              "label": "Petition includes statement re: domiciliary/principal proceedings from other state/country",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_summary_eligible",
-              "label": "Petition demonstrates summary eligibility (died 2+ yrs ago or estate < $75K less exempt property)",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_petitioner_qualified",
-              "label": "Petitioner is a beneficiary or person nominated as PR in will",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_will_no_admin",
-              "label": "Petition states will does not direct ch.733 administration",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_assets_described",
-              "label": "Assets specifically described with values (institution, account nos., legal descriptions)",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_creditor_search",
-              "label": "Petition states diligent search for creditors conducted + penalty acknowledged",
-              "type": "checkbox"
-            }
-          ]
-        },
-        {
-          "title": "Claims",
-          "fields": [
-            {
-              "name": "scl_no_claims",
-              "label": "No claims filed against the estate",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_claims_filed",
-              "label": "OR: Claims have been filed",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_claims_barred",
-              "label": "  Claims barred by statute",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_claims_paid",
-              "label": "  OR: Provision for payment made",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_claims_insufficient",
-              "label": "  OR: Insufficient assets + formal notice served on creditors",
-              "type": "checkbox"
-            }
-          ]
-        },
-        {
-          "title": "Beneficiary Notice & Order",
-          "fields": [
-            {
-              "name": "scl_formal_notice",
-              "label": "All beneficiaries received formal notice of petition + proposed distribution",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_consents_filed",
-              "label": "OR: Consents from all beneficiaries filed",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_distribution_correct",
-              "label": "Proposed order includes correct distribution per will",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_will_admitted",
-              "label": "Proposed order admitting will to probate was filed",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_order_sig_page",
-              "label": "Signature page has 4+ lines and case number",
-              "type": "checkbox"
-            }
-          ]
-        },
-        {
-          "title": "Trust Beneficiary",
-          "fields": [
-            {
-              "name": "scl_no_trust",
-              "label": "A trust is NOT a beneficiary of the decedent",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_trust_beneficiary",
-              "label": "OR: Trust IS a beneficiary of the will",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_trustee_is_petitioner",
-              "label": "  Every trustee is also a Petitioner + disclosure filed + qualified beneficiaries served",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_trustee_not_petitioner",
-              "label": "  OR: At least one trustee is not a Petitioner",
-              "type": "checkbox"
-            }
-          ]
-        },
-        {
-          "title": "Real Property",
-          "fields": [
-            {
-              "name": "scl_no_real_property",
-              "label": "Estate contains no real property",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_has_real_property",
-              "label": "OR: Estate contains real property",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_homestead_filed",
-              "label": "  Claiming homestead \u2014 Petition for Homestead filed",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_no_homestead",
-              "label": "  OR: Not claiming homestead protection",
-              "type": "checkbox"
-            }
-          ]
-        },
-        {
-          "title": "Certification B (if any items unchecked)",
-          "fields": [
-            {
-              "name": "cert_b_missing_items",
-              "label": "List items not checked above",
-              "type": "textarea"
-            }
-          ]
-        }
-      ]
+      "sections": []
     },
     {
       "id": "BW-0050",
       "name": "Mandatory Checklist \u2014 Summary Admin Intestate (Broward)",
-      "template": "templates/BW-0050.docx",
+      "delivery": "pdf_passthrough",
+      "template": "reference/Broward-Checklist-Summary-Admin-Intestate.pdf",
       "county": "Broward",
-      "sections": [
-        {
-          "title": "Hearing",
-          "fields": [
-            {
-              "name": "hearing_exparte",
-              "label": "Pursuing on ex-parte, motion, or special set calendar",
-              "type": "checkbox"
-            },
-            {
-              "name": "hearing_no_hearing",
-              "label": "Submitted to Judge without a hearing",
-              "type": "checkbox"
-            }
-          ]
-        },
-        {
-          "title": "Filing & Expenses",
-          "fields": [
-            {
-              "name": "scl_death_cert",
-              "label": "Death certificate was filed",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_medical_bills",
-              "label": "Proof of payment of medical bills (last 60 days of last illness)",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_no_medical",
-              "label": "OR: No such medical expenses \u2014 stated in Petition",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_funeral_expenses",
-              "label": "Proof of payment of reasonable funeral expenses",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_criminal_history",
-              "label": "Affidavit Regarding Criminal History filed",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_affidavit_heirs",
-              "label": "Affidavit of Heirs filed",
-              "type": "checkbox"
-            }
-          ]
-        },
-        {
-          "title": "Petition Content",
-          "fields": [
-            {
-              "name": "scl_venue",
-              "label": "Petition includes statement showing venue",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_domiciliary_proceedings",
-              "label": "Petition includes statement re: domiciliary/principal proceedings from other state/country",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_summary_eligible",
-              "label": "Petition demonstrates summary eligibility (died 2+ yrs ago or estate < $75K less exempt property)",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_petitioner_is_beneficiary",
-              "label": "Petitioner is a beneficiary of the estate",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_beneficiary_info_intestate",
-              "label": "Petition includes spouse, beneficiary names/addresses/relationships, minor birthdates",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_no_wills",
-              "label": "Petitioner unaware of any unrevoked wills or codicils (after diligent search)",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_assets_described",
-              "label": "Assets specifically described with values (institution, account nos., legal descriptions)",
-              "type": "checkbox"
-            }
-          ]
-        },
-        {
-          "title": "Beneficiary Notice",
-          "fields": [
-            {
-              "name": "scl_formal_notice",
-              "label": "All intestate beneficiaries received formal notice of Petition + proposed distribution",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_consents_filed",
-              "label": "OR: Consents from all intestate beneficiaries filed",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_creditor_search",
-              "label": "Petition states diligent search for creditors conducted + penalty acknowledged",
-              "type": "checkbox"
-            }
-          ]
-        },
-        {
-          "title": "Claims",
-          "fields": [
-            {
-              "name": "scl_no_claims",
-              "label": "No claims filed against the estate",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_claims_filed",
-              "label": "OR: Claims have been filed",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_claims_barred",
-              "label": "  Claims barred by statute",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_claims_paid",
-              "label": "  OR: Provision for payment made",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_claims_insufficient",
-              "label": "  OR: Insufficient assets + notice served on creditors",
-              "type": "checkbox"
-            }
-          ]
-        },
-        {
-          "title": "Order",
-          "fields": [
-            {
-              "name": "scl_distribution_intestacy",
-              "label": "Proposed order includes correct distribution under laws governing intestacy",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_order_sig_page",
-              "label": "Signature page has 4+ lines and case number",
-              "type": "checkbox"
-            }
-          ]
-        },
-        {
-          "title": "Real Property",
-          "fields": [
-            {
-              "name": "scl_no_real_property",
-              "label": "Estate does not contain real property",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_has_real_property",
-              "label": "OR: Estate contains real property",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_homestead_filed",
-              "label": "  Claiming homestead \u2014 Petition to Determine Homestead filed",
-              "type": "checkbox"
-            },
-            {
-              "name": "scl_no_homestead",
-              "label": "  OR: Not claiming homestead protection",
-              "type": "checkbox"
-            }
-          ]
-        },
-        {
-          "title": "Certification B (if any items unchecked)",
-          "fields": [
-            {
-              "name": "cert_b_missing_items",
-              "label": "List items not checked above",
-              "type": "textarea"
-            }
-          ]
-        }
-      ]
+      "sections": []
     },
     {
       "id": "BW-0060",

@@ -968,8 +968,6 @@ function openMatterModal(matter) {
     document.getElementById('matterType').value = matter ? matter.type || '' : '';
     document.getElementById('matterCounty').value = matter ? matter.county || '' : '';
     document.getElementById('matterSubjectName').value = matter ? matter.subjectName || '' : '';
-    document.getElementById('matterFileNo').value = matter ? matter.fileNo || '' : '';
-    document.getElementById('matterDivision').value = matter ? matter.division || '' : '';
     document.getElementById('matterAttorneyId').value = matter ? matter.attorneyId || '' : '';
     updateMatterSubjectHint();
     document.getElementById('newMatterModal').style.display = 'flex';
@@ -991,12 +989,14 @@ function handleMatterFormSubmit(e) {
     e.preventDefault();
     if (!currentClient) return;
 
+    // File No. and Division are not collected at intake — they're assigned
+    // by the clerk after filing. Existing matters keep whatever they have;
+    // new matters start blank and templates render `{file_no}` / `{division}`
+    // as empty strings.
     const data = {
         type: document.getElementById('matterType').value,
         county: document.getElementById('matterCounty').value,
         subjectName: document.getElementById('matterSubjectName').value,
-        fileNo: document.getElementById('matterFileNo').value,
-        division: document.getElementById('matterDivision').value,
         attorneyId: document.getElementById('matterAttorneyId').value || null,
     };
 
@@ -1230,10 +1230,14 @@ function wizardLoadForms() {
             county: wizardState.county
         };
         // Also propagate wizard booleans to matterData so smart templates
-        // (P3-PETITION/P3-ORDER/P3-LETTERS) get is_testate / is_ancillary.
+        // (P3-PETITION/P3-ORDER/P3-LETTERS) get is_testate / is_ancillary,
+        // and the questionnaire UI gates (row locking, conditional fields)
+        // pick up multiple_petitioners / multiple_prs.
         if (!currentMatter.matterData) currentMatter.matterData = {};
         currentMatter.matterData.is_testate = wizardState.willType === 'testate';
         currentMatter.matterData.is_ancillary = wizardState.jurisdiction === 'ancillary';
+        currentMatter.matterData.multiple_petitioners = wizardState.petitioners === 'multiple';
+        currentMatter.matterData.multiple_prs = wizardState.petitioners === 'multiple';
         saveClientsToStorage();
     }
 
@@ -1694,6 +1698,17 @@ function getAutoPopulateDefaults() {
         }];
     }
 
+    // --- Layer 3a-bis: Auto-populate prs array (PR is almost always the
+    // petitioner; user can edit if not). ---
+    if (!defaults.prs || !Array.isArray(defaults.prs) || defaults.prs.length === 0) {
+        defaults.prs = [{
+            pr_name: fullName,
+            pr_address: currentClient.address || '',
+            pr_is_fl_resident: true,
+            pr_relationship: ''
+        }];
+    }
+
     // --- Layer 3b: Auto-derive fields ---
     if (!defaults.affiant_name) defaults.affiant_name = defaults.petitioner_name || fullName;
     if (!defaults.notary_state) defaults.notary_state = 'Florida';
@@ -1704,6 +1719,16 @@ function getAutoPopulateDefaults() {
     Object.keys(attorneyDefaults).forEach(key => {
         if (!defaults[key]) defaults[key] = attorneyDefaults[key];
     });
+
+    // --- Layer 4a: Resident agent defaults to the signing attorney ---
+    // Always David or Jill in practice; user can still override the text
+    // fields if a specific matter calls for someone else.
+    if (!defaults.resident_agent_name) {
+        defaults.resident_agent_name = attorneyDefaults.attorney_name || '';
+    }
+    if (!defaults.resident_agent_address) {
+        defaults.resident_agent_address = attorneyDefaults.attorney_address || '';
+    }
 
     return defaults;
 }
@@ -1748,7 +1773,7 @@ function renderMergedFormFields() {
         const form = formsConfig.forms.find(f => f.id === formId);
         if (!form) return;
 
-        form.sections.forEach(section => {
+        (form.sections || []).forEach(section => {
             const newFields = [];
             section.fields.forEach(field => {
                 const fieldKey = field.type === 'repeating_group' ? field.name : field.name;
@@ -1799,13 +1824,274 @@ function renderMergedFormFields() {
     }
 
     document.getElementById('formFieldsSection').style.display = 'block';
+    applyConditionalVisibility();
+}
+
+// Read a matter-level boolean flag (from matter.matterData). Used by
+// `row_lock_unless_matter_flag` on repeating groups — e.g. the PR group
+// locks to a single row when the wizard answered "single".
+function getMatterFlag(name) {
+    return !!(currentMatter && currentMatter.matterData && currentMatter.matterData[name]);
+}
+
+// US states for address dropdowns. Alphabetical; includes DC + common
+// territories. Blank default = not yet chosen.
+const US_STATES = [
+    'AL','AK','AZ','AR','CA','CO','CT','DE','DC','FL','GA','HI','ID','IL',
+    'IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE',
+    'NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD',
+    'TN','TX','UT','VT','VA','WA','WV','WI','WY','PR','VI','GU','AS','MP'
+];
+
+// Parse a free-text address (auto-populated client default, legacy matter
+// data, or pasted string) into the structured shape. Returns null on
+// formats we can't confidently split — caller decides the fallback.
+// Accepts comma- and newline-separated forms:
+//   "4521 NE 12th Ave, Fort Lauderdale, FL 33334"
+//   "4521 NE 12th Ave\nFort Lauderdale, FL 33334"
+//   "1200 SW 3rd St, Apt 204, Fort Lauderdale, FL 33312"
+function parseStringToStructuredAddress(s) {
+    if (!s || typeof s !== 'string') return null;
+    const trimmed = s.trim();
+    if (!trimmed) return null;
+    const normalized = trimmed.replace(/\s*\n+\s*/g, ', ');
+    const m = normalized.match(/^(.+),\s*([^,]+),\s*([A-Z]{2})\s+(\d{5}(?:-\d{4})?)\s*$/);
+    if (!m) return null;
+    const [, beforeCity, city, state, zip] = m;
+    const parts = beforeCity.split(',').map(p => p.trim()).filter(Boolean);
+    const street = parts[0] || '';
+    const line2 = parts.length >= 2 ? parts.slice(1).join(', ') : '';
+    return { street, line2, city: city.trim(), state, zip, foreign: false };
+}
+
+// Render a structured address as a compact grid. Shape:
+//   { street, line2, city, state, zip, foreign, foreign_text }
+// Works for both top-level fields and repeating-group subfields. The
+// free-text toggle swaps the US grid for a textarea — for non-US
+// addresses or anything that doesn't fit the standard street/city/state/zip
+// shape.
+function renderAddressField(opts) {
+    // opts: { value, label, dataBase (object with data-* attrs for inputs),
+    //         addressIdPrefix (unique id prefix) }
+    const wrap = document.createElement('div');
+    wrap.className = 'address-field';
+    if (opts.label) {
+        const labelEl = document.createElement('label');
+        labelEl.className = 'address-label';
+        labelEl.textContent = opts.label;
+        wrap.appendChild(labelEl);
+    }
+
+    // String values come from two places: (a) auto-populate (the seed
+    // client.address is a string), and (b) legacy matters created before the
+    // structured-address rollout. Try to parse "street, city, ST zip" into
+    // structured fields first — almost every US address we see fits that
+    // pattern. Only fall back to the free-text path if parsing fails, so the
+    // user doesn't see the foreign-address textarea by default for normal
+    // domestic addresses.
+    let val;
+    if (opts.value && typeof opts.value === 'object') {
+        val = opts.value;
+    } else if (typeof opts.value === 'string' && opts.value.trim()) {
+        val = parseStringToStructuredAddress(opts.value)
+            || { foreign: true, foreign_text: opts.value };
+    } else {
+        val = {};
+    }
+    const isForeign = val.foreign === true;
+
+    const mkInput = (key, attrs) => {
+        const input = document.createElement('input');
+        input.type = attrs.type || 'text';
+        input.className = 'form-field-input address-sub-input';
+        input.dataset.addressKey = key;
+        Object.keys(opts.dataBase).forEach(k => { input.dataset[k] = opts.dataBase[k]; });
+        if (attrs.placeholder) input.placeholder = attrs.placeholder;
+        if (attrs.maxLength) input.maxLength = attrs.maxLength;
+        if (attrs.pattern) input.pattern = attrs.pattern;
+        if (attrs.inputMode) input.inputMode = attrs.inputMode;
+        const v = val[key];
+        input.value = (v === null || v === undefined) ? '' : v;
+        return input;
+    };
+
+    // US grid
+    const usGrid = document.createElement('div');
+    usGrid.className = 'address-grid';
+    usGrid.style.display = isForeign ? 'none' : '';
+
+    usGrid.appendChild(mkInput('street', { placeholder: 'Street address' }));
+    usGrid.appendChild(mkInput('line2', { placeholder: 'Apt / Suite (optional)' }));
+
+    const row = document.createElement('div');
+    row.className = 'address-row-3';
+    row.appendChild(mkInput('city', { placeholder: 'City' }));
+
+    const stateSelect = document.createElement('select');
+    stateSelect.className = 'form-field-input address-sub-input';
+    stateSelect.dataset.addressKey = 'state';
+    Object.keys(opts.dataBase).forEach(k => { stateSelect.dataset[k] = opts.dataBase[k]; });
+    const blank = document.createElement('option');
+    blank.value = ''; blank.textContent = 'State';
+    stateSelect.appendChild(blank);
+    US_STATES.forEach(s => {
+        const o = document.createElement('option');
+        o.value = s; o.textContent = s;
+        if ((val.state || '') === s) o.selected = true;
+        stateSelect.appendChild(o);
+    });
+    row.appendChild(stateSelect);
+    row.appendChild(mkInput('zip', {
+        placeholder: 'Zip', maxLength: 10, pattern: '\\d{5}(-\\d{4})?', inputMode: 'numeric'
+    }));
+    usGrid.appendChild(row);
+    wrap.appendChild(usGrid);
+
+    // Foreign textarea
+    const foreignWrap = document.createElement('div');
+    foreignWrap.className = 'address-foreign-wrap';
+    foreignWrap.style.display = isForeign ? '' : 'none';
+    const foreignTA = document.createElement('textarea');
+    foreignTA.className = 'form-field-input address-sub-input';
+    foreignTA.dataset.addressKey = 'foreign_text';
+    Object.keys(opts.dataBase).forEach(k => { foreignTA.dataset[k] = opts.dataBase[k]; });
+    foreignTA.placeholder = 'Full foreign address (street, city, region, postal code, country)';
+    foreignTA.rows = 3;
+    foreignTA.value = val.foreign_text || '';
+    foreignWrap.appendChild(foreignTA);
+    wrap.appendChild(foreignWrap);
+
+    // Foreign toggle
+    const toggleWrap = document.createElement('label');
+    toggleWrap.className = 'address-foreign-toggle';
+    const toggle = document.createElement('input');
+    toggle.type = 'checkbox';
+    toggle.className = 'form-field-input address-sub-input';
+    toggle.dataset.addressKey = 'foreign';
+    Object.keys(opts.dataBase).forEach(k => { toggle.dataset[k] = opts.dataBase[k]; });
+    toggle.checked = isForeign;
+    toggle.addEventListener('change', () => {
+        usGrid.style.display = toggle.checked ? 'none' : '';
+        foreignWrap.style.display = toggle.checked ? '' : 'none';
+
+        // Switching FROM free-text back to the structured grid: if the
+        // structured fields are empty, prefill from (a) whatever the user
+        // typed in the free-text box (if it parses), or (b) the value the
+        // field was originally populated with — typically the client's
+        // address. This recovers from cases where the parser didn't catch
+        // the format on first render.
+        if (!toggle.checked) {
+            const inputs = usGrid.querySelectorAll('[data-address-key]');
+            const allEmpty = Array.from(inputs).every(i => !i.value);
+            if (allEmpty) {
+                const candidate = parseStringToStructuredAddress(foreignTA.value)
+                    || parseStringToStructuredAddress(typeof opts.value === 'string' ? opts.value : '');
+                if (candidate) {
+                    inputs.forEach(input => {
+                        const key = input.dataset.addressKey;
+                        if (candidate[key] !== undefined && candidate[key] !== '') {
+                            input.value = candidate[key];
+                        }
+                    });
+                }
+            }
+        }
+    });
+    toggleWrap.appendChild(toggle);
+    const toggleLabel = document.createElement('span');
+    toggleLabel.textContent = 'Use free-text (foreign or non-standard address)';
+    toggleWrap.appendChild(toggleLabel);
+    wrap.appendChild(toggleWrap);
+
+    return wrap;
+}
+
+// Format a structured address object into a single-line string for template
+// rendering. Falls back to free-text for foreign addresses. Accepts legacy
+// plain-string addresses unchanged.
+function formatAddressValue(raw) {
+    if (raw === null || raw === undefined || raw === '') return '';
+    if (typeof raw === 'string') return raw;
+    if (typeof raw !== 'object') return String(raw);
+    if (raw.foreign && (raw.foreign_text || '').trim()) {
+        return String(raw.foreign_text).trim();
+    }
+    const parts = [];
+    const streetLine = [raw.street, raw.line2].filter(s => s && s.trim()).join(', ');
+    if (streetLine) parts.push(streetLine);
+    const cityStateZip = [
+        (raw.city || '').trim(),
+        [(raw.state || '').trim(), (raw.zip || '').trim()].filter(Boolean).join(' ')
+    ].filter(Boolean).join(', ');
+    if (cityStateZip) parts.push(cityStateZip);
+    return parts.join(', ');
+}
+
+// Walk every field/subfield declared as type="address" across the currently
+// selected forms, so prepareTemplateData can format them uniformly.
+function collectAddressFieldNames() {
+    const topLevel = new Set();
+    const subfields = new Map();
+    if (!formsConfig) return { topLevel, subfields };
+    selectedFormIds.forEach(formId => {
+        const form = formsConfig.forms.find(f => f.id === formId);
+        if (!form) return;
+        (form.sections || []).forEach(section => {
+            (section.fields || []).forEach(field => {
+                if (field.type === 'address') topLevel.add(field.name);
+                if (field.type === 'repeating_group' && Array.isArray(field.subfields)) {
+                    field.subfields.forEach(sf => {
+                        if (sf.type === 'address') {
+                            if (!subfields.has(field.name)) subfields.set(field.name, new Set());
+                            subfields.get(field.name).add(sf.name);
+                        }
+                    });
+                }
+            });
+        });
+    });
+    return { topLevel, subfields };
+}
+
+// Tag a field container with visibility metadata. applyConditionalVisibility()
+// reads these after every field change and toggles display.
+// Two sources are supported:
+//   { field: 'other_field', equals: true }       — read currentFormData
+//   { matter_flag: 'is_ancillary', equals: true } — read currentMatter.matterData
+function applyVisibleIfAttrs(el, visibleIf, scope) {
+    if (!visibleIf) return;
+    if (visibleIf.matter_flag) {
+        el.dataset.visibleIfMatterFlag = visibleIf.matter_flag;
+    } else if (visibleIf.field) {
+        el.dataset.visibleIfField = visibleIf.field;
+        el.dataset.visibleIfScope = scope || 'form';
+    } else {
+        return;
+    }
+    if ('equals' in visibleIf) el.dataset.visibleIfEquals = JSON.stringify(visibleIf.equals);
+    if ('not_equals' in visibleIf) el.dataset.visibleIfNotEquals = JSON.stringify(visibleIf.not_equals);
 }
 
 function renderFormField(field) {
     const container = document.createElement('div');
     container.className = 'form-field-container';
+    applyVisibleIfAttrs(container, field.visible_if, 'form');
 
-    if (field.type === 'text' || field.type === 'number') {
+    if (field.type === 'info') {
+        const callout = document.createElement('div');
+        callout.className = 'field-info-callout field-info-' + (field.severity || 'info');
+        callout.innerHTML = field.content;
+        container.appendChild(callout);
+    } else if (field.type === 'address') {
+        const fieldDiv = document.createElement('div');
+        fieldDiv.className = 'field';
+        fieldDiv.appendChild(renderAddressField({
+            value: currentFormData[field.name],
+            label: field.label,
+            dataBase: { field: field.name, type: 'address' }
+        }));
+        container.appendChild(fieldDiv);
+    } else if (field.type === 'text' || field.type === 'number' || field.type === 'date') {
         const fieldDiv = document.createElement('div');
         fieldDiv.className = 'field';
         const label = document.createElement('label');
@@ -1816,9 +2102,16 @@ function renderFormField(field) {
             input.type = 'number';
             input.inputMode = 'decimal';
             input.step = field.step || 'any';
+        } else if (field.type === 'date') {
+            input.type = 'date';
         } else {
             input.type = 'text';
         }
+        // Optional per-field input attributes (e.g. SSN last-4 pattern).
+        if (field.pattern) input.pattern = field.pattern;
+        if (field.maxlength) input.maxLength = field.maxlength;
+        if (field.inputmode) input.inputMode = field.inputmode;
+        if (field.placeholder) input.placeholder = field.placeholder;
         input.id = 'form_' + field.name;
         input.className = 'form-field-input';
         input.dataset.field = field.name;
@@ -1841,6 +2134,38 @@ function renderFormField(field) {
         textarea.value = currentFormData[field.name] || '';
         fieldDiv.appendChild(label);
         fieldDiv.appendChild(textarea);
+        container.appendChild(fieldDiv);
+    } else if (field.type === 'select') {
+        // Validated dropdown — `options` is an array of { value, label }
+        // (label optional; falls back to value). Used for fields where the
+        // answer is one of a small fixed set, e.g. the resident agent must
+        // be either David or Jill.
+        const fieldDiv = document.createElement('div');
+        fieldDiv.className = 'field';
+        const label = document.createElement('label');
+        label.htmlFor = 'form_' + field.name;
+        label.textContent = field.label;
+        const select = document.createElement('select');
+        select.id = 'form_' + field.name;
+        select.className = 'form-field-input';
+        select.dataset.field = field.name;
+        select.dataset.type = 'select';
+        const currentVal = currentFormData[field.name];
+        if (field.placeholder || !field.options || field.options.length === 0) {
+            const blank = document.createElement('option');
+            blank.value = '';
+            blank.textContent = field.placeholder || '-- Select --';
+            select.appendChild(blank);
+        }
+        (field.options || []).forEach(opt => {
+            const o = document.createElement('option');
+            o.value = opt.value;
+            o.textContent = opt.label || opt.value;
+            if (currentVal === opt.value) o.selected = true;
+            select.appendChild(o);
+        });
+        fieldDiv.appendChild(label);
+        fieldDiv.appendChild(select);
         container.appendChild(fieldDiv);
     } else if (field.type === 'checkbox') {
         const fieldDiv = document.createElement('div');
@@ -1867,22 +2192,36 @@ function renderFormField(field) {
         label.textContent = field.label;
         groupDiv.appendChild(label);
 
+        // Row-lock: wizard-set matter flag (e.g. multiple_prs) determines
+        // whether the user can add extra rows. When false, cap to 1 row and
+        // hide the Add button. Existing extra data is preserved but not
+        // rendered (so flipping the wizard back to "multiple" doesn't lose it).
+        // When locked AND no rows exist, render one empty row so the user
+        // always has somewhere to type — otherwise the field disappears.
+        const locked = field.row_lock_unless_matter_flag &&
+                       !getMatterFlag(field.row_lock_unless_matter_flag);
+        const items = currentFormData[field.name] || [];
+        const visibleItems = locked
+            ? (items.length > 0 ? items.slice(0, 1) : [{}])
+            : items;
+
         const itemsContainer = document.createElement('div');
         itemsContainer.className = 'repeating-group-items';
         itemsContainer.id = 'group_' + field.name;
 
-        const items = currentFormData[field.name] || [];
-        items.forEach((item, index) => {
+        visibleItems.forEach((item, index) => {
             itemsContainer.appendChild(renderRepeatingGroupItem(field, item, index));
         });
         groupDiv.appendChild(itemsContainer);
 
-        const addBtn = document.createElement('button');
-        addBtn.type = 'button';
-        addBtn.className = 'add-row-btn';
-        addBtn.textContent = '+ Add Row';
-        addBtn.dataset.field = field.name;
-        groupDiv.appendChild(addBtn);
+        if (!locked) {
+            const addBtn = document.createElement('button');
+            addBtn.type = 'button';
+            addBtn.className = 'add-row-btn';
+            addBtn.textContent = '+ Add Row';
+            addBtn.dataset.field = field.name;
+            groupDiv.appendChild(addBtn);
+        }
         container.appendChild(groupDiv);
     }
 
@@ -1899,25 +2238,65 @@ function renderRepeatingGroupItem(field, item, index) {
     field.subfields.forEach(subfield => {
         const fieldDiv = document.createElement('div');
         fieldDiv.className = 'repeating-group-item-field';
-        const label = document.createElement('label');
-        label.textContent = subfield.label;
-        const input = document.createElement('input');
-        if (subfield.type === 'number') {
-            input.type = 'number';
-            input.inputMode = 'decimal';
-            input.step = subfield.step || 'any';
-        } else {
-            input.type = 'text';
+        // Subfield visibility is per-row — visible_if.subfield references
+        // another subfield name in the same row (e.g. ben_year_of_birth
+        // hidden unless ben_is_minor checked).
+        applyVisibleIfAttrs(fieldDiv, subfield.visible_if, 'row');
+        if (subfield.visible_if) {
+            fieldDiv.dataset.visibleIfRowIndex = index;
+            fieldDiv.dataset.visibleIfParentField = field.name;
         }
+
+        const input = document.createElement('input');
         input.className = 'form-field-input';
         input.dataset.field = field.name;
         input.dataset.subfield = subfield.name;
         input.dataset.index = index;
         input.dataset.type = subfield.type || 'text';
-        const v = item[subfield.name];
-        input.value = (v === null || v === undefined) ? '' : v;
-        fieldDiv.appendChild(label);
-        fieldDiv.appendChild(input);
+
+        if (subfield.type === 'address') {
+            // Structured address inside a repeating-group row. Label + grid.
+            fieldDiv.classList.add('address-subfield');
+            fieldDiv.appendChild(renderAddressField({
+                value: item[subfield.name],
+                label: subfield.label,
+                dataBase: {
+                    field: field.name,
+                    subfield: subfield.name,
+                    index: index,
+                    type: 'address'
+                }
+            }));
+        } else if (subfield.type === 'checkbox') {
+            // Inline checkbox + label, same pattern as top-level checkbox.
+            fieldDiv.classList.add('checkbox-item');
+            input.type = 'checkbox';
+            input.checked = item[subfield.name] === true;
+            const label = document.createElement('label');
+            label.textContent = subfield.label;
+            fieldDiv.appendChild(input);
+            fieldDiv.appendChild(label);
+        } else {
+            const label = document.createElement('label');
+            label.textContent = subfield.label;
+            if (subfield.type === 'number') {
+                input.type = 'number';
+                input.inputMode = 'decimal';
+                input.step = subfield.step || 'any';
+            } else if (subfield.type === 'date') {
+                input.type = 'date';
+            } else {
+                input.type = 'text';
+            }
+            if (subfield.pattern) input.pattern = subfield.pattern;
+            if (subfield.maxlength) input.maxLength = subfield.maxlength;
+            if (subfield.inputmode) input.inputMode = subfield.inputmode;
+            if (subfield.placeholder) input.placeholder = subfield.placeholder;
+            const v = item[subfield.name];
+            input.value = (v === null || v === undefined) ? '' : v;
+            fieldDiv.appendChild(label);
+            fieldDiv.appendChild(input);
+        }
         fieldsContainer.appendChild(fieldDiv);
     });
 
@@ -1934,11 +2313,47 @@ function renderRepeatingGroupItem(field, item, index) {
     return itemDiv;
 }
 
+// Walks visibility-tagged containers and toggles display based on
+// currentFormData (form-scoped) or per-row data (row-scoped). Called after
+// every collectFormData() so toggling a condition field re-evaluates
+// downstream visibility immediately.
+function applyConditionalVisibility() {
+    const container = document.getElementById('formFieldsContainer');
+    if (!container) return;
+    container.querySelectorAll('[data-visible-if-field], [data-visible-if-matter-flag]').forEach(el => {
+        let actual;
+        const matterFlag = el.dataset.visibleIfMatterFlag;
+        if (matterFlag) {
+            const md = (currentMatter && currentMatter.matterData) || {};
+            actual = md[matterFlag];
+        } else {
+            const fieldName = el.dataset.visibleIfField;
+            const scope = el.dataset.visibleIfScope || 'form';
+            if (scope === 'row') {
+                const parent = el.dataset.visibleIfParentField;
+                const idx = parseInt(el.dataset.visibleIfRowIndex, 10);
+                const row = (currentFormData[parent] || [])[idx] || {};
+                actual = row[fieldName];
+            } else {
+                actual = currentFormData[fieldName];
+            }
+        }
+        let show = true;
+        if ('visibleIfEquals' in el.dataset) {
+            show = actual === JSON.parse(el.dataset.visibleIfEquals);
+        }
+        if ('visibleIfNotEquals' in el.dataset) {
+            show = actual !== JSON.parse(el.dataset.visibleIfNotEquals);
+        }
+        el.style.display = show ? '' : 'none';
+    });
+}
+
 function addRepeatingGroupRow(fieldName) {
     if (!currentFormData[fieldName]) currentFormData[fieldName] = [];
 
     const form = formsConfig.forms.find(f => f.id === currentFormId);
-    const field = form.sections.flatMap(s => s.fields).find(f => f.name === fieldName);
+    const field = (form.sections || []).flatMap(s => s.fields).find(f => f.name === fieldName);
     const newItem = {};
     field.subfields.forEach(sf => { newItem[sf.name] = ''; });
     currentFormData[fieldName].push(newItem);
@@ -1974,13 +2389,49 @@ function collectFormData() {
         return input.value;
     };
 
+    // Ensure a structured address object exists at data[fieldName]
+    // (top-level) or inside a repeating-group row.
+    const ensureAddressContainer = (fieldName, indexAttr, subfield) => {
+        if (indexAttr !== undefined && indexAttr !== null && indexAttr !== '') {
+            const idx = parseInt(indexAttr, 10);
+            if (!formData[fieldName]) formData[fieldName] = [];
+            if (!formData[fieldName][idx]) formData[fieldName][idx] = {};
+            if (!formData[fieldName][idx][subfield] || typeof formData[fieldName][idx][subfield] !== 'object') {
+                formData[fieldName][idx][subfield] = {};
+            }
+            return formData[fieldName][idx][subfield];
+        }
+        if (!formData[fieldName] || typeof formData[fieldName] !== 'object' || Array.isArray(formData[fieldName])) {
+            formData[fieldName] = {};
+        }
+        return formData[fieldName];
+    };
+
+    // Sub-inputs of an address field are collected separately — each has
+    // data-address-key identifying which part of the address it fills.
+    document.querySelectorAll('#formFieldsContainer .address-sub-input').forEach(input => {
+        const key = input.dataset.addressKey;
+        const fieldName = input.dataset.field;
+        const subfield = input.dataset.subfield;
+        const indexAttr = input.dataset.index;
+        const container = ensureAddressContainer(fieldName, indexAttr, subfield);
+        if (input.type === 'checkbox') {
+            container[key] = input.checked;
+        } else {
+            container[key] = input.value;
+        }
+    });
+
     document.querySelectorAll('#formFieldsContainer .form-field-input').forEach(input => {
+        // Address sub-inputs are handled above.
+        if (input.classList.contains('address-sub-input')) return;
         if (!input.dataset.index) {
             formData[input.dataset.field] = coerce(input);
         }
     });
 
     document.querySelectorAll('#formFieldsContainer .repeating-group-item-field input').forEach(input => {
+        if (input.classList.contains('address-sub-input')) return;
         const field = input.dataset.field;
         const subfield = input.dataset.subfield;
         const index = parseInt(input.dataset.index, 10);
@@ -1990,6 +2441,7 @@ function collectFormData() {
     });
 
     currentFormData = formData;
+    applyConditionalVisibility();
     saveFormDataToMatter();
 }
 
@@ -2073,6 +2525,14 @@ async function renderSingleDoc(form, templateData) {
     if (!response.ok) throw new Error('Failed to fetch template: ' + form.id);
     const arrayBuffer = await response.arrayBuffer();
 
+    // PDF passthrough: the clerk's official PDF is bundled unchanged.
+    // Used for Broward mandatory checklists and affidavits where questionnaire
+    // fields would be unanswerable at drafting time. Future phase: re-integrate
+    // as a pre-filing review step with rule-violation warnings.
+    if (form.delivery === 'pdf_passthrough') {
+        return new Blob([arrayBuffer], { type: 'application/pdf' });
+    }
+
     const zip = new window.PizZip(arrayBuffer);
     const doc = new window.docxtemplater(zip, {
         paragraphLoop: true,
@@ -2086,6 +2546,50 @@ async function renderSingleDoc(form, templateData) {
         type: 'blob',
         mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     });
+}
+
+// Format an ISO "YYYY-MM-DD" date string into "Month D, YYYY" for template
+// rendering. Accepts already-formatted strings (returns them unchanged) so
+// legacy free-text date fields still work.
+function formatDateFieldValue(raw) {
+    if (raw === null || raw === undefined || raw === '') return '';
+    const s = String(raw);
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+    if (!m) return s; // Not ISO — pass through.
+    const months = ['January','February','March','April','May','June',
+                    'July','August','September','October','November','December'];
+    const y = parseInt(m[1], 10);
+    const mo = parseInt(m[2], 10);
+    const d = parseInt(m[3], 10);
+    if (!months[mo - 1]) return s;
+    return months[mo - 1] + ' ' + d + ', ' + y;
+}
+
+// Collect every field/subfield name declared as type "date" across the
+// currently selected forms. prepareTemplateData uses this to ISO → prose
+// convert all date inputs uniformly.
+function collectDateFieldNames() {
+    const topLevel = new Set();
+    const subfields = new Map(); // parent -> Set(subfield names)
+    if (!formsConfig) return { topLevel, subfields };
+    selectedFormIds.forEach(formId => {
+        const form = formsConfig.forms.find(f => f.id === formId);
+        if (!form) return;
+        (form.sections || []).forEach(section => {
+            (section.fields || []).forEach(field => {
+                if (field.type === 'date') topLevel.add(field.name);
+                if (field.type === 'repeating_group' && Array.isArray(field.subfields)) {
+                    field.subfields.forEach(sf => {
+                        if (sf.type === 'date') {
+                            if (!subfields.has(field.name)) subfields.set(field.name, new Set());
+                            subfields.get(field.name).add(sf.name);
+                        }
+                    });
+                }
+            });
+        });
+    });
+    return { topLevel, subfields };
 }
 
 function prepareTemplateData() {
@@ -2174,6 +2678,50 @@ function prepareTemplateData() {
         }
     }
 
+    // Petitioner == PR: when the "Petitioner is same as PR(s)" checkbox is on,
+    // mirror PR rows into petitioners so the user doesn't enter both.
+    if (data.petitioner_same_as_pr === true && Array.isArray(data.prs)) {
+        data.petitioners = data.prs
+            .filter(pr => (pr.pr_name || '').trim())
+            .map(pr => ({
+                pet_name: pr.pr_name || '',
+                pet_address: pr.pr_address || '',
+                pet_interest: 'the nominated personal representative'
+            }));
+    }
+
+    // Venue reason: compose prose from checkbox selections (§733.101) + free
+    // "Other" text. Multiple boxes can be checked (rare but legal).
+    const venueParts = [];
+    if (data.venue_reason_type_domicile_fl) {
+        venueParts.push('the decedent was domiciled in this county at the time of death');
+    }
+    if (data.venue_reason_type_property) {
+        venueParts.push('the decedent was not a Florida resident but had property in this county at the time of death');
+    }
+    if (data.venue_reason_type_debtor) {
+        venueParts.push('the decedent was not a Florida resident and had no property in Florida, but a debtor of the decedent resides in this county');
+    }
+    if (data.venue_reason_other && String(data.venue_reason_other).trim()) {
+        venueParts.push(String(data.venue_reason_other).trim());
+    }
+    if (venueParts.length) {
+        data.venue_reason = venueParts.join('; also, ');
+    }
+
+    // Beneficiary year-of-birth: emit "N/A" when ben_is_minor is falsy so the
+    // rendered table has a consistent placeholder instead of an empty cell.
+    if (Array.isArray(data.beneficiaries)) {
+        data.beneficiaries = data.beneficiaries.map(ben => {
+            const isMinor = ben.ben_is_minor === true;
+            const year = (ben.ben_year_of_birth || '').toString().trim();
+            return {
+                ...ben,
+                ben_year_of_birth: isMinor ? (year || '') : 'N/A'
+            };
+        });
+    }
+
     // Derive joined name strings
     if (!data.petitioner_names) {
         data.petitioner_names = Array.isArray(data.petitioners)
@@ -2211,6 +2759,44 @@ function prepareTemplateData() {
     if (data.is_testate === undefined || data.is_testate === null) data.is_testate = false;
     if (data.is_ancillary === undefined || data.is_ancillary === null) data.is_ancillary = false;
 
+    // ISO "YYYY-MM-DD" → "Month D, YYYY" for every field declared type=date.
+    // Applies to top-level and repeating-group subfields across all selected
+    // forms. Legacy free-text dates pass through unchanged.
+    const dateNames = collectDateFieldNames();
+    dateNames.topLevel.forEach(name => {
+        data[name] = formatDateFieldValue(data[name]);
+    });
+    dateNames.subfields.forEach((subfieldSet, parentName) => {
+        if (Array.isArray(data[parentName])) {
+            data[parentName] = data[parentName].map(row => {
+                const out = { ...row };
+                subfieldSet.forEach(sf => {
+                    out[sf] = formatDateFieldValue(out[sf]);
+                });
+                return out;
+            });
+        }
+    });
+
+    // Structured address object → single-line prose for templates. Falls back
+    // to legacy free-text strings unchanged. Applied AFTER the sibling-form
+    // merge so older plain-string addresses on other forms still work.
+    const addressNames = collectAddressFieldNames();
+    addressNames.topLevel.forEach(name => {
+        data[name] = formatAddressValue(data[name]);
+    });
+    addressNames.subfields.forEach((subfieldSet, parentName) => {
+        if (Array.isArray(data[parentName])) {
+            data[parentName] = data[parentName].map(row => {
+                const out = { ...row };
+                subfieldSet.forEach(sf => {
+                    out[sf] = formatAddressValue(out[sf]);
+                });
+                return out;
+            });
+        }
+    });
+
     // Currency formatting for estate asset rows. Values enter as Numbers; the
     // template gets {asset_value_formatted} (e.g. "$1,500.00") for display
     // while the raw Number stays on asset_value for later math.
@@ -2234,7 +2820,8 @@ function makeDocFileName(subjectName, form, dateStr) {
     // Use the form's human-readable name instead of the ID
     // e.g. "Lorraine_Ann_Muscara_Petition_for_Administration_2026-04-15.docx"
     const formName = (form.name || form.id).replace(/[^a-zA-Z0-9 ]/g, '').replace(/\s+/g, '_');
-    return subjectName + '_' + formName + '_' + dateStr + '.docx';
+    const ext = form.delivery === 'pdf_passthrough' ? '.pdf' : '.docx';
+    return subjectName + '_' + formName + '_' + dateStr + ext;
 }
 
 // ============================================

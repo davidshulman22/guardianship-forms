@@ -35,6 +35,8 @@ AUTO_POPULATED = {
     # Derived display fields for numeric estate assets (from prepareTemplateData)
     "asset_value_formatted",
     "estate_assets_total", "estate_assets_total_formatted",
+    # Venue reason prose composed from venue_reason_type_* checkboxes + other
+    "venue_reason",
 }
 
 TAG_RE = re.compile(r"\{[#/^]?([a-zA-Z0-9_]+)\}")
@@ -75,13 +77,28 @@ def forms_json_fields(forms_cfg):
         by_form[form["id"]] = fields
     return by_form
 
+
+def passthrough_form_ids(forms_cfg):
+    """Return form IDs that bundle a PDF unchanged (no .docx template audit)."""
+    return {
+        form["id"]
+        for form in forms_cfg.get("forms", [])
+        if form.get("delivery") == "pdf_passthrough"
+    }
+
 def main():
     cfg = json.loads(FORMS_JSON.read_text())
     by_form = forms_json_fields(cfg)
+    passthrough = passthrough_form_ids(cfg)
 
     issues = []
     for docx in sorted(TEMPLATES.glob("*.docx")):
         form_id = docx.stem
+        if form_id in passthrough:
+            # PDF-passthrough forms bundle the clerk's PDF from reference/;
+            # any leftover .docx under templates/ is unused and intentionally
+            # skipped by the tag audit.
+            continue
         if form_id not in by_form:
             issues.append((form_id, "NO forms.json entry", set(), set()))
             continue

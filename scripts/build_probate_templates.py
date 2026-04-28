@@ -100,9 +100,12 @@ def _beneficiaries_table(doc):
 
 
 def _add_probate_signature_block(doc):
-    """Signature block: one signer line per petitioner (via loop) + attorney."""
+    """Signature block: one signer line per petitioner (via loop) + attorney.
+
+    Signing date left blank — filler at signing time (won't be known at draft).
+    """
     indent = Inches(0.5)
-    _add_para(doc, 'Signed on this _____ day of {signing_month} {signing_year}.',
+    _add_para(doc, 'Signed on this _____ day of ______________________, 20____.',
               first_indent=indent, space_after=24)
 
     # Per-petitioner signature line (loops over petitioners array; renders a
@@ -262,20 +265,15 @@ def build_p3_petition():
         '{^domiciliary_proceedings_pending}are not known to be pending in another state '
         'or country.{/domiciliary_proceedings_pending}{/is_ancillary}')
 
-    # 11. Will disposition (testate) / Unaware of unrevoked wills (intestate) — ONE paragraph
+    # 11. Will disposition (testate) / Unaware of unrevoked wills (intestate) — ONE paragraph.
+    # Will status (original in court, accompanies petition, authenticated copy, etc.) is a
+    # filing-time fact — omitted here. Clerk-review language defaults to neutral "accompanies
+    # this petition"; revise at filing if the original was previously deposited.
     _pleading_para(doc,
-        '{#is_testate}The decedent\u2019s last will dated {will_date}, {will_year}'
+        '{#is_testate}The decedent\u2019s last will dated {will_date}'
         '{#codicil_dates}, and codicil(s) dated {codicil_dates}{/codicil_dates}, '
-        '{#will_status_original}is in the possession of the court or accompanies this '
-        'petition.{/will_status_original}'
-        '{#will_status_authenticated_other}An authenticated copy of the will and/or '
-        'codicil deposited with or probated in another jurisdiction accompanies this '
-        'petition.{/will_status_authenticated_other}'
-        '{#will_status_authenticated_notarial}An authenticated copy of the notarial will '
-        'or codicil, the original of which is in the possession of a foreign notary, '
-        'accompanies this petition.{/will_status_authenticated_notarial} '
-        'Petitioner is unaware of any unrevoked will or codicil of decedent other than '
-        'as set forth above.{/is_testate}'
+        'accompanies this petition. Petitioner is unaware of any unrevoked will or codicil '
+        'of decedent other than as set forth above.{/is_testate}'
         '{^is_testate}After the exercise of reasonable diligence, petitioner is unaware '
         'of any unrevoked wills or codicils of decedent.{/is_testate}')
 
@@ -339,9 +337,8 @@ def build_p3_oath():
     _add_para(doc, '_______________________________________', space_after=0)
     _add_para(doc, '{pr_name}', space_after=18)
     _add_para(doc, 'Sworn to (or affirmed) and subscribed before me by means of '
-                   '{#notary_online}online notarization{/notary_online}'
-                   '{^notary_online}physical presence{/notary_online} this '
-                   '_____ day of {signing_month}, {signing_year}, by {pr_name}, '
+                   '\u2610 online notarization or \u2610 physical presence this '
+                   '_____ day of ______________________, 20____, by {pr_name}, '
                    'who is personally known to me or produced '
                    '______________________________ as identification.', space_after=18)
     _add_para(doc, '_______________________________________', space_after=0)
@@ -426,18 +423,18 @@ def build_p3_order():
 
     # Testate-only: admit will
     _pleading_para(doc,
-        '{#is_testate}The decedent\u2019s last will dated {will_date}, {will_year}'
+        '{#is_testate}The decedent\u2019s last will dated {will_date}'
         '{#codicil_dates}, and codicil(s) dated {codicil_dates}{/codicil_dates} '
         '{#will_is_self_proved}{pr_verb_is} self-proved and {/will_is_self_proved}'
         '{pr_verb_is} admitted to probate according to law.{/is_testate}'
         '{^is_testate}The decedent died intestate. Administration of the '
         'decedent\u2019s estate is granted.{/is_testate}')
 
-    # Appoint PR(s)
+    # Appoint PR(s). Bond omitted from the questionnaire — if the court wants bond,
+    # it will enter a separate order requiring it.
     _pleading_para(doc,
         '{pr_names} {pr_verb_is} appointed as {pr_label} of the estate of the decedent, '
-        'to serve without bond{#bond_required} except as the Court may hereafter order'
-        '{/bond_required}.')
+        'to serve without bond.')
 
     # Letters
     _pleading_para(doc,
@@ -515,9 +512,67 @@ def build_p3_letters():
     print(f'Wrote {out_path}')
 
 
+# ---------------------------------------------------------------------------
+# P1-0900  Notice of Designation of Email Addresses for Service
+# ---------------------------------------------------------------------------
+
+def build_p1_0900():
+    """Rule 2.516(b)(1)(A) notice of primary/secondary service emails.
+    Attorney-signed only (no petitioner signature). Signing date left blank
+    (filled at signing).
+    """
+    doc = Document()
+    _apply_page_setup(doc)
+    _apply_running_header(doc, 'Estate of {decedent_name}')
+    _ensure_pleading_numbering(doc)
+
+    _add_probate_caption(doc)
+
+    _add_para(doc, 'NOTICE OF DESIGNATION OF EMAIL ADDRESSES',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=0)
+    _add_para(doc, 'FOR SERVICE OF DOCUMENTS',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=18)
+
+    indent = Inches(0.5)
+    _add_para(doc,
+        'Pursuant to Florida Rule of General Practice and Judicial Administration '
+        '2.516(b)(1)(A), the undersigned counsel gives notice of the following '
+        'primary and secondary e-mail addresses for service in this matter:',
+        first_indent=indent, space_after=12)
+
+    _add_para(doc, 'Primary Email Address: {attorney_email}',
+              first_indent=indent, space_after=6)
+    _add_para(doc,
+        'Secondary Email Address: '
+        '{#attorney_email_secondary}{attorney_email_secondary}{/attorney_email_secondary}'
+        '{^attorney_email_secondary}N/A{/attorney_email_secondary}',
+        first_indent=indent, space_after=18)
+
+    _add_broward_ai_certification(doc, 'Notice of Designation of Email Addresses')
+
+    # Attorney-only signature block (no petitioner sig on a service notice).
+    _add_para(doc, 'Signed on this _____ day of ______________________, 20____.',
+              first_indent=indent, space_after=24)
+    _add_para(doc, '_______________________________________', space_after=0)
+    _add_para(doc, '{attorney_name}, Attorney for {petitioner_label}', space_after=18)
+    _add_para(doc, 'Email Addresses:', space_after=0)
+    _add_para(doc, '{attorney_email}', space_after=0)
+    _add_para(doc, '{#attorney_email_secondary}{attorney_email_secondary}{/attorney_email_secondary}', space_after=0)
+    _add_para(doc, 'Florida Bar No. {attorney_bar_no}', space_after=12)
+    _add_para(doc, '{attorney_firm}', space_after=0)
+    _add_para(doc, '{attorney_address}', space_after=12)
+    _add_para(doc, 'Telephone {attorney_phone}', space_after=0)
+
+    out_path = os.path.join(TEMPLATE_DIR, 'P1-0900.docx')
+    doc.save(out_path)
+    _inject_numbering_part(out_path)
+    print(f'Wrote {out_path}')
+
+
 if __name__ == '__main__':
     os.makedirs(TEMPLATE_DIR, exist_ok=True)
     build_p3_petition()
     build_p3_oath()
     build_p3_order()
     build_p3_letters()
+    build_p1_0900()

@@ -1688,3 +1688,73 @@ details[open] .form-selector-toggle::before {
     width: 100vw;
 }
 
+/* Field-level info/warning callouts (field type "info") */
+.field-info-callout {
+    padding: 0.75rem 1rem;
+    margin: 0.5rem 0 1rem;
+    border-radius: 6px;
+    border-left: 4px solid;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+.field-info-callout.field-info-info {
+    background: #f0f7ff;
+    border-left-color: #2563eb;
+    color: #1e3a8a;
+}
+.field-info-callout.field-info-warning {
+    background: #fef3c7;
+    border-left-color: #d97706;
+    color: #78350f;
+}
+.field-info-callout.field-info-danger {
+    background: #fee2e2;
+    border-left-color: #dc2626;
+    color: #7f1d1d;
+    font-weight: 600;
+}
+
+/* Structured address field (type: "address") */
+.address-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.address-field .address-label {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+.address-field .address-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+.address-field .address-grid > input,
+.address-field .address-grid > select {
+    width: 100%;
+}
+.address-field .address-row-3 {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 0.4rem;
+}
+.address-field .address-foreign-wrap textarea {
+    width: 100%;
+    resize: vertical;
+}
+.address-field .address-foreign-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    color: #555;
+    margin-top: 0.2rem;
+    cursor: pointer;
+}
+.address-field .address-foreign-toggle input[type="checkbox"] {
+    margin: 0;
+}
+.repeating-group-item-field.address-subfield {
+    grid-column: 1 / -1;
+}
+
