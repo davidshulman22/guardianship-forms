@@ -1,12 +1,12 @@
 # CHAT HANDOFF — RESUME-READY
-**Last updated:** 2026-04-28 (mid-day)
-**Status:** Phases 1–6b merged to `main` and deployed live. Branch `phase1-2-questionnaire-cleanup` retained for git history but no longer the working branch.
+**Last updated:** 2026-04-28 (afternoon)
+**Status:** Phases 1–7b merged to `main` and deployed live. Probate + guardianship questionnaire UX overhaul complete. Branch `phase1-2-questionnaire-cleanup` retained for git history.
 
 ---
 
 # 0. Where things stand
 
-**Live:** https://davidshulman22.github.io/guardianship-forms/ — `main` is the deployed branch. Two rounds of live testing on 2026-04-28 passed; all bugs surfaced have been fixed and shipped.
+**Live:** https://davidshulman22.github.io/guardianship-forms/ — `main` is the deployed branch. Two rounds of probate live testing on 2026-04-28 passed; guardianship parity work shipped same day. Guardianship side has not yet been live-tested by Jill / Maribel.
 
 **Local pickup on any machine:**
 ```bash
@@ -22,16 +22,18 @@ cd guardianship-forms
 ```
 
 **Recent commit history (newest first):**
-1. `fd46146` Merge phase1-2-questionnaire-cleanup → main
-2. `9915bb8` Phase 6b: second-batch live-test fixes
-3. `0539ea3` Phase 6: live-test fixes (1/5/12/13/15 + drop file_no/division)
-4. `8e6730f` Phase 5: PDF passthrough for Broward checklists + P1-0900 rebuild
-5. `5e1c2a1` HANDOFF: cross-machine pickup instructions + pushed branch URL
-6. `aedd90b` Phase 4 fix: preserve legacy string addresses on migration
-7. `77c96cf` Phase 4: Structured address field type with foreign toggle
-8. `b5fbff6` Phase 3: Date field type + SSN pattern input
-9. `e505ef8` Phase 2: Questionnaire UX improvements
-10. `5a23de3` Phase 1: Drop draft-time-unknown fields from formal-admin
+1. `fd0a4fa` Phase 7b: drop signing dates + consolidate AIP DOB across guardianship
+2. `0ea3f33` Phase 7a: bring questionnaire UX upgrades to guardianship forms
+3. `b9ae61e` docs: refresh HANDOFF + CLAUDE for post-merge state
+4. `fd46146` Merge phase1-2-questionnaire-cleanup → main
+5. `9915bb8` Phase 6b: second-batch live-test fixes
+6. `0539ea3` Phase 6: live-test fixes (1/5/12/13/15 + drop file_no/division)
+7. `8e6730f` Phase 5: PDF passthrough for Broward checklists + P1-0900 rebuild
+8. `aedd90b` Phase 4 fix: preserve legacy string addresses on migration
+9. `77c96cf` Phase 4: Structured address field type with foreign toggle
+10. `b5fbff6` Phase 3: Date field type + SSN pattern input
+11. `e505ef8` Phase 2: Questionnaire UX improvements
+12. `5a23de3` Phase 1: Drop draft-time-unknown fields from formal-admin
 
 ---
 
@@ -144,6 +146,18 @@ Address values are objects: `{ street, line2, city, state, zip, foreign, foreign
 - B-2/3 prs[] array auto-populates from client (name + address)
 - B-4 resident_agent_name now a validated `select` — David/Jill only
 
+**Phase 7a (2026-04-28 afternoon):** Bring Phase 1–6b parity to all 5 guardianship forms.
+- 12 `*_address` fields converted to structured `address` type across G2-010, G3-010, G3-025, G3-026 (petitioner / AIP / proposed guardian / physician). `next_of_kin.address` subfield converted in all 4 forms with NOK groups.
+- `visible_if` gates on alternatives (description + insufficient reason) and preneed (name shown on `has_preneed === true`; reason on `not_equals: true` so the default "no preneed" path shows by default).
+- Felony danger callout (F.S. §744.309(3)) above each "Proposed Guardian" / "Proposed Emergency Temporary Guardian" section in G3-010, G3-025, G3-026.
+- `proposed_guardian_name` and `proposed_guardian_address` auto-populate from `currentClient` on first render.
+
+**Phase 7b (2026-04-28 afternoon):** Drop draft-time-unknown signing fields and consolidate AIP DOB on the guardianship side.
+- Removed `signing_month` / `signing_year` from all 5 G forms (forms.json) and `cos_month` / `cos_year` from G2-140's Certificate of Service section.
+- `_add_signature_block()` and the G2-140 builder now render `Signed on this _____ day of __________, 20___.` — handwritten by signer.
+- G3-010: collapsed `aip_dob_month` / `aip_dob_day` / `aip_dob_year` (three text fields) into a single `aip_dob` field of type `date`. Template body uses `{aip_dob}` (auto-formatted to "Month D, YYYY" by `formatDateFieldValue`).
+- All 5 G*.docx templates rebuilt; tag audit passes.
+
 ---
 
 # 6. Remaining Work
@@ -214,12 +228,13 @@ Address values are objects: `{ street, line2, city, state, zip, foreign, foreign
 
 # 8. Next Best Action
 
-1. **Start Priority 1: P3-0740 Notice to Creditors rebuild.** Small, self-contained; establishes the pattern for the remaining summary-admin rebuilds.
+1. **Live-test the guardianship side.** Phase 7a/7b shipped without a Jill/Maribel test pass. Walk a G3-025 or G3-026 questionnaire end-to-end: structured addresses, felony warning callout, alternatives/preneed `visible_if`, AIP DOB date picker, blank signing line. Confirm before declaring it done.
+2. **Start Priority 1: P3-0740 Notice to Creditors rebuild.** Small, self-contained; establishes the pattern for the remaining summary-admin rebuilds.
    - Builder: add `build_p3_0740()` in `scripts/build_probate_templates.py`
    - Probate caption + Broward AI cert + attorney signature block
    - Fields: `creditor_notice_published_in`, `creditor_notice_first_pub_date`, `creditor_notice_circulation_county` (verify against FLSSI 2.0220)
-2. **Or pick from Priority 1a follow-ups** if David surfaces one in the next live test.
-3. **Or schedule the Priority 1b matter-data interview** if David explicitly asks — that's the next big architectural move.
+3. **Or pick from Priority 1a follow-ups** if David surfaces one in the next live test.
+4. **Or schedule the Priority 1b matter-data interview** if David explicitly asks — that's the next big architectural move.
 
 ---
 
