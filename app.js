@@ -1748,6 +1748,14 @@ function getAutoPopulateDefaults() {
     if (!defaults.proposed_guardian_name) defaults.proposed_guardian_name = fullName;
     if (!defaults.proposed_guardian_address) defaults.proposed_guardian_address = currentClient.address || '';
 
+    // --- Layer 3a-quater: Petitioner short residence (city, state) ---
+    // The questionnaire asks "Petitioner's residence (city, state)" as a
+    // short text field on G3-010/025/026 — derive from the structured
+    // address so the user doesn't have to retype.
+    if (!defaults.petitioner_residence) {
+        defaults.petitioner_residence = extractCityState(currentClient.address);
+    }
+
     // --- Layer 3b: Auto-derive fields ---
     if (!defaults.affiant_name) defaults.affiant_name = defaults.petitioner_name || fullName;
     if (!defaults.notary_state) defaults.notary_state = 'Florida';
@@ -1786,6 +1794,24 @@ function renderMergedFormFields() {
         if (!currentFormData[key] && defaults[key]) {
             currentFormData[key] = defaults[key];
         }
+    });
+
+    // Apply schema-level default_value for any field that has never been
+    // touched (e.g. proposed_guardian_same_as_petitioner defaults to true).
+    // This makes visible_if checks see the right initial value — the
+    // checkbox renderer also honors default_value visually, but the form
+    // data needs to match for the visibility pass to agree.
+    selectedFormIds.forEach(formId => {
+        const form = formsConfig.forms.find(f => f.id === formId);
+        if (!form) return;
+        (form.sections || []).forEach(section => {
+            (section.fields || []).forEach(field => {
+                if (field.default_value !== undefined &&
+                    currentFormData[field.name] === undefined) {
+                    currentFormData[field.name] = field.default_value;
+                }
+            });
+        });
     });
 
     const container = document.getElementById('formFieldsContainer');
@@ -1958,12 +1984,19 @@ function renderAddressField(opts) {
     if (opts.value && typeof opts.value === 'object') {
         val = { ...opts.value };
         const hasStructured = val.street || val.city || val.state || val.zip;
-        if (val.foreign === true && val.foreign_text && !hasStructured) {
-            const parsed = parseStringToStructuredAddress(val.foreign_text);
+        if (val.foreign === true && !hasStructured) {
+            // Saved with foreign:true but the structured fields are empty.
+            // Try to upgrade by re-parsing foreign_text. If we can't (no
+            // foreign text or it's truly non-US), drop the foreign flag so
+            // the toggle still defaults unchecked — David's preference is
+            // for the structured grid to be the default view always.
+            const parsed = val.foreign_text
+                ? parseStringToStructuredAddress(val.foreign_text)
+                : null;
             if (parsed) {
-                // keep the original text on the object too, so toggling back
-                // to free-text recovers it verbatim
                 val = { ...parsed, foreign_text: val.foreign_text };
+            } else {
+                val.foreign = false;
             }
         }
     } else if (typeof opts.value === 'string' && opts.value.trim()) {
@@ -2078,6 +2111,20 @@ function renderAddressField(opts) {
     wrap.appendChild(toggleWrap);
 
     return wrap;
+}
+
+// Pull just the "City, State" piece out of an address (object or string).
+// Used for short residence-style fields like petitioner_residence that
+// take a different shape than the full mailing address.
+function extractCityState(raw) {
+    if (!raw) return '';
+    let obj = null;
+    if (typeof raw === 'object') obj = raw;
+    else if (typeof raw === 'string') obj = parseStringToStructuredAddress(raw);
+    if (!obj) return '';
+    const city = (obj.city || '').trim();
+    const state = (obj.state || '').trim();
+    return [city, state].filter(Boolean).join(', ');
 }
 
 // Format a structured address object into a single-line string for template
@@ -2249,7 +2296,15 @@ function renderFormField(field) {
         input.id = 'form_' + field.name;
         input.className = 'form-field-input';
         input.dataset.field = field.name;
-        input.checked = currentFormData[field.name] === true;
+        // `default_value: true` precheck-style: if the field has never been
+        // touched (currentFormData has no entry), use the schema default.
+        // An explicit `false` always wins — the user's "no, untick this"
+        // choice is preserved.
+        let cbVal = currentFormData[field.name];
+        if (cbVal === undefined && field.default_value !== undefined) {
+            cbVal = field.default_value;
+        }
+        input.checked = cbVal === true;
         const label = document.createElement('label');
         label.htmlFor = 'form_' + field.name;
         label.textContent = field.label;
@@ -2766,6 +2821,15 @@ function prepareTemplateData() {
                 pet_address: pr.pr_address || '',
                 pet_interest: 'the nominated personal representative'
             }));
+    }
+
+    // Guardianship: proposed guardian == petitioner — when the checkbox is on
+    // (default), mirror petitioner_name / petitioner_address into the proposed
+    // guardian fields. Means the user doesn't have to fill them twice and the
+    // questionnaire can hide the duplicate inputs.
+    if (data.proposed_guardian_same_as_petitioner === true) {
+        data.proposed_guardian_name = data.petitioner_name || data.proposed_guardian_name || '';
+        data.proposed_guardian_address = data.petitioner_address || data.proposed_guardian_address || '';
     }
 
     // Venue reason: compose prose from checkbox selections (§733.101) + free

@@ -305,7 +305,7 @@ def build_g3_025():
         'Petitioner\u2019s residence is {petitioner_residence} and petitioner\u2019s post office address is {petitioner_address}.')
 
     _pleading_para(doc,
-        '{aip_name} (the AIP-Alleged Incapacitated Person) is an alleged incapacitated person who is {aip_age} years of age.  The residence of the Ward is {aip_residence}; and the post office address of the Ward is {aip_address}.')
+        '{aip_name} (the AIP-Alleged Incapacitated Person) is an alleged incapacitated person who is {aip_age} years of age, whose address is {aip_address}.')
 
     _pleading_para(doc,
         'The nature of the Ward\u2019s alleged incapacity is {ward_incapacity_nature}.')
@@ -322,7 +322,7 @@ def build_g3_025():
     _next_of_kin_table(doc)
 
     _pleading_para(doc,
-        'The proposed guardian, {proposed_guardian_name}, whose residence is {proposed_guardian_residence}, and whose post office address is {proposed_guardian_address}, is sui juris and otherwise qualified under the laws of Florida to act as plenary guardian of the property of the Ward.{#is_professional_guardian} The proposed guardian is a professional guardian and has complied with the registration requirements of Florida Statutes section 744.2002.{/is_professional_guardian} The relationship and previous association of the proposed guardian to the Ward (including any activities designated in Florida Statutes section 744.446(3)) are {proposed_guardian_relationship}. The proposed guardian should be appointed because {appointment_reason}.')
+        'The proposed guardian, {proposed_guardian_name}, whose address is {proposed_guardian_address}, is sui juris and otherwise qualified under the laws of Florida to act as plenary guardian of the property of the Ward.{#is_professional_guardian} The proposed guardian is a professional guardian and has complied with the registration requirements of Florida Statutes section 744.2002.{/is_professional_guardian} The relationship and previous association of the proposed guardian to the Ward (including any activities designated in Florida Statutes section 744.446(3)) are {proposed_guardian_relationship}. The proposed guardian should be appointed because {appointment_reason}.')
 
     _pleading_para(doc,
         'The nature and value of the property subject to guardianship are as follows:',
@@ -558,7 +558,7 @@ def build_g3_026():
         'Petitioner\u2019s residence is {petitioner_residence} and petitioner\u2019s post office address is {petitioner_address}.')
 
     _pleading_para(doc,
-        '{aip_name} (the AIP-Alleged Incapacitated Person) is an alleged incapacitated person who is {aip_age} years of age.  The residence of the Ward is {aip_residence}; and the post office address of the Ward is {aip_address}.')
+        '{aip_name} (the AIP-Alleged Incapacitated Person) is an alleged incapacitated person who is {aip_age} years of age, whose address is {aip_address}.')
 
     # 3. Rights removal + delegation — the "keep_with_next" keeps the heading
     # glued to the checkbox list.
@@ -629,7 +629,7 @@ def build_g3_026():
 
     # 9. Proposed guardian
     _pleading_para(doc,
-        'The proposed guardian, {proposed_guardian_name}, whose residence is {proposed_guardian_residence}, and whose post office address is {proposed_guardian_address}, is sui juris and otherwise qualified under the laws of Florida to act as limited guardian of the person and property of the Ward.{#is_professional_guardian} The proposed guardian is a professional guardian and has complied with the registration requirements of Florida Statutes section 744.2002.{/is_professional_guardian} The relationship and previous association of the proposed guardian to the Ward (including any activities designated in Florida Statutes section 744.446(3)) are {proposed_guardian_relationship}. The proposed guardian should be appointed because {appointment_reason}.')
+        'The proposed guardian, {proposed_guardian_name}, whose address is {proposed_guardian_address}, is sui juris and otherwise qualified under the laws of Florida to act as limited guardian of the person and property of the Ward.{#is_professional_guardian} The proposed guardian is a professional guardian and has complied with the registration requirements of Florida Statutes section 744.2002.{/is_professional_guardian} The relationship and previous association of the proposed guardian to the Ward (including any activities designated in Florida Statutes section 744.446(3)) are {proposed_guardian_relationship}. The proposed guardian should be appointed because {appointment_reason}.')
 
     # 10. Reasonable search
     _pleading_para(doc,
@@ -690,7 +690,7 @@ def build_g3_010():
         'There appears to be imminent danger that the physical or mental health or safety of the alleged incapacitated person will be seriously impaired or that the property of that person is in danger of being wasted, misappropriated or lost unless immediate action is taken because: {imminent_danger_reason}.')
 
     _pleading_para(doc,
-        '{aip_name} is an alleged incapacitated person whose date of birth is {aip_dob}, and who is {aip_age} years of age.  The residence of the alleged incapacitated person is {aip_residence}, and the post office address of the alleged incapacitated person is {aip_address}.')
+        '{aip_name} is an alleged incapacitated person whose date of birth is {aip_dob}, and who is {aip_age} years of age, whose address is {aip_address}.')
 
     _pleading_para(doc,
         'The nature of the alleged incapacitated person\u2019s alleged incapacity is {aip_incapacity_nature}.')
@@ -701,7 +701,7 @@ def build_g3_010():
     _next_of_kin_table(doc)
 
     _pleading_para(doc,
-        'The proposed emergency temporary guardian, {proposed_guardian_name}, whose residence is {proposed_guardian_residence}, and whose post office address is {proposed_guardian_address}, is sui juris and otherwise qualified under the laws of Florida to act as guardian of the alleged incapacitated person.{#is_professional_guardian} The proposed guardian is a professional guardian and has complied with the registration requirements of Florida Statutes section 744.2002.{/is_professional_guardian}')
+        'The proposed emergency temporary guardian, {proposed_guardian_name}, whose address is {proposed_guardian_address}, is sui juris and otherwise qualified under the laws of Florida to act as guardian of the alleged incapacitated person.{#is_professional_guardian} The proposed guardian is a professional guardian and has complied with the registration requirements of Florida Statutes section 744.2002.{/is_professional_guardian}')
 
     _pleading_para(doc,
         'The relationship and previous association of the proposed emergency temporary guardian to the alleged incapacitated person is {proposed_guardian_relationship}.')

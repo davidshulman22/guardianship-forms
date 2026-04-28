@@ -290,13 +290,8 @@
               "type": "text"
             },
             {
-              "name": "aip_residence",
-              "label": "AIP's residence (full address)",
-              "type": "text"
-            },
-            {
               "name": "aip_address",
-              "label": "AIP's post office address",
+              "label": "AIP's address",
               "type": "address"
             },
             {
@@ -353,19 +348,22 @@
               "content": "<strong>F.S. §744.309(3) — felony disqualification.</strong> A person convicted of a felony is <em>not qualified</em> to serve as guardian. Confirm with the proposed guardian before proceeding."
             },
             {
-              "name": "proposed_guardian_name",
-              "label": "Proposed guardian's name",
-              "type": "text"
+              "name": "proposed_guardian_same_as_petitioner",
+              "label": "Proposed guardian is the petitioner (most common — auto-fills name + address from petitioner)",
+              "type": "checkbox",
+              "default_value": true
             },
             {
-              "name": "proposed_guardian_residence",
-              "label": "Proposed guardian's residence (full address)",
-              "type": "text"
+              "name": "proposed_guardian_name",
+              "label": "Proposed guardian's name",
+              "type": "text",
+              "visible_if": { "field": "proposed_guardian_same_as_petitioner", "not_equals": true }
             },
             {
               "name": "proposed_guardian_address",
-              "label": "Proposed guardian's post office address",
-              "type": "address"
+              "label": "Proposed guardian's address",
+              "type": "address",
+              "visible_if": { "field": "proposed_guardian_same_as_petitioner", "not_equals": true }
             },
             {
               "name": "is_professional_guardian",
@@ -485,13 +483,8 @@
               "type": "text"
             },
             {
-              "name": "aip_residence",
-              "label": "Ward's residence (full address)",
-              "type": "text"
-            },
-            {
               "name": "aip_address",
-              "label": "Ward's post office address",
+              "label": "Ward's address",
               "type": "address"
             },
             {
@@ -582,19 +575,22 @@
               "content": "<strong>F.S. §744.309(3) — felony disqualification.</strong> A person convicted of a felony is <em>not qualified</em> to serve as guardian. Confirm with the proposed guardian before proceeding."
             },
             {
-              "name": "proposed_guardian_name",
-              "label": "Proposed guardian's name",
-              "type": "text"
+              "name": "proposed_guardian_same_as_petitioner",
+              "label": "Proposed guardian is the petitioner (most common — auto-fills name + address from petitioner)",
+              "type": "checkbox",
+              "default_value": true
             },
             {
-              "name": "proposed_guardian_residence",
-              "label": "Proposed guardian's residence (full address)",
-              "type": "text"
+              "name": "proposed_guardian_name",
+              "label": "Proposed guardian's name",
+              "type": "text",
+              "visible_if": { "field": "proposed_guardian_same_as_petitioner", "not_equals": true }
             },
             {
               "name": "proposed_guardian_address",
-              "label": "Proposed guardian's post office address",
-              "type": "address"
+              "label": "Proposed guardian's address",
+              "type": "address",
+              "visible_if": { "field": "proposed_guardian_same_as_petitioner", "not_equals": true }
             },
             {
               "name": "is_professional_guardian",
@@ -666,13 +662,8 @@
               "type": "text"
             },
             {
-              "name": "aip_residence",
-              "label": "Ward's residence (full address)",
-              "type": "text"
-            },
-            {
               "name": "aip_address",
-              "label": "Ward's post office address",
+              "label": "Ward's address",
               "type": "address"
             }
           ]
@@ -860,19 +851,22 @@
               "content": "<strong>F.S. §744.309(3) — felony disqualification.</strong> A person convicted of a felony is <em>not qualified</em> to serve as guardian. Confirm with the proposed guardian before proceeding."
             },
             {
-              "name": "proposed_guardian_name",
-              "label": "Proposed guardian's name",
-              "type": "text"
+              "name": "proposed_guardian_same_as_petitioner",
+              "label": "Proposed guardian is the petitioner (most common — auto-fills name + address from petitioner)",
+              "type": "checkbox",
+              "default_value": true
             },
             {
-              "name": "proposed_guardian_residence",
-              "label": "Proposed guardian's residence (full address)",
-              "type": "text"
+              "name": "proposed_guardian_name",
+              "label": "Proposed guardian's name",
+              "type": "text",
+              "visible_if": { "field": "proposed_guardian_same_as_petitioner", "not_equals": true }
             },
             {
               "name": "proposed_guardian_address",
-              "label": "Proposed guardian's post office address",
-              "type": "address"
+              "label": "Proposed guardian's address",
+              "type": "address",
+              "visible_if": { "field": "proposed_guardian_same_as_petitioner", "not_equals": true }
             },
             {
               "name": "is_professional_guardian",
