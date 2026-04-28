@@ -10,9 +10,15 @@ David Shulman is both the builder and the primary end user. He handles probate m
 
 ## Current State
 
-41 forms defined in forms.json (5 guardianship, 30 probate FLSSI, 6 Broward local). Open Estate wizard guides form selection. All templates pass the tag audit.
+39 forms in forms.json (5 guardianship, 28 probate FLSSI / general / closing, 6 Broward local — 5 of which are PDF passthrough). Open Estate wizard guides form selection. All templates pass the tag audit.
 
-**Template rebuild in progress.** Six templates (all 5 guardianship + P3-0100) have been rebuilt from scratch on a clean builder pattern that complies with the `docx-numbering` skill (real Word numbering, 1.5 line spacing, no empty spacer paragraphs, Broward AI certification above the signature block). Remaining 35 probate/local templates still use the legacy FLSSI layout and are queued.
+**Template rebuild in progress.** 10 templates on the new builder pattern: G2-010, G2-140, G3-010, G3-025, G3-026, P3-PETITION, P3-OATH, P3-ORDER, P3-LETTERS, P1-0900. ~24 legacy probate templates still queued (summary admin, closing, inventory, notice to creditors, BW-0060). The new pattern produces real Word numbering, 1.5 line spacing, no empty spacer paragraphs, and Broward AI certification above the signature block.
+
+**5 forms delivered as PDF passthrough** (BW-0010 / BW-0020 / BW-0030 / BW-0040 / BW-0050) — clerk's official PDF bundled byte-for-byte instead of generating a .docx.
+
+**Questionnaire layer (Phases 1–6b, deployed 2026-04-28).** Field types: `text`, `number`, `date`, `textarea`, `checkbox`, `info` (severity callouts), `address` (structured grid + free-text fallback), `select` (validated dropdown), `repeating_group`. Conditional visibility (`visible_if`) reads either form data (`field`) or matter-level flags (`matter_flag`). Repeating groups support `row_lock_unless_matter_flag` (cap to 1 row, render one empty when locked). Per-field input attrs: `pattern`, `maxlength`, `inputmode`, `placeholder`. Address values are objects `{ street, line2, city, state, zip, foreign, foreign_text }` — `parseStringToStructuredAddress()` auto-converts free-text strings on render so auto-populated client defaults appear in the structured grid.
+
+**Auto-populate (4 layers):** cross-form data → matter data → client data → attorney profile. `petitioners[]` and `prs[]` arrays are pre-populated with the client's name + address on first render; resident agent is pre-populated with the matter's signing attorney. User can edit any pre-populated value.
 
 **Auth is live.** Microsoft OAuth via Supabase's Azure provider. `user_profiles` table with admin/standard roles, RLS-gated. David and Maribel are auto-promoted to admin on first sign-in via the `handle_new_user` trigger allow-list. Live URL: `https://davidshulman22.github.io/guardianship-forms/`.
 
@@ -108,9 +114,9 @@ These map to a `wizardFormMatrix` in app.js that selects the exact right set of 
 ### Auto-Population Layers
 `getAutoPopulateDefaults()` builds field values from 4 sources (in priority order):
 1. Data from other forms in this matter (cross-form sharing)
-2. Matter-level data (county, subject name, matterData)
-3. Client-level data (petitioner name/address)
-4. Attorney defaults — per-matter via `ATTORNEY_PROFILES`, keyed by `matter.attorneyId` with a fall-through default (guardianship → Jill, else David)
+2. Matter-level data (county, subject name, matterData — including wizard-set flags `is_ancillary`, `multiple_petitioners`, `multiple_prs`)
+3. Client-level data (petitioner name/address) — also pre-populates `petitioners[]` and `prs[]` arrays with one row each on first render
+4. Attorney defaults — per-matter via `ATTORNEY_PROFILES`, keyed by `matter.attorneyId` with a fall-through default (guardianship → Jill, else David). Resident agent fields default to the signing attorney's name + firm address.
 
 ### Per-Matter Signing Attorney
 `ATTORNEY_PROFILES` in `app.js` holds two entries: `david` and `jill`. The matter modal has a "Signing Attorney" dropdown so any matter can explicitly pick David or Jill regardless of type — e.g. a probate matter Jill is handling. Leaving it on "Default for matter type" preserves the old behavior. Maribel is a paralegal, not in `ATTORNEY_PROFILES`; her drafts still list Jill as attorney of record.
@@ -189,13 +195,34 @@ def build_pX_YYYY():
 
 ## Legacy Template Notes (pre-rebuild)
 
-The 35 templates still using the original FLSSI structure have these quirks:
+~24 probate templates still use the original FLSSI structure. They have these quirks:
 1. **rsid attributes vary per paragraph** — never assume shared values between `<w:p>` elements when patching
 2. **Smart apostrophes** — FLSSI uses U+2019 (`'`) not ASCII `'`
 3. **No f-strings for template tags** — Python f-strings double-escape braces. Use `+` concatenation
 4. **Two-column layout breaks on multi-line fields with justified text** — exactly the bug that motivated the rebuild
 
 These templates are scheduled for replacement via `build_probate_templates.py`. Do not patch them further; rebuild instead.
+
+## forms.json Field Schema (current)
+
+```json
+{
+  "name": "field_name",
+  "type": "info | date | address | select | text | number | checkbox | textarea | repeating_group",
+  "severity": "info | warning | danger",        // info type only
+  "content": "<html>...</html>",                 // info type only
+  "options": [{ "value": "x", "label": "X" }],  // select type only
+  "placeholder": "...",                          // select OR text
+  "pattern": "\\d{4}",                           // text — client-side validation
+  "maxlength": 4,
+  "inputmode": "numeric",
+  "visible_if": { "field": "other_field", "equals": true },
+  "visible_if": { "matter_flag": "is_ancillary", "equals": true },
+  "row_lock_unless_matter_flag": "multiple_prs"  // repeating_group only
+}
+```
+
+Form-level entries support `delivery: "pdf_passthrough"` with `template` pointing into `reference/`. PDF passthrough forms have `sections: []` (no questionnaire).
 
 ## Broward County (17th Circuit) — Local Requirements
 
