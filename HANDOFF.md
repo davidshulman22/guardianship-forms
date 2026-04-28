@@ -180,6 +180,9 @@ Address values are objects: `{ street, line2, city, state, zip, foreign, foreign
 - [ ] **#6** "Interest in estate" as a `select` dropdown with "Other" option (the select type now exists, just needs the data + an "other" free-text path)
 - [ ] **#14** Self-proved will: does the petition need to capture witness names? Verify against FLSSI 2.0103 / template content
 - [ ] **#16** David started a 16th feedback item but it was cut off — confirm what he intended
+- [ ] **Universal caption fix (all templates).** Two parts, ship together:
+  1. The caption block must render **bold** — every line from "IN THE CIRCUIT COURT FOR …" through "Division Probate". Currently rendered as regular weight. Change `_add_probate_caption()` in `build_probate_templates.py` and `_add_guardianship_caption()` in `build_guardianship_templates.py` to set `bold=True` on every paragraph + cell run in the caption table. Then rebuild every template (10 active builder-pattern templates today; ~24 legacy templates will get fixed when they're rebuilt anyway).
+  2. The **county must always render ALL CAPS in the caption** — even if the matter was created with `Broward`, the caption should read `BROWARD COUNTY, FLORIDA`. Cleanest way: in `prepareTemplateData()`, set `data.county_caption = (data.county || '').toUpperCase()` and have the caption template tag use `{county_caption}` instead of `{county}`. Other places that use `{county}` (file metadata, body text where mixed case is fine) keep the original. Audit must be updated to know about `county_caption`.
 
 **Priority 1b — Matter-level data interview (architectural, weekend-sized):**
 - Lift decedent / assets / beneficiaries up from per-form `formData` to `matter.matterData`. Today's wizard propagation of `multiple_petitioners` / `multiple_prs` is a small step in this direction.
