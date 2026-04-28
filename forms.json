@@ -226,21 +226,6 @@
               "type": "text"
             }
           ]
-        },
-        {
-          "title": "Signing Information",
-          "fields": [
-            {
-              "name": "signing_month",
-              "label": "Month",
-              "type": "text"
-            },
-            {
-              "name": "signing_year",
-              "label": "Year",
-              "type": "text"
-            }
-          ]
         }
       ]
     },
@@ -249,21 +234,6 @@
       "name": "Notice of Designation of Email Addresses for Service",
       "template": "templates/G2-140.docx",
       "sections": [
-        {
-          "title": "Signing Information",
-          "fields": [
-            {
-              "name": "signing_month",
-              "label": "Month",
-              "type": "text"
-            },
-            {
-              "name": "signing_year",
-              "label": "Year",
-              "type": "text"
-            }
-          ]
-        },
         {
           "title": "Certificate of Service",
           "fields": [
@@ -275,16 +245,6 @@
             {
               "name": "cos_service_method",
               "label": "Method of service (e.g., email, hand delivery)",
-              "type": "text"
-            },
-            {
-              "name": "cos_month",
-              "label": "Month of service",
-              "type": "text"
-            },
-            {
-              "name": "cos_year",
-              "label": "Year of service",
               "type": "text"
             }
           ]
@@ -320,19 +280,9 @@
           "title": "Ward (AIP) Information",
           "fields": [
             {
-              "name": "aip_dob_month",
-              "label": "AIP date of birth \u2014 month",
-              "type": "text"
-            },
-            {
-              "name": "aip_dob_day",
-              "label": "AIP date of birth \u2014 day",
-              "type": "text"
-            },
-            {
-              "name": "aip_dob_year",
-              "label": "AIP date of birth \u2014 year",
-              "type": "text"
+              "name": "aip_dob",
+              "label": "AIP date of birth",
+              "type": "date"
             },
             {
               "name": "aip_age",
@@ -500,21 +450,6 @@
             {
               "name": "guardianship_scope",
               "label": "Scope (e.g. 'person', 'property', or 'person and property')",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Signing Information",
-          "fields": [
-            {
-              "name": "signing_month",
-              "label": "Month",
-              "type": "text"
-            },
-            {
-              "name": "signing_year",
-              "label": "Year",
               "type": "text"
             }
           ]
@@ -697,21 +632,6 @@
                   "type": "text"
                 }
               ]
-            }
-          ]
-        },
-        {
-          "title": "Signing Information",
-          "fields": [
-            {
-              "name": "signing_month",
-              "label": "Month",
-              "type": "text"
-            },
-            {
-              "name": "signing_year",
-              "label": "Year",
-              "type": "text"
             }
           ]
         }
@@ -968,21 +888,6 @@
               "name": "appointment_reason",
               "label": "Reason for appointing proposed guardian",
               "type": "textarea"
-            }
-          ]
-        },
-        {
-          "title": "Signing Information",
-          "fields": [
-            {
-              "name": "signing_month",
-              "label": "Month",
-              "type": "text"
-            },
-            {
-              "name": "signing_year",
-              "label": "Year",
-              "type": "text"
             }
           ]
         }

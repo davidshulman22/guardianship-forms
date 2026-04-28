@@ -506,8 +506,13 @@ def _add_broward_ai_certification(doc, doc_title):
 
 
 def _add_signature_block(doc, *, role='Petitioner', name_field='{petitioner_name}'):
-    """Petitioner + Attorney signature lines and attorney contact block."""
-    _add_para(doc, 'Signed on this _____ day of {signing_month} {signing_year}.',
+    """Petitioner + Attorney signature lines and attorney contact block.
+
+    Per Phase 1 (probate) and Phase 7b (guardianship), the signing date is
+    rendered as a blank line — not asked at drafting time. The signer
+    handwrites the date when they sign.
+    """
+    _add_para(doc, 'Signed on this _____ day of __________, 20___.',
               first_indent=Inches(0.5), space_after=24)
     _add_para(doc, '_______________________________________', space_after=0)
     _add_para(doc, f'{name_field}, {role}', space_after=24)
@@ -685,7 +690,7 @@ def build_g3_010():
         'There appears to be imminent danger that the physical or mental health or safety of the alleged incapacitated person will be seriously impaired or that the property of that person is in danger of being wasted, misappropriated or lost unless immediate action is taken because: {imminent_danger_reason}.')
 
     _pleading_para(doc,
-        '{aip_name} is an alleged incapacitated person whose date of birth is {aip_dob_month} {aip_dob_day}, {aip_dob_year}, and who is {aip_age} years of age.  The residence of the alleged incapacitated person is {aip_residence}, and the post office address of the alleged incapacitated person is {aip_address}.')
+        '{aip_name} is an alleged incapacitated person whose date of birth is {aip_dob}, and who is {aip_age} years of age.  The residence of the alleged incapacitated person is {aip_residence}, and the post office address of the alleged incapacitated person is {aip_address}.')
 
     _pleading_para(doc,
         'The nature of the alleged incapacitated person\u2019s alleged incapacity is {aip_incapacity_nature}.')
@@ -886,8 +891,8 @@ def build_g2_140():
     _add_run(p, 'Secondary E-Mail Address:\t', bold=True)
     _add_run(p, '{#attorney_email_secondary}{attorney_email_secondary}{/attorney_email_secondary}{^attorney_email_secondary}(none){/attorney_email_secondary}')
 
-    # Signed on this ___ day
-    _add_para(doc, 'Signed on this _____ day of {signing_month} {signing_year}.',
+    # Signed on this ___ day — blank, signer handwrites.
+    _add_para(doc, 'Signed on this _____ day of __________, 20___.',
               first_indent=indent, space_after=24)
 
     # Broward AI certification — only renders in Broward-county matters.
@@ -904,7 +909,7 @@ def build_g2_140():
     _add_para(doc, 'CERTIFICATE OF SERVICE',
               align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=12)
     _add_para(doc,
-        'I CERTIFY that a true and correct copy of the foregoing has been furnished to {cos_served_to} by {cos_service_method} on this _____ day of {cos_month} {cos_year}.',
+        'I CERTIFY that a true and correct copy of the foregoing has been furnished to {cos_served_to} by {cos_service_method} on this _____ day of __________, 20___.',
         first_indent=indent, space_after=24)
 
     _add_para(doc, '_______________________________________', space_after=0)
