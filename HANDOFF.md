@@ -228,7 +228,9 @@ Address values are objects: `{ street, line2, city, state, zip, foreign, foreign
 - [ ] **#16** David started a 16th feedback item but it was cut off — confirm what he intended
 - [x] **Universal caption fix (all templates).** ✅ Shipped Phase 7e (2026-04-28 evening) — see Section 5.
 
-**Priority 1b — Matter-level data interview (architectural, weekend-sized):**
+**Priority 1b — Matter-level data interview (architectural, in progress on `matter-interview` fork):**
+*Active work.* Local-only branch in sibling worktree `../Forms Project Interview/`. Plan of record: that worktree's `docs/MATTER_INTERVIEW_PLAN.md` (entity model: role-based people with tagged roles, single `people[]` and `assets[]` arrays on `matter.matterData`). Will not auto-merge — cherry-pick or merge when proven. Constraint: every field optional, no required inputs ever (per memory).
+
 - Lift decedent / assets / beneficiaries up from per-form `formData` to `matter.matterData`. Today's wizard propagation of `multiple_petitioners` / `multiple_prs` is a small step in this direction.
 - David's 2026-04-28 feedback items #7-11 all describe this same shift:
   - #7 Decedent legal name asked once
@@ -310,7 +312,7 @@ The adversary axis is already built into P1-FORMAL-NOTICE and P1-PROOF-OF-SERVIC
 
 ### Branch state
 
-`main` is current. The `phase1-2-questionnaire-cleanup` branch is merged and retained for git history. Start of session: `git pull`. New work: branch from `main` if it's a multi-day feature, or commit straight to `main` if it's a small surgical fix.
+`main` is current. The `phase1-2-questionnaire-cleanup` branch is merged and retained for git history. A `matter-interview` branch exists in a sibling worktree (`../Forms Project Interview/`) — local-only, never pushed, exploring the Priority 1b matter-level data interview; will not auto-merge. See that worktree's `docs/MATTER_INTERVIEW_PLAN.md` for its plan. Start of session: `git pull`. New work: branch from `main` if it's a multi-day feature, or commit straight to `main` if it's a small surgical fix.
 
 ### What's deployed (Phases 1–8e, all merged to `main` 2026-04-28)
 
