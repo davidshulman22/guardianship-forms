@@ -42,11 +42,11 @@ const formBundles = {
         },
         {
             name: 'Summary Admin (testate)',
-            formIds: ['P2-0204', 'P2-0300', 'P2-0355']
+            formIds: ['P2-PETITION', 'P2-ORDER', 'P2-0355']
         },
         {
             name: 'Summary Admin (intestate)',
-            formIds: ['P2-0214', 'P2-0310', 'P2-0355']
+            formIds: ['P2-PETITION', 'P2-ORDER', 'P2-0355']
         }
     ],
     guardianship: [
@@ -83,12 +83,10 @@ const formSections = {
                 label: 'Estate Administration',
                 subtitle: 'Post-order filings',
                 formIds: ['P2-0355']
-            },
-            closing: {
-                label: 'Additional Orders',
-                subtitle: 'Will admission orders (if not included in opening)',
-                formIds: ['P2-0500', 'P2-0600', 'P2-0610', 'P2-0630', 'P2-0650']
             }
+            // Will admission for summary admin is built into P2-ORDER (combined
+            // order admitting will + summary admin) — no separate "additional
+            // orders" section needed.
         }
     }
 };
@@ -1103,39 +1101,39 @@ const wizardFormMatrix = {
         broward: ['BW-0010']
     },
 
-    // Summary Administration — Domiciliary
+    // Summary Administration — all 8 variants collapse to one bundle.
+    // P2-PETITION/P2-ORDER branch internally on is_testate / is_ancillary /
+    // multiple_petitioners (set on matter.matterData by the wizard).
     'summary|testate|domiciliary|single': {
-        forms: ['P2-0204', 'P2-0300', 'P2-0355'],
+        forms: ['P2-PETITION', 'P2-ORDER', 'P2-0355'],
         broward: ['BW-0010', 'BW-0040']
     },
     'summary|testate|domiciliary|multiple': {
-        forms: ['P2-0205', 'P2-0300', 'P2-0355'],
+        forms: ['P2-PETITION', 'P2-ORDER', 'P2-0355'],
         broward: ['BW-0010', 'BW-0040']
     },
     'summary|intestate|domiciliary|single': {
-        forms: ['P2-0214', 'P2-0310', 'P2-0355'],
+        forms: ['P2-PETITION', 'P2-ORDER', 'P2-0355'],
         broward: ['BW-0010', 'BW-0050', 'BW-0060']
     },
     'summary|intestate|domiciliary|multiple': {
-        forms: ['P2-0215', 'P2-0310', 'P2-0355'],
+        forms: ['P2-PETITION', 'P2-ORDER', 'P2-0355'],
         broward: ['BW-0010', 'BW-0050', 'BW-0060']
     },
-
-    // Summary Administration — Ancillary
     'summary|testate|ancillary|single': {
-        forms: ['P2-0219', 'P2-0320'],
+        forms: ['P2-PETITION', 'P2-ORDER', 'P2-0355'],
         broward: ['BW-0010']
     },
     'summary|testate|ancillary|multiple': {
-        forms: ['P2-0220', 'P2-0320'],
+        forms: ['P2-PETITION', 'P2-ORDER', 'P2-0355'],
         broward: ['BW-0010']
     },
     'summary|intestate|ancillary|single': {
-        forms: ['P2-0224', 'P2-0325'],
+        forms: ['P2-PETITION', 'P2-ORDER', 'P2-0355'],
         broward: ['BW-0010']
     },
     'summary|intestate|ancillary|multiple': {
-        forms: ['P2-0225', 'P2-0325'],
+        forms: ['P2-PETITION', 'P2-ORDER', 'P2-0355'],
         broward: ['BW-0010']
     }
 };
@@ -1747,6 +1745,11 @@ function getAutoPopulateDefaults() {
     // is being proposed. ---
     if (!defaults.proposed_guardian_name) defaults.proposed_guardian_name = fullName;
     if (!defaults.proposed_guardian_address) defaults.proposed_guardian_address = currentClient.address || '';
+
+    // --- Layer 3a-quinquies: Caveat — caveator is the firm's client. ---
+    if (!defaults.caveator_name) defaults.caveator_name = fullName;
+    if (!defaults.caveator_mailing_address) defaults.caveator_mailing_address = currentClient.address || '';
+    if (!defaults.caveator_residence_address) defaults.caveator_residence_address = currentClient.address || '';
 
     // --- Layer 3a-quater: Petitioner short residence (city, state) ---
     // The questionnaire asks "Petitioner's residence (city, state)" as a
@@ -2904,6 +2907,18 @@ function prepareTemplateData() {
     // is_testate / is_ancillary live on matter.matterData; default gracefully
     if (data.is_testate === undefined || data.is_testate === null) data.is_testate = false;
     if (data.is_ancillary === undefined || data.is_ancillary === null) data.is_ancillary = false;
+
+    // Caveat (P1-CAVEAT) derived flags. caveator_type select drives title +
+    // body language; caveator_is_nonresident drives the "FL attorney" paragraph
+    // and the attorney signature block.
+    data.caveator_is_creditor = data.caveator_type === 'creditor';
+    data.caveator_is_ip = data.caveator_type === 'interested_person';
+
+    // Summary administration (P2-PETITION) derived flags. creditors_status
+    // select drives which paragraph 10 sentence renders.
+    data.creditors_all_barred = data.creditors_status === 'all_barred';
+    data.creditors_no_debt = data.creditors_status === 'no_debt';
+    data.creditors_has_debt = data.creditors_status === 'has_debt';
 
     // ISO "YYYY-MM-DD" → "Month D, YYYY" for every field declared type=date.
     // Applies to top-level and repeating-group subfields across all selected

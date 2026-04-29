@@ -32,6 +32,10 @@ AUTO_POPULATED = {
     "pr_pronoun_he_she", "pr_pronoun_his_her",
     # Matter-level booleans (set on matter.matterData, not per-form)
     "is_testate", "is_ancillary",
+    # Caveat (P1-CAVEAT) derived flags from caveator_type select
+    "caveator_is_creditor", "caveator_is_ip",
+    # Summary admin (P2-PETITION) derived flags from creditors_status select
+    "creditors_all_barred", "creditors_no_debt", "creditors_has_debt",
     # Derived display fields for numeric estate assets (from prepareTemplateData)
     "asset_value_formatted",
     "estate_assets_total", "estate_assets_total_formatted",

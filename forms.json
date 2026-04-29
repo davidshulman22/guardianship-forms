@@ -345,11 +345,11 @@
               "name": "_proposed_guardian_felony_warning",
               "type": "info",
               "severity": "danger",
-              "content": "<strong>F.S. §744.309(3) — felony disqualification.</strong> A person convicted of a felony is <em>not qualified</em> to serve as guardian. Confirm with the proposed guardian before proceeding."
+              "content": "<strong>F.S. \u00a7744.309(3) \u2014 felony disqualification.</strong> A person convicted of a felony is <em>not qualified</em> to serve as guardian. Confirm with the proposed guardian before proceeding."
             },
             {
               "name": "proposed_guardian_same_as_petitioner",
-              "label": "Proposed guardian is the petitioner (most common — auto-fills name + address from petitioner)",
+              "label": "Proposed guardian is the petitioner (most common \u2014 auto-fills name + address from petitioner)",
               "type": "checkbox",
               "default_value": true
             },
@@ -357,13 +357,19 @@
               "name": "proposed_guardian_name",
               "label": "Proposed guardian's name",
               "type": "text",
-              "visible_if": { "field": "proposed_guardian_same_as_petitioner", "not_equals": true }
+              "visible_if": {
+                "field": "proposed_guardian_same_as_petitioner",
+                "not_equals": true
+              }
             },
             {
               "name": "proposed_guardian_address",
               "label": "Proposed guardian's address",
               "type": "address",
-              "visible_if": { "field": "proposed_guardian_same_as_petitioner", "not_equals": true }
+              "visible_if": {
+                "field": "proposed_guardian_same_as_petitioner",
+                "not_equals": true
+              }
             },
             {
               "name": "is_professional_guardian",
@@ -416,7 +422,10 @@
               "name": "alternatives_description",
               "label": "If yes, describe the alternatives",
               "type": "textarea",
-              "visible_if": { "field": "has_alternatives", "equals": true }
+              "visible_if": {
+                "field": "has_alternatives",
+                "equals": true
+              }
             }
           ]
         },
@@ -432,13 +441,19 @@
               "name": "preneed_guardian_name",
               "label": "If yes, name of designated preneed guardian",
               "type": "text",
-              "visible_if": { "field": "has_preneed", "equals": true }
+              "visible_if": {
+                "field": "has_preneed",
+                "equals": true
+              }
             },
             {
               "name": "preneed_reason",
               "label": "If no, brief explanation (e.g. 'as the AIP has no preneed documents')",
               "type": "text",
-              "visible_if": { "field": "has_preneed", "not_equals": true }
+              "visible_if": {
+                "field": "has_preneed",
+                "not_equals": true
+              }
             }
           ]
         },
@@ -506,13 +521,19 @@
               "name": "alternatives_description",
               "label": "If yes, describe the alternatives",
               "type": "textarea",
-              "visible_if": { "field": "has_alternatives", "equals": true }
+              "visible_if": {
+                "field": "has_alternatives",
+                "equals": true
+              }
             },
             {
               "name": "alternatives_insufficient_reason",
               "label": "If yes, why are the alternatives insufficient?",
               "type": "textarea",
-              "visible_if": { "field": "has_alternatives", "equals": true }
+              "visible_if": {
+                "field": "has_alternatives",
+                "equals": true
+              }
             }
           ]
         },
@@ -528,13 +549,19 @@
               "name": "preneed_guardian_name",
               "label": "If yes, name of designated preneed guardian",
               "type": "text",
-              "visible_if": { "field": "has_preneed", "equals": true }
+              "visible_if": {
+                "field": "has_preneed",
+                "equals": true
+              }
             },
             {
               "name": "preneed_reason",
               "label": "If no, brief explanation (e.g. 'as the AIP has no preneed documents')",
               "type": "text",
-              "visible_if": { "field": "has_preneed", "not_equals": true }
+              "visible_if": {
+                "field": "has_preneed",
+                "not_equals": true
+              }
             }
           ]
         },
@@ -572,11 +599,11 @@
               "name": "_proposed_guardian_felony_warning",
               "type": "info",
               "severity": "danger",
-              "content": "<strong>F.S. §744.309(3) — felony disqualification.</strong> A person convicted of a felony is <em>not qualified</em> to serve as guardian. Confirm with the proposed guardian before proceeding."
+              "content": "<strong>F.S. \u00a7744.309(3) \u2014 felony disqualification.</strong> A person convicted of a felony is <em>not qualified</em> to serve as guardian. Confirm with the proposed guardian before proceeding."
             },
             {
               "name": "proposed_guardian_same_as_petitioner",
-              "label": "Proposed guardian is the petitioner (most common — auto-fills name + address from petitioner)",
+              "label": "Proposed guardian is the petitioner (most common \u2014 auto-fills name + address from petitioner)",
               "type": "checkbox",
               "default_value": true
             },
@@ -584,13 +611,19 @@
               "name": "proposed_guardian_name",
               "label": "Proposed guardian's name",
               "type": "text",
-              "visible_if": { "field": "proposed_guardian_same_as_petitioner", "not_equals": true }
+              "visible_if": {
+                "field": "proposed_guardian_same_as_petitioner",
+                "not_equals": true
+              }
             },
             {
               "name": "proposed_guardian_address",
               "label": "Proposed guardian's address",
               "type": "address",
-              "visible_if": { "field": "proposed_guardian_same_as_petitioner", "not_equals": true }
+              "visible_if": {
+                "field": "proposed_guardian_same_as_petitioner",
+                "not_equals": true
+              }
             },
             {
               "name": "is_professional_guardian",
@@ -782,13 +815,19 @@
               "name": "alternatives_description",
               "label": "If yes, describe the alternatives",
               "type": "textarea",
-              "visible_if": { "field": "has_alternatives", "equals": true }
+              "visible_if": {
+                "field": "has_alternatives",
+                "equals": true
+              }
             },
             {
               "name": "alternatives_insufficient_reason",
               "label": "If yes, why are the alternatives insufficient?",
               "type": "textarea",
-              "visible_if": { "field": "has_alternatives", "equals": true }
+              "visible_if": {
+                "field": "has_alternatives",
+                "equals": true
+              }
             }
           ]
         },
@@ -804,13 +843,19 @@
               "name": "preneed_guardian_name",
               "label": "If yes, name of designated preneed guardian",
               "type": "text",
-              "visible_if": { "field": "has_preneed", "equals": true }
+              "visible_if": {
+                "field": "has_preneed",
+                "equals": true
+              }
             },
             {
               "name": "preneed_reason",
               "label": "If no, brief explanation (e.g. 'as the AIP has no preneed documents')",
               "type": "text",
-              "visible_if": { "field": "has_preneed", "not_equals": true }
+              "visible_if": {
+                "field": "has_preneed",
+                "not_equals": true
+              }
             }
           ]
         },
@@ -848,11 +893,11 @@
               "name": "_proposed_guardian_felony_warning",
               "type": "info",
               "severity": "danger",
-              "content": "<strong>F.S. §744.309(3) — felony disqualification.</strong> A person convicted of a felony is <em>not qualified</em> to serve as guardian. Confirm with the proposed guardian before proceeding."
+              "content": "<strong>F.S. \u00a7744.309(3) \u2014 felony disqualification.</strong> A person convicted of a felony is <em>not qualified</em> to serve as guardian. Confirm with the proposed guardian before proceeding."
             },
             {
               "name": "proposed_guardian_same_as_petitioner",
-              "label": "Proposed guardian is the petitioner (most common — auto-fills name + address from petitioner)",
+              "label": "Proposed guardian is the petitioner (most common \u2014 auto-fills name + address from petitioner)",
               "type": "checkbox",
               "default_value": true
             },
@@ -860,13 +905,19 @@
               "name": "proposed_guardian_name",
               "label": "Proposed guardian's name",
               "type": "text",
-              "visible_if": { "field": "proposed_guardian_same_as_petitioner", "not_equals": true }
+              "visible_if": {
+                "field": "proposed_guardian_same_as_petitioner",
+                "not_equals": true
+              }
             },
             {
               "name": "proposed_guardian_address",
               "label": "Proposed guardian's address",
               "type": "address",
-              "visible_if": { "field": "proposed_guardian_same_as_petitioner", "not_equals": true }
+              "visible_if": {
+                "field": "proposed_guardian_same_as_petitioner",
+                "not_equals": true
+              }
             },
             {
               "name": "is_professional_guardian",
@@ -1143,31 +1194,46 @@
               "name": "domiciliary_proceedings_pending",
               "label": "Domiciliary/principal proceedings pending in another jurisdiction (auto-set for ancillary)",
               "type": "checkbox",
-              "visible_if": { "matter_flag": "is_ancillary", "equals": true }
+              "visible_if": {
+                "matter_flag": "is_ancillary",
+                "equals": true
+              }
             },
             {
               "name": "domiciliary_court_name",
               "label": "Domiciliary court name (e.g. 'Surrogate's Court, New York County')",
               "type": "text",
-              "visible_if": { "matter_flag": "is_ancillary", "equals": true }
+              "visible_if": {
+                "matter_flag": "is_ancillary",
+                "equals": true
+              }
             },
             {
               "name": "domiciliary_court_address",
               "label": "Domiciliary court address",
               "type": "address",
-              "visible_if": { "matter_flag": "is_ancillary", "equals": true }
+              "visible_if": {
+                "matter_flag": "is_ancillary",
+                "equals": true
+              }
             },
             {
               "name": "domiciliary_representative",
               "label": "Domiciliary representative name",
               "type": "text",
-              "visible_if": { "matter_flag": "is_ancillary", "equals": true }
+              "visible_if": {
+                "matter_flag": "is_ancillary",
+                "equals": true
+              }
             },
             {
               "name": "domiciliary_representative_address",
               "label": "Domiciliary representative address",
               "type": "address",
-              "visible_if": { "matter_flag": "is_ancillary", "equals": true }
+              "visible_if": {
+                "matter_flag": "is_ancillary",
+                "equals": true
+              }
             }
           ]
         },
@@ -1234,8 +1300,14 @@
               "label": "Resident agent",
               "type": "select",
               "options": [
-                { "value": "David A. Shulman", "label": "David A. Shulman" },
-                { "value": "Jill R. Ginsberg", "label": "Jill R. Ginsberg" }
+                {
+                  "value": "David A. Shulman",
+                  "label": "David A. Shulman"
+                },
+                {
+                  "value": "Jill R. Ginsberg",
+                  "label": "Jill R. Ginsberg"
+                }
               ]
             },
             {
@@ -1420,62 +1492,87 @@
       ]
     },
     {
-      "id": "P2-0204",
-      "name": "Petition for Summary Administration (testate, single petitioner)",
-      "template": "templates/P2-0204.docx",
+      "id": "P2-PETITION",
+      "name": "Petition for Summary Administration (smart \u2014 testate/intestate, single/multi, dom/ancillary)",
+      "template": "templates/P2-PETITION.docx",
       "sections": [
         {
-          "title": "Petitioner",
+          "title": "Petitioner(s)",
           "fields": [
             {
-              "name": "petitioner_name",
-              "label": "Petitioner name",
-              "type": "text"
-            },
-            {
-              "name": "petitioner_interest",
-              "label": "Interest in estate (e.g., surviving spouse, beneficiary)",
-              "type": "text"
+              "name": "petitioners",
+              "label": "Petitioner(s) \u2014 add one row per person filing the petition",
+              "type": "repeating_group",
+              "row_lock_unless_matter_flag": "multiple_petitioners",
+              "subfields": [
+                {
+                  "name": "pet_name",
+                  "label": "Name",
+                  "type": "text"
+                },
+                {
+                  "name": "pet_address",
+                  "label": "Address",
+                  "type": "address"
+                },
+                {
+                  "name": "pet_interest",
+                  "label": "Interest in estate",
+                  "type": "text",
+                  "placeholder": "e.g., a beneficiary, surviving spouse, sole heir"
+                }
+              ]
             }
           ]
         },
         {
-          "title": "Decedent Information",
+          "title": "Decedent",
           "fields": [
             {
               "name": "decedent_full_name",
-              "label": "Decedent full name",
+              "label": "Decedent full legal name",
               "type": "text"
             },
             {
               "name": "decedent_address",
-              "label": "Decedent last known address",
-              "type": "text"
+              "label": "Decedent's last known address",
+              "type": "address"
             },
             {
               "name": "decedent_ssn_last4",
-              "label": "Last 4 digits of SSN",
-              "type": "text"
+              "label": "Last 4 digits of decedent's SSN",
+              "type": "text",
+              "pattern": "\\d{4}",
+              "maxlength": 4,
+              "inputmode": "numeric"
             },
             {
               "name": "decedent_death_date",
               "label": "Date of death",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_year",
-              "label": "Year of death",
-              "type": "text"
+              "type": "date"
             },
             {
               "name": "decedent_death_place",
-              "label": "Place of death",
+              "label": "Place of death (city/county where died)",
               "type": "text"
             },
             {
               "name": "decedent_domicile",
-              "label": "Domicile at death",
-              "type": "text"
+              "label": "County of domicile at death",
+              "type": "text",
+              "visible_if": {
+                "matter_flag": "is_ancillary",
+                "equals": false
+              }
+            },
+            {
+              "name": "decedent_domicile_state",
+              "label": "State/country of domicile (ancillary only)",
+              "type": "text",
+              "visible_if": {
+                "matter_flag": "is_ancillary",
+                "equals": true
+              }
             }
           ]
         },
@@ -1484,7 +1581,7 @@
           "fields": [
             {
               "name": "beneficiaries",
-              "label": "Beneficiaries of the estate",
+              "label": "Beneficiaries (and surviving spouse, if any)",
               "type": "repeating_group",
               "subfields": [
                 {
@@ -1495,7 +1592,7 @@
                 {
                   "name": "ben_address",
                   "label": "Address",
-                  "type": "text"
+                  "type": "address"
                 },
                 {
                   "name": "ben_relationship",
@@ -1503,81 +1600,194 @@
                   "type": "text"
                 },
                 {
+                  "name": "ben_is_minor",
+                  "label": "Minor?",
+                  "type": "checkbox"
+                },
+                {
                   "name": "ben_year_of_birth",
                   "label": "Year of birth (if minor)",
-                  "type": "text"
+                  "type": "text",
+                  "pattern": "\\d{4}",
+                  "maxlength": 4,
+                  "inputmode": "numeric",
+                  "visible_if": {
+                    "field": "ben_is_minor",
+                    "equals": true
+                  }
                 }
               ]
             }
           ]
         },
         {
-          "title": "Venue and Will",
+          "title": "Venue",
           "fields": [
             {
-              "name": "venue_reason",
-              "label": "Reason venue is proper in this county",
-              "type": "text"
+              "name": "_venue_help",
+              "type": "info",
+              "severity": "info",
+              "content": "Venue reason \u2014 at least one must apply for summary admin filed in this county."
             },
+            {
+              "name": "venue_reason_type_domicile_fl",
+              "label": "Decedent was domiciled in this county at the time of death",
+              "type": "checkbox"
+            },
+            {
+              "name": "venue_reason_type_property",
+              "label": "Decedent was not a Florida resident but had property in this county at the time of death",
+              "type": "checkbox"
+            },
+            {
+              "name": "venue_reason_type_debtor",
+              "label": "Decedent was not a Florida resident and had no property in Florida, but a debtor of the decedent resides in this county",
+              "type": "checkbox"
+            },
+            {
+              "name": "venue_reason_other",
+              "label": "Other reason (specify)",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "title": "Will (testate only)",
+          "fields": [
             {
               "name": "will_date",
-              "label": "Date of will",
-              "type": "text"
-            },
-            {
-              "name": "will_year",
-              "label": "Year of will",
-              "type": "text"
+              "label": "Will date",
+              "type": "date",
+              "visible_if": {
+                "matter_flag": "is_testate",
+                "equals": true
+              }
             },
             {
               "name": "codicil_dates",
-              "label": "Codicil date(s) (if any)",
-              "type": "text"
-            },
-            {
-              "name": "codicil_year",
-              "label": "Codicil year",
-              "type": "text"
+              "label": "Codicil date(s) (blank if none; separate multiple with commas)",
+              "type": "text",
+              "visible_if": {
+                "matter_flag": "is_testate",
+                "equals": true
+              }
             }
           ]
         },
         {
-          "title": "Domiciliary Proceedings",
+          "title": "Qualification for Summary Administration",
           "fields": [
             {
+              "name": "_qual_help",
+              "type": "info",
+              "severity": "info",
+              "content": "Check each ground that applies. At least one must apply for summary admin."
+            },
+            {
+              "name": "qualifies_no_admin_required",
+              "label": "Decedent's will does not direct administration as required by Florida Statutes Chapter 733",
+              "type": "checkbox"
+            },
+            {
+              "name": "qualifies_under_75k",
+              "label": "Value of the entire estate subject to administration in this state, less exempt property, does not exceed $75,000",
+              "type": "checkbox"
+            },
+            {
+              "name": "qualifies_2_year_rule",
+              "label": "Decedent has been dead for more than two years",
+              "type": "checkbox"
+            }
+          ]
+        },
+        {
+          "title": "Domiciliary / Principal Probate Proceedings",
+          "fields": [
+            {
+              "name": "domiciliary_proceedings_pending",
+              "label": "Domiciliary/principal proceedings pending in another jurisdiction (auto-set for ancillary)",
+              "type": "checkbox"
+            },
+            {
+              "name": "domiciliary_court_name",
+              "label": "Domiciliary court name (e.g. 'Surrogate's Court, New York County')",
+              "type": "text",
+              "visible_if": {
+                "field": "domiciliary_proceedings_pending",
+                "equals": true
+              }
+            },
+            {
               "name": "domiciliary_court_address",
-              "label": "Address of domiciliary court",
-              "type": "text"
+              "label": "Domiciliary court address",
+              "type": "address",
+              "visible_if": {
+                "field": "domiciliary_proceedings_pending",
+                "equals": true
+              }
             },
             {
               "name": "domiciliary_representative",
-              "label": "Name of domiciliary representative",
-              "type": "text"
+              "label": "Domiciliary representative name",
+              "type": "text",
+              "visible_if": {
+                "field": "domiciliary_proceedings_pending",
+                "equals": true
+              }
             },
             {
               "name": "domiciliary_representative_address",
-              "label": "Address of domiciliary representative",
-              "type": "text"
+              "label": "Domiciliary representative address",
+              "type": "address",
+              "visible_if": {
+                "field": "domiciliary_proceedings_pending",
+                "equals": true
+              }
             }
           ]
         },
         {
-          "title": "Assets",
+          "title": "Estate Assets",
           "fields": [
             {
-              "name": "assets",
-              "label": "Estate assets",
+              "name": "estate_assets",
+              "label": "Estate assets (separately designate protected homestead and exempt property)",
               "type": "repeating_group",
               "subfields": [
                 {
                   "name": "asset_description",
-                  "label": "Asset description",
+                  "label": "Description",
                   "type": "text"
                 },
                 {
-                  "name": "estimated_value",
+                  "name": "asset_value",
                   "label": "Estimated value",
-                  "type": "text"
+                  "type": "text",
+                  "placeholder": "e.g., $25,000"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Creditors",
+          "fields": [
+            {
+              "name": "creditors_status",
+              "label": "Status of creditors' claims",
+              "type": "select",
+              "options": [
+                {
+                  "value": "all_barred",
+                  "label": "All claims of creditors are barred"
+                },
+                {
+                  "value": "no_debt",
+                  "label": "Diligent search done; estate is not indebted"
+                },
+                {
+                  "value": "has_debt",
+                  "label": "Diligent search done; estate is indebted (provision for payment on attached schedule)"
                 }
               ]
             }
@@ -1587,8 +1797,8 @@
           "title": "Distribution",
           "fields": [
             {
-              "name": "distribution",
-              "label": "Proposed distribution",
+              "name": "summary_admin_distributees",
+              "label": "Distribution plan \u2014 to whom assets will be distributed",
               "type": "repeating_group",
               "subfields": [
                 {
@@ -1597,1541 +1807,93 @@
                   "type": "text"
                 },
                 {
-                  "name": "dist_asset_share",
-                  "label": "Asset, share, or amount",
-                  "type": "text"
+                  "name": "dist_address",
+                  "label": "Address",
+                  "type": "address"
+                },
+                {
+                  "name": "dist_share",
+                  "label": "Asset, share or amount",
+                  "type": "text",
+                  "placeholder": "e.g., '1/2 of all assets', '$10,000', 'the homestead at 123 Main St'"
                 }
               ]
-            }
-          ]
-        },
-        {
-          "title": "Signing and Attorney",
-          "fields": [
-            {
-              "name": "signing_day",
-              "label": "Day",
-              "type": "text"
-            },
-            {
-              "name": "signing_month",
-              "label": "Month",
-              "type": "text"
-            },
-            {
-              "name": "signing_year",
-              "label": "Year",
-              "type": "text"
-            },
-            {
-              "name": "attorney_email",
-              "label": "Attorney email",
-              "type": "text"
-            },
-            {
-              "name": "attorney_email_secondary",
-              "label": "Secondary email",
-              "type": "text"
-            },
-            {
-              "name": "attorney_bar_no",
-              "label": "Florida Bar No.",
-              "type": "text"
-            },
-            {
-              "name": "attorney_phone",
-              "label": "Telephone",
-              "type": "text"
             }
           ]
         }
       ]
     },
     {
-      "id": "P2-0205",
-      "name": "Petition for Summary Administration (testate, multiple petitioners)",
-      "template": "templates/P2-0205.docx",
+      "id": "P2-ORDER",
+      "name": "Order of Summary Administration (smart \u2014 testate combined w/ will-admit, intestate just summary admin)",
+      "template": "templates/P2-ORDER.docx",
       "sections": [
         {
-          "title": "Petitioners",
+          "title": "Will Specifics (testate only)",
           "fields": [
             {
-              "name": "petitioners",
-              "label": "Petitioners",
-              "type": "repeating_group",
-              "subfields": [
-                {
-                  "name": "pet_name",
-                  "label": "Name",
-                  "type": "text"
-                },
-                {
-                  "name": "pet_address",
-                  "label": "Address",
-                  "type": "text"
-                },
-                {
-                  "name": "pet_relationship",
-                  "label": "Relationship to decedent",
-                  "type": "text"
-                }
-              ]
+              "name": "is_self_proved",
+              "label": "Will is self-proved (acknowledgement of decedent + affidavits of witnesses)",
+              "type": "checkbox",
+              "visible_if": {
+                "matter_flag": "is_testate",
+                "equals": true
+              }
             },
             {
-              "name": "petitioner_interest",
-              "label": "Interest in estate",
-              "type": "text"
+              "name": "will_witnesses",
+              "label": "Subscribing/attesting witness name(s) \u2014 required if NOT self-proved",
+              "type": "text",
+              "visible_if": {
+                "matter_flag": "is_testate",
+                "equals": true
+              }
+            },
+            {
+              "name": "is_auth_copy_of_will",
+              "label": "Filing an authenticated copy of the will (nonresident decedent only)",
+              "type": "checkbox",
+              "visible_if": {
+                "matter_flag": "is_ancillary",
+                "equals": true
+              }
             }
           ]
         },
         {
-          "title": "Decedent Information",
+          "title": "From Petition (auto-populates)",
           "fields": [
             {
               "name": "decedent_full_name",
-              "label": "Decedent full name",
-              "type": "text"
-            },
-            {
-              "name": "decedent_address",
-              "label": "Decedent last known address",
-              "type": "text"
-            },
-            {
-              "name": "decedent_ssn_last4",
-              "label": "Last 4 digits of SSN",
+              "label": "Decedent full legal name",
               "type": "text"
             },
             {
               "name": "decedent_death_date",
               "label": "Date of death",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_year",
-              "label": "Year of death",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_place",
-              "label": "Place of death",
-              "type": "text"
-            },
-            {
-              "name": "decedent_domicile",
-              "label": "Domicile at death",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Beneficiaries",
-          "fields": [
-            {
-              "name": "beneficiaries",
-              "label": "Beneficiaries of the estate",
-              "type": "repeating_group",
-              "subfields": [
-                {
-                  "name": "ben_name",
-                  "label": "Name",
-                  "type": "text"
-                },
-                {
-                  "name": "ben_address",
-                  "label": "Address",
-                  "type": "text"
-                },
-                {
-                  "name": "ben_relationship",
-                  "label": "Relationship",
-                  "type": "text"
-                },
-                {
-                  "name": "ben_year_of_birth",
-                  "label": "Year of birth (if minor)",
-                  "type": "text"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "title": "Venue and Will",
-          "fields": [
-            {
-              "name": "venue_reason",
-              "label": "Reason venue is proper in this county",
-              "type": "text"
+              "type": "date"
             },
             {
               "name": "will_date",
-              "label": "Date of will",
-              "type": "text"
-            },
-            {
-              "name": "will_year",
-              "label": "Year of will",
-              "type": "text"
+              "label": "Will date (testate only)",
+              "type": "date",
+              "visible_if": {
+                "matter_flag": "is_testate",
+                "equals": true
+              }
             },
             {
               "name": "codicil_dates",
-              "label": "Codicil date(s) (if any)",
-              "type": "text"
-            },
-            {
-              "name": "codicil_year",
-              "label": "Codicil year",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Domiciliary Proceedings",
-          "fields": [
-            {
-              "name": "domiciliary_court_address",
-              "label": "Address of domiciliary court",
-              "type": "text"
-            },
-            {
-              "name": "domiciliary_representative",
-              "label": "Name of domiciliary representative",
-              "type": "text"
-            },
-            {
-              "name": "domiciliary_representative_address",
-              "label": "Address of domiciliary representative",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Assets",
-          "fields": [
-            {
-              "name": "assets",
-              "label": "Estate assets",
-              "type": "repeating_group",
-              "subfields": [
-                {
-                  "name": "asset_description",
-                  "label": "Asset description",
-                  "type": "text"
-                },
-                {
-                  "name": "estimated_value",
-                  "label": "Estimated value",
-                  "type": "text"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "title": "Distribution",
-          "fields": [
-            {
-              "name": "distribution",
-              "label": "Proposed distribution",
-              "type": "repeating_group",
-              "subfields": [
-                {
-                  "name": "dist_name",
-                  "label": "Name",
-                  "type": "text"
-                },
-                {
-                  "name": "dist_asset_share",
-                  "label": "Asset, share, or amount",
-                  "type": "text"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "title": "Signing and Attorney",
-          "fields": [
-            {
-              "name": "signing_day",
-              "label": "Day",
-              "type": "text"
-            },
-            {
-              "name": "signing_month",
-              "label": "Month",
-              "type": "text"
-            },
-            {
-              "name": "signing_year",
-              "label": "Year",
-              "type": "text"
-            },
-            {
-              "name": "attorney_bar_no",
-              "label": "Florida Bar No.",
-              "type": "text"
-            },
-            {
-              "name": "attorney_phone",
-              "label": "Telephone",
-              "type": "text"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "P2-0214",
-      "name": "Petition for Summary Administration (intestate, single petitioner)",
-      "template": "templates/P2-0214.docx",
-      "sections": [
-        {
-          "title": "Petitioner",
-          "fields": [
-            {
-              "name": "petitioner_name",
-              "label": "Petitioner name",
-              "type": "text"
-            },
-            {
-              "name": "petitioner_interest",
-              "label": "Interest in estate",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Decedent Information",
-          "fields": [
-            {
-              "name": "decedent_full_name",
-              "label": "Decedent full name",
-              "type": "text"
-            },
-            {
-              "name": "decedent_address",
-              "label": "Decedent last known address",
-              "type": "text"
-            },
-            {
-              "name": "decedent_ssn_last4",
-              "label": "Last 4 digits of SSN",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_date",
-              "label": "Date of death",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_year",
-              "label": "Year of death",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_place",
-              "label": "Place of death",
-              "type": "text"
-            },
-            {
-              "name": "decedent_domicile",
-              "label": "Domicile at death",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Beneficiaries",
-          "fields": [
-            {
-              "name": "beneficiaries",
-              "label": "Beneficiaries of the estate",
-              "type": "repeating_group",
-              "subfields": [
-                {
-                  "name": "ben_name",
-                  "label": "Name",
-                  "type": "text"
-                },
-                {
-                  "name": "ben_address",
-                  "label": "Address",
-                  "type": "text"
-                },
-                {
-                  "name": "ben_relationship",
-                  "label": "Relationship",
-                  "type": "text"
-                },
-                {
-                  "name": "ben_year_of_birth",
-                  "label": "Year of birth (if minor)",
-                  "type": "text"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "title": "Venue",
-          "fields": [
-            {
-              "name": "venue_reason",
-              "label": "Reason venue is proper in this county",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Domiciliary Proceedings",
-          "fields": [
-            {
-              "name": "domiciliary_court_address",
-              "label": "Address of domiciliary court",
-              "type": "text"
-            },
-            {
-              "name": "domiciliary_representative",
-              "label": "Name of domiciliary representative",
-              "type": "text"
-            },
-            {
-              "name": "domiciliary_representative_address",
-              "label": "Address of domiciliary representative",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Assets",
-          "fields": [
-            {
-              "name": "assets",
-              "label": "Estate assets",
-              "type": "repeating_group",
-              "subfields": [
-                {
-                  "name": "asset_description",
-                  "label": "Asset description",
-                  "type": "text"
-                },
-                {
-                  "name": "estimated_value",
-                  "label": "Estimated value",
-                  "type": "text"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "title": "Distribution",
-          "fields": [
-            {
-              "name": "distribution",
-              "label": "Proposed distribution",
-              "type": "repeating_group",
-              "subfields": [
-                {
-                  "name": "dist_name",
-                  "label": "Name",
-                  "type": "text"
-                },
-                {
-                  "name": "dist_asset_share",
-                  "label": "Asset, share, or amount",
-                  "type": "text"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "title": "Signing and Attorney",
-          "fields": [
-            {
-              "name": "signing_day",
-              "label": "Day",
-              "type": "text"
-            },
-            {
-              "name": "signing_month",
-              "label": "Month",
-              "type": "text"
-            },
-            {
-              "name": "signing_year",
-              "label": "Year",
-              "type": "text"
-            },
-            {
-              "name": "attorney_bar_no",
-              "label": "Florida Bar No.",
-              "type": "text"
-            },
-            {
-              "name": "attorney_phone",
-              "label": "Telephone",
-              "type": "text"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "P2-0215",
-      "name": "Petition for Summary Administration (intestate, multiple petitioners)",
-      "template": "templates/P2-0215.docx",
-      "sections": [
-        {
-          "title": "Petitioners",
-          "fields": [
-            {
-              "name": "petitioners",
-              "label": "Petitioners",
-              "type": "repeating_group",
-              "subfields": [
-                {
-                  "name": "pet_name",
-                  "label": "Name",
-                  "type": "text"
-                },
-                {
-                  "name": "pet_address",
-                  "label": "Address",
-                  "type": "text"
-                },
-                {
-                  "name": "pet_relationship",
-                  "label": "Relationship to decedent",
-                  "type": "text"
-                }
-              ]
-            },
-            {
-              "name": "petitioner_interest",
-              "label": "Interest in estate",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Decedent Information",
-          "fields": [
-            {
-              "name": "decedent_full_name",
-              "label": "Decedent full name",
-              "type": "text"
-            },
-            {
-              "name": "decedent_address",
-              "label": "Decedent last known address",
-              "type": "text"
-            },
-            {
-              "name": "decedent_ssn_last4",
-              "label": "Last 4 digits of SSN",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_date",
-              "label": "Date of death",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_year",
-              "label": "Year of death",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_place",
-              "label": "Place of death",
-              "type": "text"
-            },
-            {
-              "name": "decedent_domicile",
-              "label": "Domicile at death",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Beneficiaries",
-          "fields": [
-            {
-              "name": "beneficiaries",
-              "label": "Beneficiaries of the estate",
-              "type": "repeating_group",
-              "subfields": [
-                {
-                  "name": "ben_name",
-                  "label": "Name",
-                  "type": "text"
-                },
-                {
-                  "name": "ben_address",
-                  "label": "Address",
-                  "type": "text"
-                },
-                {
-                  "name": "ben_relationship",
-                  "label": "Relationship",
-                  "type": "text"
-                },
-                {
-                  "name": "ben_year_of_birth",
-                  "label": "Year of birth (if minor)",
-                  "type": "text"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "title": "Venue",
-          "fields": [
-            {
-              "name": "venue_reason",
-              "label": "Reason venue is proper in this county",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Domiciliary Proceedings",
-          "fields": [
-            {
-              "name": "domiciliary_court_address",
-              "label": "Address of domiciliary court",
-              "type": "text"
-            },
-            {
-              "name": "domiciliary_representative",
-              "label": "Name of domiciliary representative",
-              "type": "text"
-            },
-            {
-              "name": "domiciliary_representative_address",
-              "label": "Address of domiciliary representative",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Assets",
-          "fields": [
-            {
-              "name": "assets",
-              "label": "Estate assets",
-              "type": "repeating_group",
-              "subfields": [
-                {
-                  "name": "asset_description",
-                  "label": "Asset description",
-                  "type": "text"
-                },
-                {
-                  "name": "estimated_value",
-                  "label": "Estimated value",
-                  "type": "text"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "title": "Distribution",
-          "fields": [
-            {
-              "name": "distribution",
-              "label": "Proposed distribution",
-              "type": "repeating_group",
-              "subfields": [
-                {
-                  "name": "dist_name",
-                  "label": "Name",
-                  "type": "text"
-                },
-                {
-                  "name": "dist_asset_share",
-                  "label": "Asset, share, or amount",
-                  "type": "text"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "title": "Signing and Attorney",
-          "fields": [
-            {
-              "name": "signing_day",
-              "label": "Day",
-              "type": "text"
-            },
-            {
-              "name": "signing_month",
-              "label": "Month",
-              "type": "text"
-            },
-            {
-              "name": "signing_year",
-              "label": "Year",
-              "type": "text"
-            },
-            {
-              "name": "attorney_bar_no",
-              "label": "Florida Bar No.",
-              "type": "text"
-            },
-            {
-              "name": "attorney_phone",
-              "label": "Telephone",
-              "type": "text"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "P2-0219",
-      "name": "Petition for Summary Administration (testate, nonresident decedent, single petitioner)",
-      "template": "templates/P2-0219.docx",
-      "sections": [
-        {
-          "title": "Petitioner",
-          "fields": [
-            {
-              "name": "petitioner_name",
-              "label": "Petitioner name",
-              "type": "text"
-            },
-            {
-              "name": "petitioner_interest",
-              "label": "Interest in estate",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Decedent Information",
-          "fields": [
-            {
-              "name": "decedent_full_name",
-              "label": "Decedent full name",
-              "type": "text"
-            },
-            {
-              "name": "decedent_address",
-              "label": "Decedent last known address",
-              "type": "text"
-            },
-            {
-              "name": "decedent_ssn_last4",
-              "label": "Last 4 digits of SSN",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_date",
-              "label": "Date of death",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_year",
-              "label": "Year of death",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_place",
-              "label": "Place of death",
-              "type": "text"
-            },
-            {
-              "name": "decedent_domicile",
-              "label": "Domicile at death",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Beneficiaries",
-          "fields": [
-            {
-              "name": "beneficiaries",
-              "label": "Beneficiaries of the estate",
-              "type": "repeating_group",
-              "subfields": [
-                {
-                  "name": "ben_name",
-                  "label": "Name",
-                  "type": "text"
-                },
-                {
-                  "name": "ben_address",
-                  "label": "Address",
-                  "type": "text"
-                },
-                {
-                  "name": "ben_relationship",
-                  "label": "Relationship",
-                  "type": "text"
-                },
-                {
-                  "name": "ben_year_of_birth",
-                  "label": "Year of birth (if minor)",
-                  "type": "text"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "title": "Venue and Will",
-          "fields": [
-            {
-              "name": "venue_reason",
-              "label": "Reason venue is proper in this county",
-              "type": "text"
-            },
-            {
-              "name": "will_date",
-              "label": "Date of authenticated copy of will",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Domiciliary Proceedings",
-          "fields": [
-            {
-              "name": "domiciliary_court_address",
-              "label": "Address of domiciliary court",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Assets",
-          "fields": [
-            {
-              "name": "assets",
-              "label": "Estate assets",
-              "type": "repeating_group",
-              "subfields": [
-                {
-                  "name": "asset_description",
-                  "label": "Asset description",
-                  "type": "text"
-                },
-                {
-                  "name": "estimated_value",
-                  "label": "Estimated value",
-                  "type": "text"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "title": "Distribution",
-          "fields": [
-            {
-              "name": "distribution",
-              "label": "Proposed distribution",
-              "type": "repeating_group",
-              "subfields": [
-                {
-                  "name": "dist_name",
-                  "label": "Name",
-                  "type": "text"
-                },
-                {
-                  "name": "dist_asset_share",
-                  "label": "Asset, share, or amount",
-                  "type": "text"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "title": "Signing and Attorney",
-          "fields": [
-            {
-              "name": "signing_day",
-              "label": "Day",
-              "type": "text"
-            },
-            {
-              "name": "signing_month",
-              "label": "Month",
-              "type": "text"
-            },
-            {
-              "name": "signing_year",
-              "label": "Year",
-              "type": "text"
-            },
-            {
-              "name": "attorney_bar_no",
-              "label": "Florida Bar No.",
-              "type": "text"
-            },
-            {
-              "name": "attorney_phone",
-              "label": "Telephone",
-              "type": "text"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "P2-0220",
-      "name": "Petition for Summary Administration (testate, nonresident decedent, multiple petitioners)",
-      "template": "templates/P2-0220.docx",
-      "sections": [
-        {
-          "title": "Petitioners",
-          "fields": [
-            {
-              "name": "petitioners",
-              "label": "Petitioners",
-              "type": "repeating_group",
-              "subfields": [
-                {
-                  "name": "pet_name",
-                  "label": "Name",
-                  "type": "text"
-                },
-                {
-                  "name": "pet_address",
-                  "label": "Address",
-                  "type": "text"
-                },
-                {
-                  "name": "pet_relationship",
-                  "label": "Relationship to decedent",
-                  "type": "text"
-                }
-              ]
-            },
-            {
-              "name": "petitioner_interest",
-              "label": "Interest in estate",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Decedent Information",
-          "fields": [
-            {
-              "name": "decedent_full_name",
-              "label": "Decedent full name",
-              "type": "text"
-            },
-            {
-              "name": "decedent_address",
-              "label": "Decedent last known address",
-              "type": "text"
-            },
-            {
-              "name": "decedent_ssn_last4",
-              "label": "Last 4 digits of SSN",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_date",
-              "label": "Date of death",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_year",
-              "label": "Year of death",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_place",
-              "label": "Place of death",
-              "type": "text"
-            },
-            {
-              "name": "decedent_domicile",
-              "label": "Domicile at death",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Beneficiaries",
-          "fields": [
-            {
-              "name": "beneficiaries",
-              "label": "Beneficiaries of the estate",
-              "type": "repeating_group",
-              "subfields": [
-                {
-                  "name": "ben_name",
-                  "label": "Name",
-                  "type": "text"
-                },
-                {
-                  "name": "ben_address",
-                  "label": "Address",
-                  "type": "text"
-                },
-                {
-                  "name": "ben_relationship",
-                  "label": "Relationship",
-                  "type": "text"
-                },
-                {
-                  "name": "ben_year_of_birth",
-                  "label": "Year of birth (if minor)",
-                  "type": "text"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "title": "Venue and Will",
-          "fields": [
-            {
-              "name": "venue_reason",
-              "label": "Reason venue is proper in this county",
-              "type": "text"
-            },
-            {
-              "name": "will_date",
-              "label": "Date of authenticated copy of will",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Domiciliary Proceedings",
-          "fields": [
-            {
-              "name": "domiciliary_court_address",
-              "label": "Address of domiciliary court",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Assets",
-          "fields": [
-            {
-              "name": "assets",
-              "label": "Estate assets",
-              "type": "repeating_group",
-              "subfields": [
-                {
-                  "name": "asset_description",
-                  "label": "Asset description",
-                  "type": "text"
-                },
-                {
-                  "name": "estimated_value",
-                  "label": "Estimated value",
-                  "type": "text"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "title": "Distribution",
-          "fields": [
-            {
-              "name": "distribution",
-              "label": "Proposed distribution",
-              "type": "repeating_group",
-              "subfields": [
-                {
-                  "name": "dist_name",
-                  "label": "Name",
-                  "type": "text"
-                },
-                {
-                  "name": "dist_asset_share",
-                  "label": "Asset, share, or amount",
-                  "type": "text"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "title": "Signing and Attorney",
-          "fields": [
-            {
-              "name": "signing_day",
-              "label": "Day",
-              "type": "text"
-            },
-            {
-              "name": "signing_month",
-              "label": "Month",
-              "type": "text"
-            },
-            {
-              "name": "signing_year",
-              "label": "Year",
-              "type": "text"
-            },
-            {
-              "name": "attorney_bar_no",
-              "label": "Florida Bar No.",
-              "type": "text"
-            },
-            {
-              "name": "attorney_phone",
-              "label": "Telephone",
-              "type": "text"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "P2-0224",
-      "name": "Petition for Summary Administration (intestate, nonresident decedent, single petitioner)",
-      "template": "templates/P2-0224.docx",
-      "sections": [
-        {
-          "title": "Petitioner",
-          "fields": [
-            {
-              "name": "petitioner_name",
-              "label": "Petitioner name",
-              "type": "text"
-            },
-            {
-              "name": "petitioner_interest",
-              "label": "Interest in estate",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Decedent Information",
-          "fields": [
-            {
-              "name": "decedent_full_name",
-              "label": "Decedent full name",
-              "type": "text"
-            },
-            {
-              "name": "decedent_address",
-              "label": "Decedent last known address",
-              "type": "text"
-            },
-            {
-              "name": "decedent_ssn_last4",
-              "label": "Last 4 digits of SSN",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_date",
-              "label": "Date of death",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_year",
-              "label": "Year of death",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_place",
-              "label": "Place of death",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Beneficiaries",
-          "fields": [
-            {
-              "name": "beneficiaries",
-              "label": "Beneficiaries of the estate",
-              "type": "repeating_group",
-              "subfields": [
-                {
-                  "name": "ben_name",
-                  "label": "Name",
-                  "type": "text"
-                },
-                {
-                  "name": "ben_address",
-                  "label": "Address",
-                  "type": "text"
-                },
-                {
-                  "name": "ben_relationship",
-                  "label": "Relationship",
-                  "type": "text"
-                },
-                {
-                  "name": "ben_year_of_birth",
-                  "label": "Year of birth (if minor)",
-                  "type": "text"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "title": "Venue",
-          "fields": [
-            {
-              "name": "venue_reason",
-              "label": "Reason venue is proper in this county",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Domiciliary Proceedings",
-          "fields": [
-            {
-              "name": "domiciliary_court_address",
-              "label": "Address of domiciliary court",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Assets",
-          "fields": [
-            {
-              "name": "assets",
-              "label": "Estate assets",
-              "type": "repeating_group",
-              "subfields": [
-                {
-                  "name": "asset_description",
-                  "label": "Asset description",
-                  "type": "text"
-                },
-                {
-                  "name": "estimated_value",
-                  "label": "Estimated value",
-                  "type": "text"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "title": "Distribution",
-          "fields": [
-            {
-              "name": "distribution",
-              "label": "Proposed distribution",
-              "type": "repeating_group",
-              "subfields": [
-                {
-                  "name": "dist_name",
-                  "label": "Name",
-                  "type": "text"
-                },
-                {
-                  "name": "dist_asset_share",
-                  "label": "Asset, share, or amount",
-                  "type": "text"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "title": "Signing and Attorney",
-          "fields": [
-            {
-              "name": "signing_day",
-              "label": "Day",
-              "type": "text"
-            },
-            {
-              "name": "signing_month",
-              "label": "Month",
-              "type": "text"
-            },
-            {
-              "name": "signing_year",
-              "label": "Year",
-              "type": "text"
-            },
-            {
-              "name": "attorney_bar_no",
-              "label": "Florida Bar No.",
-              "type": "text"
-            },
-            {
-              "name": "attorney_phone",
-              "label": "Telephone",
-              "type": "text"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "P2-0225",
-      "name": "Petition for Summary Administration (intestate, nonresident decedent, multiple petitioners)",
-      "template": "templates/P2-0225.docx",
-      "sections": [
-        {
-          "title": "Petitioners",
-          "fields": [
-            {
-              "name": "petitioners",
-              "label": "Petitioners",
-              "type": "repeating_group",
-              "subfields": [
-                {
-                  "name": "pet_name",
-                  "label": "Name",
-                  "type": "text"
-                },
-                {
-                  "name": "pet_address",
-                  "label": "Address",
-                  "type": "text"
-                },
-                {
-                  "name": "pet_relationship",
-                  "label": "Relationship to decedent",
-                  "type": "text"
-                }
-              ]
-            },
-            {
-              "name": "petitioner_interest",
-              "label": "Interest in estate",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Decedent Information",
-          "fields": [
-            {
-              "name": "decedent_full_name",
-              "label": "Decedent full name",
-              "type": "text"
-            },
-            {
-              "name": "decedent_address",
-              "label": "Decedent last known address",
-              "type": "text"
-            },
-            {
-              "name": "decedent_ssn_last4",
-              "label": "Last 4 digits of SSN",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_date",
-              "label": "Date of death",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_year",
-              "label": "Year of death",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_place",
-              "label": "Place of death",
-              "type": "text"
-            },
-            {
-              "name": "decedent_domicile",
-              "label": "Domicile at death",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Beneficiaries",
-          "fields": [
-            {
-              "name": "beneficiaries",
-              "label": "Beneficiaries of the estate",
-              "type": "repeating_group",
-              "subfields": [
-                {
-                  "name": "ben_name",
-                  "label": "Name",
-                  "type": "text"
-                },
-                {
-                  "name": "ben_address",
-                  "label": "Address",
-                  "type": "text"
-                },
-                {
-                  "name": "ben_relationship",
-                  "label": "Relationship",
-                  "type": "text"
-                },
-                {
-                  "name": "ben_year_of_birth",
-                  "label": "Year of birth (if minor)",
-                  "type": "text"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "title": "Venue",
-          "fields": [
-            {
-              "name": "venue_reason",
-              "label": "Reason venue is proper in this county",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Domiciliary Proceedings",
-          "fields": [
-            {
-              "name": "domiciliary_court_address",
-              "label": "Address of domiciliary court",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Assets",
-          "fields": [
-            {
-              "name": "assets",
-              "label": "Estate assets",
-              "type": "repeating_group",
-              "subfields": [
-                {
-                  "name": "asset_description",
-                  "label": "Asset description",
-                  "type": "text"
-                },
-                {
-                  "name": "estimated_value",
-                  "label": "Estimated value",
-                  "type": "text"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "title": "Distribution",
-          "fields": [
-            {
-              "name": "distribution",
-              "label": "Proposed distribution",
-              "type": "repeating_group",
-              "subfields": [
-                {
-                  "name": "dist_name",
-                  "label": "Name",
-                  "type": "text"
-                },
-                {
-                  "name": "dist_asset_share",
-                  "label": "Asset, share, or amount",
-                  "type": "text"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "title": "Signing and Attorney",
-          "fields": [
-            {
-              "name": "signing_day",
-              "label": "Day",
-              "type": "text"
-            },
-            {
-              "name": "signing_month",
-              "label": "Month",
-              "type": "text"
-            },
-            {
-              "name": "signing_year",
-              "label": "Year",
-              "type": "text"
-            },
-            {
-              "name": "attorney_bar_no",
-              "label": "Florida Bar No.",
-              "type": "text"
-            },
-            {
-              "name": "attorney_phone",
-              "label": "Telephone",
-              "type": "text"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "P2-0300",
-      "name": "Order of Summary Administration (testate)",
-      "template": "templates/P2-0300.docx",
-      "sections": [
-        {
-          "title": "Case Information",
-          "fields": [
-            {
-              "name": "petitioner_name",
-              "label": "Petitioner name",
-              "type": "text"
-            },
-            {
-              "name": "decedent_full_name",
-              "label": "Decedent full name",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_date",
-              "label": "Date of death",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_year",
-              "label": "Year of death",
-              "type": "text"
-            },
-            {
-              "name": "will_date",
-              "label": "Date of will",
-              "type": "text"
-            },
-            {
-              "name": "will_year",
-              "label": "Year of will",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Distribution",
-          "fields": [
-            {
-              "name": "distribution",
-              "label": "Distribution of assets",
+              "label": "Codicil date(s)",
+              "type": "text",
+              "visible_if": {
+                "matter_flag": "is_testate",
+                "equals": true
+              }
+            },
+            {
+              "name": "summary_admin_distributees",
+              "label": "Distribution plan (auto-populates from petition)",
               "type": "repeating_group",
               "subfields": [
                 {
@@ -3142,370 +1904,14 @@
                 {
                   "name": "dist_address",
                   "label": "Address",
-                  "type": "text"
+                  "type": "address"
                 },
                 {
-                  "name": "dist_asset_share",
-                  "label": "Asset, share, or amount",
+                  "name": "dist_share",
+                  "label": "Asset, share or amount",
                   "type": "text"
                 }
               ]
-            }
-          ]
-        },
-        {
-          "title": "Order",
-          "fields": [
-            {
-              "name": "order_date",
-              "label": "Order date",
-              "type": "text"
-            },
-            {
-              "name": "order_year",
-              "label": "Order year",
-              "type": "text"
-            },
-            {
-              "name": "judge_name",
-              "label": "Circuit Judge name",
-              "type": "text"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "P2-0310",
-      "name": "Order of Summary Administration (intestate)",
-      "template": "templates/P2-0310.docx",
-      "sections": [
-        {
-          "title": "Case Information",
-          "fields": [
-            {
-              "name": "petitioner_name",
-              "label": "Petitioner name",
-              "type": "text"
-            },
-            {
-              "name": "decedent_full_name",
-              "label": "Decedent full name",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_date",
-              "label": "Date of death",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_year",
-              "label": "Year of death",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Distribution",
-          "fields": [
-            {
-              "name": "distribution",
-              "label": "Distribution of assets",
-              "type": "repeating_group",
-              "subfields": [
-                {
-                  "name": "dist_name",
-                  "label": "Name",
-                  "type": "text"
-                },
-                {
-                  "name": "dist_address",
-                  "label": "Address",
-                  "type": "text"
-                },
-                {
-                  "name": "dist_asset_share",
-                  "label": "Asset, share, or amount",
-                  "type": "text"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "title": "Order",
-          "fields": [
-            {
-              "name": "order_date",
-              "label": "Order date",
-              "type": "text"
-            },
-            {
-              "name": "order_year",
-              "label": "Order year",
-              "type": "text"
-            },
-            {
-              "name": "judge_name",
-              "label": "Circuit Judge name",
-              "type": "text"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "P2-0320",
-      "name": "Order of Summary Administration (testate, nonresident decedent)",
-      "template": "templates/P2-0320.docx",
-      "sections": [
-        {
-          "title": "Case Information",
-          "fields": [
-            {
-              "name": "petitioner_name",
-              "label": "Petitioner name",
-              "type": "text"
-            },
-            {
-              "name": "decedent_full_name",
-              "label": "Decedent full name",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_date",
-              "label": "Date of death",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_year",
-              "label": "Year of death",
-              "type": "text"
-            },
-            {
-              "name": "will_date",
-              "label": "Date of will",
-              "type": "text"
-            },
-            {
-              "name": "will_year",
-              "label": "Year of will",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Distribution",
-          "fields": [
-            {
-              "name": "distribution",
-              "label": "Distribution of assets",
-              "type": "repeating_group",
-              "subfields": [
-                {
-                  "name": "dist_name",
-                  "label": "Name",
-                  "type": "text"
-                },
-                {
-                  "name": "dist_address",
-                  "label": "Address",
-                  "type": "text"
-                },
-                {
-                  "name": "dist_asset_share",
-                  "label": "Asset, share, or amount",
-                  "type": "text"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "title": "Order",
-          "fields": [
-            {
-              "name": "order_date",
-              "label": "Order date",
-              "type": "text"
-            },
-            {
-              "name": "order_year",
-              "label": "Order year",
-              "type": "text"
-            },
-            {
-              "name": "judge_name",
-              "label": "Circuit Judge name",
-              "type": "text"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "P2-0322",
-      "name": "Order of Summary Administration (testate, nonresident, auth copy will)",
-      "template": "templates/P2-0322.docx",
-      "sections": [
-        {
-          "title": "Case Information",
-          "fields": [
-            {
-              "name": "petitioner_name",
-              "label": "Petitioner name",
-              "type": "text"
-            },
-            {
-              "name": "decedent_full_name",
-              "label": "Decedent full name",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_date",
-              "label": "Date of death",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_year",
-              "label": "Year of death",
-              "type": "text"
-            },
-            {
-              "name": "will_date",
-              "label": "Date of will",
-              "type": "text"
-            },
-            {
-              "name": "will_year",
-              "label": "Year of will",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Distribution",
-          "fields": [
-            {
-              "name": "distribution",
-              "label": "Distribution of assets",
-              "type": "repeating_group",
-              "subfields": [
-                {
-                  "name": "dist_name",
-                  "label": "Name",
-                  "type": "text"
-                },
-                {
-                  "name": "dist_address",
-                  "label": "Address",
-                  "type": "text"
-                },
-                {
-                  "name": "dist_asset_share",
-                  "label": "Asset, share, or amount",
-                  "type": "text"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "title": "Order",
-          "fields": [
-            {
-              "name": "order_date",
-              "label": "Order date",
-              "type": "text"
-            },
-            {
-              "name": "order_year",
-              "label": "Order year",
-              "type": "text"
-            },
-            {
-              "name": "judge_name",
-              "label": "Circuit Judge name",
-              "type": "text"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "P2-0325",
-      "name": "Order of Summary Administration (intestate, nonresident decedent)",
-      "template": "templates/P2-0325.docx",
-      "sections": [
-        {
-          "title": "Case Information",
-          "fields": [
-            {
-              "name": "petitioner_name",
-              "label": "Petitioner name",
-              "type": "text"
-            },
-            {
-              "name": "decedent_full_name",
-              "label": "Decedent full name",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_date",
-              "label": "Date of death",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_year",
-              "label": "Year of death",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Distribution",
-          "fields": [
-            {
-              "name": "distribution",
-              "label": "Distribution of assets",
-              "type": "repeating_group",
-              "subfields": [
-                {
-                  "name": "dist_name",
-                  "label": "Name",
-                  "type": "text"
-                },
-                {
-                  "name": "dist_address",
-                  "label": "Address",
-                  "type": "text"
-                },
-                {
-                  "name": "dist_asset_share",
-                  "label": "Asset, share, or amount",
-                  "type": "text"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "title": "Order",
-          "fields": [
-            {
-              "name": "order_date",
-              "label": "Order date",
-              "type": "text"
-            },
-            {
-              "name": "order_year",
-              "label": "Order year",
-              "type": "text"
-            },
-            {
-              "name": "judge_name",
-              "label": "Circuit Judge name",
-              "type": "text"
             }
           ]
         }
@@ -3517,31 +1923,38 @@
       "template": "templates/P2-0355.docx",
       "sections": [
         {
-          "title": "Estate Information",
+          "title": "Notice Details",
+          "fields": [
+            {
+              "name": "court_address",
+              "label": "Probate Division address",
+              "type": "textarea",
+              "placeholder": "Default Broward: 201 SE 6th Street, Fort Lauderdale, FL 33301"
+            },
+            {
+              "name": "total_estate_value",
+              "label": "Total value of the estate",
+              "type": "text",
+              "placeholder": "e.g., $50,000.00"
+            }
+          ]
+        },
+        {
+          "title": "From Petition (auto-populates)",
           "fields": [
             {
               "name": "decedent_full_name",
-              "label": "Decedent full name",
+              "label": "Decedent full legal name",
               "type": "text"
             },
             {
               "name": "decedent_death_date",
               "label": "Date of death",
-              "type": "text"
+              "type": "date"
             },
             {
-              "name": "estate_value",
-              "label": "Total value of estate",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Distribution",
-          "fields": [
-            {
-              "name": "distribution",
-              "label": "Persons to whom estate was assigned",
+              "name": "summary_admin_distributees",
+              "label": "Distribution plan (auto-populates from petition)",
               "type": "repeating_group",
               "subfields": [
                 {
@@ -3552,331 +1965,14 @@
                 {
                   "name": "dist_address",
                   "label": "Address",
+                  "type": "address"
+                },
+                {
+                  "name": "dist_share",
+                  "label": "Asset, share or amount",
                   "type": "text"
                 }
               ]
-            }
-          ]
-        },
-        {
-          "title": "Publication and Attorney",
-          "fields": [
-            {
-              "name": "publication_date",
-              "label": "Date of first publication",
-              "type": "text"
-            },
-            {
-              "name": "publication_year",
-              "label": "Year",
-              "type": "text"
-            },
-            {
-              "name": "attorney_email",
-              "label": "Attorney email",
-              "type": "text"
-            },
-            {
-              "name": "attorney_bar_no",
-              "label": "Florida Bar No.",
-              "type": "text"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "P2-0500",
-      "name": "Order Admitting Will to Probate and of Summary Administration (self-proved)",
-      "template": "templates/P2-0500.docx",
-      "sections": [
-        {
-          "title": "Case Information",
-          "fields": [
-            {
-              "name": "petitioner_name",
-              "label": "Petitioner name",
-              "type": "text"
-            },
-            {
-              "name": "decedent_full_name",
-              "label": "Decedent full name",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_date",
-              "label": "Date of death",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_year",
-              "label": "Year of death",
-              "type": "text"
-            },
-            {
-              "name": "will_date",
-              "label": "Date of will",
-              "type": "text"
-            },
-            {
-              "name": "will_year",
-              "label": "Year of will",
-              "type": "text"
-            },
-            {
-              "name": "witnesses",
-              "label": "Attesting witnesses",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Distribution",
-          "fields": [
-            {
-              "name": "distribution",
-              "label": "Distribution of assets",
-              "type": "repeating_group",
-              "subfields": [
-                {
-                  "name": "dist_name",
-                  "label": "Name",
-                  "type": "text"
-                },
-                {
-                  "name": "dist_address",
-                  "label": "Address",
-                  "type": "text"
-                },
-                {
-                  "name": "dist_asset_share",
-                  "label": "Asset, share, or amount",
-                  "type": "text"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "title": "Order",
-          "fields": [
-            {
-              "name": "order_date",
-              "label": "Order date",
-              "type": "text"
-            },
-            {
-              "name": "order_year",
-              "label": "Order year",
-              "type": "text"
-            },
-            {
-              "name": "judge_name",
-              "label": "Circuit Judge name",
-              "type": "text"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "P2-0600",
-      "name": "Order Admitting Will to Probate (summary administration)",
-      "template": "templates/P2-0600.docx",
-      "sections": [
-        {
-          "title": "Case Information",
-          "fields": [
-            {
-              "name": "decedent_full_name",
-              "label": "Decedent full name",
-              "type": "text"
-            },
-            {
-              "name": "oath_witness",
-              "label": "Subscribing witness who gave oath",
-              "type": "text"
-            },
-            {
-              "name": "will_date",
-              "label": "Date of will",
-              "type": "text"
-            },
-            {
-              "name": "witnesses",
-              "label": "Attesting witnesses",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Order",
-          "fields": [
-            {
-              "name": "order_date",
-              "label": "Order date",
-              "type": "text"
-            },
-            {
-              "name": "order_year",
-              "label": "Order year",
-              "type": "text"
-            },
-            {
-              "name": "judge_name",
-              "label": "Circuit Judge name",
-              "type": "text"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "P2-0610",
-      "name": "Order Admitting Will to Probate (summary administration, self-proved)",
-      "template": "templates/P2-0610.docx",
-      "sections": [
-        {
-          "title": "Case Information",
-          "fields": [
-            {
-              "name": "decedent_full_name",
-              "label": "Decedent full name",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_date",
-              "label": "Date of death",
-              "type": "text"
-            },
-            {
-              "name": "will_date",
-              "label": "Date of will",
-              "type": "text"
-            },
-            {
-              "name": "witnesses",
-              "label": "Attesting witnesses",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Order",
-          "fields": [
-            {
-              "name": "order_date",
-              "label": "Order date",
-              "type": "text"
-            },
-            {
-              "name": "order_year",
-              "label": "Order year",
-              "type": "text"
-            },
-            {
-              "name": "judge_name",
-              "label": "Circuit Judge name",
-              "type": "text"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "P2-0630",
-      "name": "Order Admitting Will of Nonresident to Probate (summary administration, auth copy)",
-      "template": "templates/P2-0630.docx",
-      "sections": [
-        {
-          "title": "Case Information",
-          "fields": [
-            {
-              "name": "petitioner_name",
-              "label": "Petitioner name",
-              "type": "text"
-            },
-            {
-              "name": "decedent_full_name",
-              "label": "Decedent full name",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Order",
-          "fields": [
-            {
-              "name": "order_date",
-              "label": "Order date",
-              "type": "text"
-            },
-            {
-              "name": "order_year",
-              "label": "Order year",
-              "type": "text"
-            },
-            {
-              "name": "judge_name",
-              "label": "Circuit Judge name",
-              "type": "text"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "P2-0650",
-      "name": "Order Admitting Will to Probate (summary administration, nonresident, self-proved)",
-      "template": "templates/P2-0650.docx",
-      "sections": [
-        {
-          "title": "Case Information",
-          "fields": [
-            {
-              "name": "decedent_full_name",
-              "label": "Decedent full name",
-              "type": "text"
-            },
-            {
-              "name": "execution_state",
-              "label": "State where will was executed",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_date",
-              "label": "Date of death",
-              "type": "text"
-            },
-            {
-              "name": "will_date",
-              "label": "Date of will",
-              "type": "text"
-            },
-            {
-              "name": "witnesses",
-              "label": "Attesting witnesses",
-              "type": "text"
-            }
-          ]
-        },
-        {
-          "title": "Order",
-          "fields": [
-            {
-              "name": "order_date",
-              "label": "Order date",
-              "type": "text"
-            },
-            {
-              "name": "order_year",
-              "label": "Order year",
-              "type": "text"
-            },
-            {
-              "name": "judge_name",
-              "label": "Circuit Judge name",
-              "type": "text"
             }
           ]
         }
@@ -3887,6 +1983,299 @@
       "name": "Notice of Designation of Email Addresses for Service",
       "template": "templates/P1-0900.docx",
       "sections": []
+    },
+    {
+      "id": "P1-0400",
+      "name": "Request for Notice and Copies",
+      "template": "templates/P1-0400.docx",
+      "sections": [
+        {
+          "title": "Requesting Party",
+          "fields": [
+            {
+              "name": "requestor_name",
+              "label": "Name of requesting party",
+              "type": "text"
+            },
+            {
+              "name": "requestor_interest",
+              "label": "Interest in the estate",
+              "type": "text",
+              "placeholder": "e.g., a beneficiary, creditor"
+            },
+            {
+              "name": "requestor_residence",
+              "label": "Residence address",
+              "type": "address"
+            },
+            {
+              "name": "requestor_mailing_address",
+              "label": "Post office (mailing) address",
+              "type": "address"
+            }
+          ]
+        },
+        {
+          "title": "Notices Should Be Sent To",
+          "fields": [
+            {
+              "name": "service_address",
+              "label": "Address where notice and copies should be sent",
+              "type": "textarea",
+              "placeholder": "Default: firm address. Change if notices should go directly to the requesting party."
+            }
+          ]
+        },
+        {
+          "title": "Certificate of Service",
+          "fields": [
+            {
+              "name": "cos_recipients",
+              "label": "Recipients (typically attorney for personal representative)",
+              "type": "textarea"
+            },
+            {
+              "name": "cos_method",
+              "label": "Method of service",
+              "type": "text",
+              "placeholder": "e.g., U.S. Mail, email"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P1-0500",
+      "name": "Formal Notice",
+      "template": "templates/P1-0500.docx",
+      "sections": [
+        {
+          "title": "Formal Notice",
+          "fields": [
+            {
+              "name": "notice_to",
+              "label": "TO: (names and addresses of those being noticed)",
+              "type": "textarea"
+            },
+            {
+              "name": "petition_being_noticed",
+              "label": "Title of petition or pleading being noticed",
+              "type": "text",
+              "placeholder": "e.g., Petition for Administration"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P1-0510",
+      "name": "Proof of Service of Formal Notice",
+      "template": "templates/P1-0510.docx",
+      "sections": [
+        {
+          "title": "Service Details",
+          "fields": [
+            {
+              "name": "service_date",
+              "label": "Date of service",
+              "type": "date"
+            },
+            {
+              "name": "pleading_title",
+              "label": "Title of pleading served (along with the formal notice)",
+              "type": "text",
+              "placeholder": "e.g., Petition for Administration"
+            },
+            {
+              "name": "service_recipients",
+              "label": "Addressees served (names and addresses)",
+              "type": "textarea"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P1-0530",
+      "name": "Notice of Hearing",
+      "template": "templates/P1-0530.docx",
+      "sections": [
+        {
+          "title": "Hearing",
+          "fields": [
+            {
+              "name": "notice_to",
+              "label": "TO: (names and addresses of those being noticed)",
+              "type": "textarea"
+            },
+            {
+              "name": "judge_name",
+              "label": "Judge",
+              "type": "text",
+              "placeholder": "e.g., Kenneth L. Gillespie"
+            },
+            {
+              "name": "courthouse_address",
+              "label": "Courthouse address",
+              "type": "text",
+              "placeholder": "e.g., 201 SE 6th Street, Fort Lauderdale"
+            },
+            {
+              "name": "hearing_date",
+              "label": "Hearing date",
+              "type": "date"
+            },
+            {
+              "name": "hearing_time",
+              "label": "Hearing time (e.g., 9:00)",
+              "type": "text",
+              "placeholder": "9:00"
+            },
+            {
+              "name": "hearing_time_ampm",
+              "label": "AM / PM",
+              "type": "select",
+              "options": [
+                {
+                  "value": "A",
+                  "label": "A.M."
+                },
+                {
+                  "value": "P",
+                  "label": "P.M."
+                }
+              ]
+            },
+            {
+              "name": "hearing_subject",
+              "label": "Matter to be heard",
+              "type": "text",
+              "placeholder": "e.g., Petition for Administration"
+            },
+            {
+              "name": "time_set_aside",
+              "label": "Time set aside by the court",
+              "type": "text",
+              "placeholder": "e.g., 15 minutes"
+            }
+          ]
+        },
+        {
+          "title": "Certificate of Service",
+          "fields": [
+            {
+              "name": "cos_method",
+              "label": "Method of service",
+              "type": "text",
+              "placeholder": "e.g., U.S. Mail, email"
+            }
+          ]
+        },
+        {
+          "title": "ADA Accommodation Contact",
+          "fields": [
+            {
+              "name": "ada_contact",
+              "label": "Court personnel for accommodation requests (name, address, phone)",
+              "type": "textarea",
+              "placeholder": "Broward default: ADA Coordinator, Judicial Complex, 201 S.E. 6th Street, Room 17150, Fort Lauderdale, FL 33301; (954) 831-7721"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P1-CAVEAT",
+      "name": "Caveat (smart \u2014 creditor or interested person; resident or nonresident)",
+      "template": "templates/P1-CAVEAT.docx",
+      "sections": [
+        {
+          "title": "Caveator",
+          "fields": [
+            {
+              "name": "caveator_type",
+              "label": "Caveator's interest",
+              "type": "select",
+              "options": [
+                {
+                  "value": "creditor",
+                  "label": "Creditor of the decedent"
+                },
+                {
+                  "value": "interested_person",
+                  "label": "Interested person (other than creditor) \u2014 heir, beneficiary, etc."
+                }
+              ]
+            },
+            {
+              "name": "caveator_interest",
+              "label": "Describe the caveator's interest",
+              "type": "text",
+              "placeholder": "e.g., an heir at law, a beneficiary under a prior will",
+              "visible_if": {
+                "field": "caveator_type",
+                "equals": "interested_person"
+              }
+            },
+            {
+              "name": "caveator_is_nonresident",
+              "label": "Caveator is a non-resident of the State of Florida (firm will appear as Florida attorney for caveator)",
+              "type": "checkbox"
+            },
+            {
+              "name": "caveator_name",
+              "label": "Caveator's name",
+              "type": "text"
+            },
+            {
+              "name": "caveator_mailing_address",
+              "label": "Caveator's mailing address",
+              "type": "address"
+            },
+            {
+              "name": "caveator_residence_address",
+              "label": "Caveator's residence address",
+              "type": "address"
+            }
+          ]
+        },
+        {
+          "title": "Decedent",
+          "fields": [
+            {
+              "name": "decedent_full_name",
+              "label": "Decedent's full legal name",
+              "type": "text"
+            },
+            {
+              "name": "decedent_last_residence",
+              "label": "Decedent's last known residence address",
+              "type": "address"
+            },
+            {
+              "name": "decedent_ssn_last4",
+              "label": "Last 4 digits of decedent's SSN (if known)",
+              "type": "text",
+              "pattern": "\\d{4}",
+              "maxlength": 4,
+              "inputmode": "numeric"
+            },
+            {
+              "name": "decedent_year_of_birth",
+              "label": "Decedent's year of birth (if known)",
+              "type": "text",
+              "pattern": "\\d{4}",
+              "maxlength": 4,
+              "inputmode": "numeric"
+            },
+            {
+              "name": "decedent_death_date",
+              "label": "Date of death",
+              "type": "date"
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "P3-0740",

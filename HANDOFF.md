@@ -1,6 +1,6 @@
 # CHAT HANDOFF — RESUME-READY
-**Last updated:** 2026-04-28 (evening)
-**Status:** Phases 1–7e merged to `main` and deployed live. Probate + guardianship questionnaire UX overhaul complete. Universal caption fix (bold + county ALL CAPS) shipped across both builders. Branch `phase1-2-questionnaire-cleanup` retained for git history.
+**Last updated:** 2026-04-28 (late evening)
+**Status:** Phases 1–7e merged to `main`. Phase 8a (in-flight, uncommitted): smart consolidations on the probate side — P1-CAVEAT (4→1), batch of P1 forms (P1-0400, P1-0500, P1-0510, P1-0530), and full summary admin replacement (P2-PETITION, P2-ORDER, P2-0355) collapsing 19 legacy P2 forms into 3 smart templates. Wizard rewired; legacy P2 templates deleted. Branch `phase1-2-questionnaire-cleanup` retained for git history.
 
 ---
 
@@ -158,6 +158,20 @@ Address values are objects: `{ street, line2, city, state, zip, foreign, foreign
 - `_add_signature_block()` and the G2-140 builder now render `Signed on this _____ day of __________, 20___.` — handwritten by signer.
 - G3-010: collapsed `aip_dob_month` / `aip_dob_day` / `aip_dob_year` (three text fields) into a single `aip_dob` field of type `date`. Template body uses `{aip_dob}` (auto-formatted to "Month D, YYYY" by `formatDateFieldValue`).
 - All 5 G*.docx templates rebuilt; tag audit passes.
+
+**Phase 8a (2026-04-28 late evening, IN-FLIGHT — uncommitted):** Smart-template consolidations on the probate side.
+- **P1-CAVEAT** smart template — consolidates FLSSI P1-0301/0305/0311/0315 (4→1). Pro se variants (P1-0300/0310 with designated agent) intentionally out of scope. Axes: caveator_type (creditor/IP) × caveator_is_nonresident.
+- **Batch 1 P1 forms built individually:** P1-0400 (Request for Notice and Copies), P1-0500 (Formal Notice), P1-0510 (Proof of Service of Formal Notice), P1-0530 (Notice of Hearing). All built on the new builder pattern with FLSSI 2025 source DOCX as reference.
+- **Full summary admin replacement (P2):** 19 legacy P2 forms (P2-0204..0225 petitions, P2-0300..0325 summary admin orders, P2-0500..0650 will-admit orders) replaced with **3 smart templates**:
+  - **P2-PETITION** consolidates 8 petition variants (testate/intestate × single/multi × dom/ancillary)
+  - **P2-ORDER** consolidates 6 order variants. Per David's preference, testate path = combined Order Admitting Will to Probate AND of Summary Administration (P2-0500-style); intestate path = standalone Order of Summary Admin. Axes: is_testate × is_ancillary × is_self_proved (testate only) × is_auth_copy_of_will (testate ancillary only).
+  - **P2-0355** Notice to Creditors (summary admin) — rebuilt with new schema using cross-form `summary_admin_distributees` from petition.
+- Wizard matrix collapsed: all 8 summary admin keys now → `['P2-PETITION', 'P2-ORDER', 'P2-0355']`. Bundles + sections updated. Legacy P2 templates deleted from `templates/`.
+- New derived flags in `prepareTemplateData()`: `caveator_is_creditor`/`caveator_is_ip` (from caveator_type select), `creditors_all_barred`/`creditors_no_debt`/`creditors_has_debt` (from creditors_status select). New auto-pop layer for `caveator_name`/`caveator_mailing_address`/`caveator_residence_address` from currentClient.
+- New helper `_distribution_table()` (3-col: name/address/share/amount) for summary-admin distributees.
+- New `reference/FLSSI-2025/` directory with all 14 source DOCX from `FODPROBWD2025/Converted DOCX` for body-text accuracy.
+- All affected templates (10 builder-pattern + 5 new + P1-CAVEAT + 3 P2) rebuilt; tag audit passes.
+- **NOT YET LIVE-TESTED.** Needs end-to-end test on a summary admin matter before declaring done.
 
 **Phase 7e (2026-04-28 evening):** Universal caption fix across both builders.
 - `prepareTemplateData()` now sets `data.county_caption = (matter.county || '').toUpperCase()`. Body-text references to `{county}` keep the matter's original casing; only the caption line uses `{county_caption}`.

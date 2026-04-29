@@ -84,6 +84,24 @@ def _estate_assets_table(doc):
     return tbl
 
 
+def _distribution_table(doc):
+    """Three-column bordered table for summary-admin distribution plan.
+    Same row pattern as beneficiaries: header + one looping row
+    (`{#summary_admin_distributees}...{/summary_admin_distributees}`)."""
+    tbl = _table_with_borders(doc, rows=2, cols=3, col_widths_in=[2.0, 2.8, 1.7])
+    for cell in tbl.rows[0].cells:
+        _clear_cell(cell)
+    _cell_para(tbl.cell(0, 0), 'NAME', bold=True, space_after=0)
+    _cell_para(tbl.cell(0, 1), 'ADDRESS', bold=True, space_after=0)
+    _cell_para(tbl.cell(0, 2), 'ASSET, SHARE OR AMOUNT', bold=True, space_after=0)
+    for cell in tbl.rows[1].cells:
+        _clear_cell(cell)
+    _cell_para(tbl.cell(1, 0), '{#summary_admin_distributees}{dist_name}', space_after=0)
+    _cell_para(tbl.cell(1, 1), '{dist_address}', space_after=0)
+    _cell_para(tbl.cell(1, 2), '{dist_share}{/summary_admin_distributees}', space_after=0)
+    return tbl
+
+
 def _beneficiaries_table(doc):
     """Four-column bordered table for probate beneficiaries with a
     docxtemplater paragraph-loop row."""
@@ -573,6 +591,711 @@ def build_p1_0900():
     print(f'Wrote {out_path}')
 
 
+# ---------------------------------------------------------------------------
+# Shared helpers for P1 service / consent forms (Batch 1)
+# ---------------------------------------------------------------------------
+
+def _add_attorney_signature_block(doc):
+    """Attorney-only signature block for P1 service / consent / notice forms.
+    Signing date left blank (handwritten at signing per Phase 7b convention).
+    """
+    indent = Inches(0.5)
+    _add_para(doc, 'Signed on this _____ day of ______________________, 20____.',
+              first_indent=indent, space_after=24)
+    _add_para(doc, '_______________________________________', space_after=0)
+    _add_para(doc, '{attorney_name}, Attorney for {petitioner_label}', space_after=18)
+    _add_para(doc, 'Email Addresses:', space_after=0)
+    _add_para(doc, '{attorney_email}', space_after=0)
+    _add_para(doc, '{#attorney_email_secondary}{attorney_email_secondary}{/attorney_email_secondary}', space_after=0)
+    _add_para(doc, 'Florida Bar No. {attorney_bar_no}', space_after=12)
+    _add_para(doc, '{attorney_firm}', space_after=0)
+    _add_para(doc, '{attorney_address}', space_after=12)
+    _add_para(doc, 'Telephone {attorney_phone}', space_after=0)
+
+
+# ---------------------------------------------------------------------------
+# P1-0400  Request for Notice and Copies
+# ---------------------------------------------------------------------------
+
+def build_p1_0400():
+    """Florida Probate Rule 5.060 — request by an interested person for notice
+    and copies of subsequent pleadings/documents in the estate.
+    Signed by requestor + attorney; cert of service to PR's attorney.
+    """
+    doc = Document()
+    _apply_page_setup(doc)
+    _apply_running_header(doc, 'Estate of {decedent_name}')
+    _ensure_pleading_numbering(doc)
+
+    _add_probate_caption(doc)
+
+    _add_para(doc, 'REQUEST FOR NOTICE AND COPIES',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=18)
+
+    _add_para(doc, '{requestor_name}, alleges:', space_after=12)
+
+    _pleading_para(doc, 'I have an interest in the above estate as {requestor_interest}.')
+    _pleading_para(doc, 'My residence is {requestor_residence}.')
+    _pleading_para(doc, 'My post office address is {requestor_mailing_address}.')
+    _pleading_para(doc, 'The name and address of my attorney, if any, are set forth below.')
+    _pleading_para(doc, 'A copy of this request is being served on the attorney for the personal representative.')
+
+    indent = Inches(0.5)
+    _add_para(doc,
+        'I request that, as long as I am an interested person, notice of all '
+        'further proceedings in this estate and copies of subsequent pleadings '
+        'and documents be sent to:',
+        first_indent=indent, space_after=6)
+    _add_para(doc, '{service_address}', first_indent=indent, space_after=12)
+
+    _add_para(doc,
+        'Under penalties of perjury, I declare that I have read the foregoing, '
+        'and the facts alleged are true, to the best of my knowledge and belief.',
+        first_indent=indent, space_after=18)
+
+    _add_broward_ai_certification(doc, 'Request for Notice and Copies')
+
+    # Requestor signature, then attorney signature.
+    _add_para(doc, 'Signed on this _____ day of ______________________, 20____.',
+              first_indent=indent, space_after=24)
+    _add_para(doc, '_______________________________________', space_after=0)
+    _add_para(doc, '{requestor_name}, Requesting Party', space_after=24)
+
+    _add_attorney_signature_block(doc)
+
+    # Certificate of Service
+    _add_para(doc, '', space_after=12)
+    _add_para(doc, 'CERTIFICATE OF SERVICE',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=12)
+    _add_para(doc,
+        'I CERTIFY that a copy hereof has been furnished to {cos_recipients} '
+        'by {cos_method} on _____ day of ______________________, 20____.',
+        first_indent=indent, space_after=24)
+    _add_para(doc, '_______________________________________', space_after=0)
+    _add_para(doc, '{attorney_name}, Attorney', space_after=0)
+
+    out_path = os.path.join(TEMPLATE_DIR, 'P1-0400.docx')
+    doc.save(out_path)
+    _inject_numbering_part(out_path)
+    print(f'Wrote {out_path}')
+
+
+# ---------------------------------------------------------------------------
+# P1-0500  Formal Notice
+# ---------------------------------------------------------------------------
+
+def build_p1_0500():
+    """Florida Probate Rule 5.040(a) formal notice. Served by attorney with
+    a copy of the underlying petition; recipient has 20 days to respond.
+    """
+    doc = Document()
+    _apply_page_setup(doc)
+    _apply_running_header(doc, 'Estate of {decedent_name}')
+    _ensure_pleading_numbering(doc)
+
+    _add_probate_caption(doc)
+
+    _add_para(doc, 'FORMAL NOTICE',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=18)
+
+    indent = Inches(0.5)
+    _add_para(doc, 'TO:', space_after=6)
+    _add_para(doc, '{notice_to}', first_indent=indent, space_after=18)
+
+    _add_para(doc,
+        'YOU ARE NOTIFIED that a {petition_being_noticed} has been filed in '
+        'this court, a copy of which accompanies this notice. You are required '
+        'to serve written defenses on the undersigned within 20 days after '
+        'service of this notice, exclusive of the day of service, and to file '
+        'the original of the written defenses with the clerk of the above court '
+        'either before service or immediately thereafter. Failure to serve and '
+        'file written defenses as required may result in a judgment or order '
+        'for the relief demanded in the pleading or motion, without further '
+        'notice.',
+        first_indent=indent, space_after=18)
+
+    _add_broward_ai_certification(doc, 'Formal Notice')
+
+    _add_attorney_signature_block(doc)
+
+    out_path = os.path.join(TEMPLATE_DIR, 'P1-0500.docx')
+    doc.save(out_path)
+    _inject_numbering_part(out_path)
+    print(f'Wrote {out_path}')
+
+
+# ---------------------------------------------------------------------------
+# P1-0510  Proof of Service of Formal Notice
+# ---------------------------------------------------------------------------
+
+def build_p1_0510():
+    """Sworn proof that formal notice + underlying pleading were served per
+    Florida Probate Rule 5.040(a). Signed by attorney."""
+    doc = Document()
+    _apply_page_setup(doc)
+    _apply_running_header(doc, 'Estate of {decedent_name}')
+    _ensure_pleading_numbering(doc)
+
+    _add_probate_caption(doc)
+
+    _add_para(doc, 'PROOF OF SERVICE OF FORMAL NOTICE',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=18)
+
+    indent = Inches(0.5)
+    _add_para(doc,
+        'Under penalties of perjury, I swear or affirm that on {service_date}, '
+        'a copy of {pleading_title} and a copy of the formal notice thereof '
+        'filed in the above proceeding were mailed by United States registered '
+        'or certified mail, return receipt requested, postage prepaid, or were '
+        'delivered in a manner permitted by Florida Probate Rule 5.040(a), to:',
+        first_indent=indent, space_after=12)
+
+    _add_para(doc, '{service_recipients}', first_indent=indent, space_after=18)
+
+    _add_para(doc,
+        "Signed receipts or other evidence that service was made on each "
+        "addressee or the addressee's agent are attached.",
+        first_indent=indent, space_after=18)
+
+    _add_broward_ai_certification(doc, 'Proof of Service of Formal Notice')
+
+    _add_attorney_signature_block(doc)
+
+    out_path = os.path.join(TEMPLATE_DIR, 'P1-0510.docx')
+    doc.save(out_path)
+    _inject_numbering_part(out_path)
+    print(f'Wrote {out_path}')
+
+
+# ---------------------------------------------------------------------------
+# P1-0530  Notice of Hearing
+# ---------------------------------------------------------------------------
+
+def build_p1_0530():
+    """Notice of Hearing per Florida Probate Rule 5.060 / 2.516.
+    Signed by attorney; includes ADA accommodation language."""
+    doc = Document()
+    _apply_page_setup(doc)
+    _apply_running_header(doc, 'Estate of {decedent_name}')
+    _ensure_pleading_numbering(doc)
+
+    _add_probate_caption(doc)
+
+    _add_para(doc, 'NOTICE OF HEARING',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=18)
+
+    indent = Inches(0.5)
+    _add_para(doc, 'TO:', space_after=6)
+    _add_para(doc, '{notice_to}', first_indent=indent, space_after=18)
+
+    _add_para(doc,
+        'YOU ARE HEREBY NOTIFIED that the undersigned will call up for hearing '
+        "before the Honorable {judge_name}, judge of the above court, in the "
+        "judge's chambers in the {county} County Courthouse, the address of "
+        'which is {courthouse_address}, Florida, on {hearing_date}, at '
+        '{hearing_time} o’clock {hearing_time_ampm}.M., or as soon thereafter '
+        'as same may be heard, the {hearing_subject}.',
+        first_indent=indent, space_after=12)
+
+    _add_para(doc,
+        'Time set aside by the court is {time_set_aside}.',
+        first_indent=indent, space_after=18)
+
+    _add_para(doc, 'PLEASE GOVERN YOURSELVES ACCORDINGLY.',
+              first_indent=indent, space_after=18)
+
+    _add_para(doc,
+        'I CERTIFY that a copy hereof has been furnished to the above '
+        'addressees by {cos_method} on _____ day of ______________________, '
+        '20____.',
+        first_indent=indent, space_after=18)
+
+    _add_broward_ai_certification(doc, 'Notice of Hearing')
+
+    _add_attorney_signature_block(doc)
+
+    # ADA accommodation notice (FLSSI standard footer).
+    _add_para(doc, '', space_after=12)
+    _add_para(doc,
+        'If you are a person with a disability who needs any accommodation in '
+        'order to participate in this proceeding, you are entitled, at no cost '
+        'to you, to the provision of certain assistance. Please contact '
+        '{ada_contact} at least 7 days before your scheduled court appearance, '
+        'or immediately upon receiving this notification if the time before '
+        'the scheduled appearance is less than 7 days; if you are hearing or '
+        'voice impaired, call 711.',
+        space_after=0)
+
+    out_path = os.path.join(TEMPLATE_DIR, 'P1-0530.docx')
+    doc.save(out_path)
+    _inject_numbering_part(out_path)
+    print(f'Wrote {out_path}')
+
+
+# ---------------------------------------------------------------------------
+# P1-CAVEAT  Smart caveat: consolidates FLSSI P1-0301/0305/0311/0315
+#   Axes: caveator_type (creditor / interested_person)
+#         caveator_is_nonresident (drives FL-attorney representation paragraph
+#                                   + attorney signature block)
+#   Pro se variants (P1-0300, P1-0310 with designated agent) are intentionally
+#   out of scope — the firm always represents the caveator.
+# ---------------------------------------------------------------------------
+
+def build_p1_caveat():
+    doc = Document()
+    _apply_page_setup(doc)
+    _apply_running_header(doc, 'Estate of {decedent_name}')
+    _ensure_pleading_numbering(doc)
+
+    _add_probate_caption(doc)
+
+    # Title — branches on caveator_type
+    _add_para(doc,
+        '{#caveator_is_creditor}CAVEAT BY CREDITOR{/caveator_is_creditor}'
+        '{#caveator_is_ip}CAVEAT BY INTERESTED PERSON{/caveator_is_ip}',
+        align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=18)
+
+    # Paragraph 1: caveator's interest + decedent ID block
+    _pleading_para(doc,
+        'The interest of the caveator is '
+        '{#caveator_is_creditor}that of a creditor of {decedent_full_name}, '
+        'deceased{/caveator_is_creditor}'
+        '{#caveator_is_ip}{caveator_interest}, of {decedent_full_name}, '
+        'deceased{/caveator_is_ip}, whose last known residence address is '
+        '{decedent_last_residence}, the last four digits of whose social '
+        'security number, if known, are {decedent_ssn_last4}, whose year of '
+        'birth, if known, is {decedent_year_of_birth}, and who died on or '
+        'about {decedent_death_date}.')
+
+    # Paragraph 2: caveator's name + addresses
+    _pleading_para(doc,
+        "Caveator's name, mailing address, and residence address are: "
+        '{caveator_name}; {caveator_mailing_address}; '
+        '{caveator_residence_address}.')
+
+    # Paragraph 3 (nonresident only): FL attorney representation
+    _pleading_para(doc,
+        '{#caveator_is_nonresident}Caveator, a non-resident of the State of '
+        'Florida, is represented by an attorney admitted to practice in '
+        'Florida.{/caveator_is_nonresident}'
+        '{^caveator_is_nonresident}Caveator is a resident of the State of '
+        'Florida.{/caveator_is_nonresident}')
+
+    indent = Inches(0.5)
+
+    # Request paragraph — branches on type AND residency
+    _add_para(doc,
+        '{#caveator_is_creditor}Caveator requests that the clerk notify the '
+        "{#caveator_is_nonresident}caveator's attorney{/caveator_is_nonresident}"
+        '{^caveator_is_nonresident}caveator{/caveator_is_nonresident} in '
+        'writing of the date of issuance of letters of administration and of '
+        'the names and addresses of the personal representative and the '
+        "personal representative's attorney, and that caveator be given such "
+        'additional notice as the Florida Probate Rules require.'
+        '{/caveator_is_creditor}'
+        '{#caveator_is_ip}Caveator requests that the court not admit a will '
+        'of the decedent to probate or appoint a personal representative '
+        'without formal notice '
+        '{#caveator_is_nonresident}on caveator or his or her designated '
+        'agent{/caveator_is_nonresident}'
+        '{^caveator_is_nonresident}on caveator{/caveator_is_nonresident}, '
+        'and that caveator be given such additional notice as the Florida '
+        'Probate Rules require.{/caveator_is_ip}',
+        first_indent=indent, space_after=18)
+
+    _add_para(doc,
+        'Under penalties of perjury, I declare that I have read the '
+        'foregoing, and the facts alleged are true, to the best of my '
+        'knowledge and belief.',
+        first_indent=indent, space_after=18)
+
+    _add_broward_ai_certification(doc, 'Caveat')
+
+    # Caveator signature (always)
+    _add_para(doc, 'Signed on this _____ day of ______________________, 20____.',
+              first_indent=indent, space_after=24)
+    _add_para(doc, '_______________________________________', space_after=0)
+    _add_para(doc, '{caveator_name}, Caveator', space_after=24)
+
+    # Attorney signature block — only when nonresident (firm represents
+    # caveator as Florida attorney).
+    _add_para(doc, '{#caveator_is_nonresident}', space_after=0)
+    _add_para(doc, '_______________________________________', space_after=0)
+    _add_para(doc, '{attorney_name}, Attorney for Caveator', space_after=18)
+    _add_para(doc, 'Email Addresses:', space_after=0)
+    _add_para(doc, '{attorney_email}', space_after=0)
+    _add_para(doc, '{#attorney_email_secondary}{attorney_email_secondary}{/attorney_email_secondary}', space_after=0)
+    _add_para(doc, 'Florida Bar No. {attorney_bar_no}', space_after=12)
+    _add_para(doc, '{attorney_firm}', space_after=0)
+    _add_para(doc, '{attorney_address}', space_after=12)
+    _add_para(doc, 'Telephone {attorney_phone}', space_after=0)
+    _add_para(doc, '{/caveator_is_nonresident}', space_after=0)
+
+    out_path = os.path.join(TEMPLATE_DIR, 'P1-CAVEAT.docx')
+    doc.save(out_path)
+    _inject_numbering_part(out_path)
+    print(f'Wrote {out_path}')
+
+
+# ---------------------------------------------------------------------------
+# P2-PETITION  Smart Petition for Summary Administration
+#   Consolidates 8 FLSSI variants (P2-0204/0205/0214/0215/0219/0220/0224/0225).
+#   Axes: is_testate × is_ancillary × multiple_petitioners
+#   Self-proved status is a property of the will/order, not the petition.
+# ---------------------------------------------------------------------------
+
+def build_p2_petition():
+    doc = Document()
+    _apply_page_setup(doc)
+    _apply_running_header(doc, 'Estate of {decedent_name}')
+    _ensure_pleading_numbering(doc)
+
+    _add_probate_caption(doc)
+
+    _add_para(doc, 'PETITION FOR SUMMARY ADMINISTRATION',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=18)
+
+    _add_para(doc, '{petitioner_label}, {petitioner_names}, {petitioner_verb_alleges}:',
+              space_after=12)
+
+    # 1. Interest of petitioner(s)
+    _pleading_para(doc,
+        '{^multiple_petitioners}{#petitioners}Petitioner has an interest in the above '
+        'estate as {pet_interest}. Petitioner’s address is set forth in paragraph 3 '
+        'and the name and office address of petitioner’s attorney are set forth at '
+        'the end of this petition.{/petitioners}{/multiple_petitioners}'
+        '{#multiple_petitioners}Each petitioner has an interest in the above estate as '
+        'set forth below: {#petitioners}{pet_name} is {pet_interest}. {/petitioners}'
+        'Their addresses are set forth in paragraph 3 and the name and office address of '
+        'their attorney are set forth at the end of this petition.{/multiple_petitioners}')
+
+    # 2. Decedent
+    _pleading_para(doc,
+        'Decedent, {decedent_full_name}, whose last known address was {decedent_address}, '
+        'and the last four digits of whose social security number are {decedent_ssn_last4}, '
+        'died on {decedent_death_date}, at {decedent_death_place}, and on the date of death, '
+        'decedent was domiciled in '
+        '{^is_ancillary}{decedent_domicile} County, Florida{/is_ancillary}'
+        '{#is_ancillary}{decedent_domicile_state}{/is_ancillary}.')
+
+    # 3. Beneficiaries
+    _pleading_para(doc,
+        'So far as is known, the names of the beneficiaries of this estate and of '
+        'decedent’s surviving spouse, if any, their addresses and relationships to '
+        'decedent, and the years of birth of any who are minors, are:',
+        keep_with_next=True)
+    _beneficiaries_table(doc)
+
+    # 4. Venue
+    _pleading_para(doc,
+        'Venue of this proceeding is in this county because {venue_reason}.')
+
+    # 5. Will (testate only) — branches on FL res vs ancillary
+    _pleading_para(doc,
+        '{#is_testate}'
+        '{^is_ancillary}The original of the decedent’s last will, dated {will_date}'
+        '{#codicil_dates}, and codicil(s) dated {codicil_dates}{/codicil_dates}, '
+        'is/are in the possession of the above court or accompany/accompanies this petition.'
+        '{/is_ancillary}'
+        '{#is_ancillary}An authenticated copy of the decedent’s last will, dated '
+        '{will_date}{#codicil_dates}, and codicil(s) dated {codicil_dates}{/codicil_dates}, '
+        'and an authenticated copy of so much of the domiciliary proceedings as is required '
+        'by Florida Probate Rule 5.470 accompany this petition.{/is_ancillary}'
+        '{/is_testate}'
+        '{^is_testate}After the exercise of reasonable diligence, {petitioner_label} '
+        '{petitioner_verb_is} unaware of any unrevoked wills or codicils of decedent.'
+        '{/is_testate}')
+
+    # 6. No other unrevoked wills (testate only)
+    _pleading_para(doc,
+        '{#is_testate}{petitioner_label} {petitioner_verb_is} unaware of any unrevoked '
+        'will or codicil of decedent other than as set forth in paragraph 5.{/is_testate}')
+
+    # 7. Qualifies for summary admin — render only the checked grounds
+    _pleading_para(doc,
+        '{petitioner_label} {petitioner_verb_is} entitled to summary administration because:'
+        '{#qualifies_no_admin_required} Decedent’s will does not direct administration '
+        'as required by Florida Statutes Chapter 733.{/qualifies_no_admin_required}'
+        '{#qualifies_under_75k} To the best knowledge of the {#multiple_petitioners}'
+        'petitioners{/multiple_petitioners}{^multiple_petitioners}petitioner'
+        '{/multiple_petitioners}, the value of the entire estate subject to administration '
+        'in this state, less the value of property exempt from the claims of creditors, '
+        'does not exceed $75,000.{/qualifies_under_75k}'
+        '{#qualifies_2_year_rule} The decedent has been dead for more than two years.'
+        '{/qualifies_2_year_rule}')
+
+    # 8. Domiciliary / principal probate proceedings
+    _pleading_para(doc,
+        '{#is_ancillary}Domiciliary proceedings are pending in {domiciliary_court_name}, '
+        'the address of which is {domiciliary_court_address}, and letters have been issued '
+        'to {domiciliary_representative}, whose address is '
+        '{domiciliary_representative_address}.{/is_ancillary}'
+        '{^is_ancillary}Domiciliary or principal probate proceedings '
+        '{#domiciliary_proceedings_pending}are known to be pending in '
+        '{domiciliary_court_name}, the address of which is {domiciliary_court_address}. '
+        'Letters have been issued to {domiciliary_representative}, whose address is '
+        '{domiciliary_representative_address}.{/domiciliary_proceedings_pending}'
+        '{^domiciliary_proceedings_pending}are not known to be pending in another state '
+        'or country.{/domiciliary_proceedings_pending}{/is_ancillary}')
+
+    # 9. Assets
+    _pleading_para(doc,
+        'The following is a complete list of the assets in this estate and their estimated '
+        'values, together with those assets claimed to be exempt:',
+        keep_with_next=True)
+    _estate_assets_table(doc)
+
+    # 10. Creditors status — single-select, render only the chosen branch
+    _pleading_para(doc,
+        'With respect to claims of creditors:'
+        '{#creditors_all_barred} All claims of creditors are barred.{/creditors_all_barred}'
+        '{#creditors_no_debt} {petitioner_label} {petitioner_verb_has} made diligent search '
+        'and reasonable inquiry for any known or reasonably ascertainable creditors and the '
+        'estate is not indebted.{/creditors_no_debt}'
+        '{#creditors_has_debt} {petitioner_label} {petitioner_verb_has} made diligent search '
+        'and reasonable inquiry for any known or reasonably ascertainable creditors and the '
+        'estate is indebted; provision for the payment of debts and the information required '
+        'by Florida Statutes section 735.206 and Florida Probate Rule 5.530 are set forth on '
+        'the attached schedule.{/creditors_has_debt}')
+
+    # 11. Notice to creditors plan
+    _pleading_para(doc,
+        'All creditors ascertained to have claims and which have not joined in this '
+        'petition or consented to entry of the order requested will be served by formal '
+        'notice with a copy of this petition. {petitioner_label} '
+        '{#multiple_petitioners}acknowledge{/multiple_petitioners}'
+        '{^multiple_petitioners}acknowledges{/multiple_petitioners} that any known or '
+        'reasonably ascertainable creditor who did not receive timely notice of this '
+        'petition and for whom provision for payment was not made may enforce a timely '
+        'claim and, if the creditor prevails, shall be awarded reasonable attorney’s '
+        'fees as an element of costs against those who joined in the petition.')
+
+    # 12. Distribution
+    _pleading_para(doc,
+        'It is proposed that all assets of the decedent, including exempt property, be '
+        'distributed to the following:',
+        keep_with_next=True)
+    _distribution_table(doc)
+
+    # Closing — unnumbered
+    indent = Inches(0.5)
+    _add_para(doc,
+        '{petitioner_label} '
+        '{#multiple_petitioners}waive{/multiple_petitioners}'
+        '{^multiple_petitioners}waives{/multiple_petitioners} notice of hearing on this '
+        'petition and '
+        '{#multiple_petitioners}request{/multiple_petitioners}'
+        '{^multiple_petitioners}requests{/multiple_petitioners} that '
+        '{#is_testate}the decedent’s last will and codicil(s), if applicable, be '
+        'admitted to probate and {/is_testate}'
+        'an order of summary administration be entered directing distribution of the '
+        'assets in the estate in accordance with the schedule set forth above.',
+        first_indent=indent, space_before=12, space_after=12)
+
+    _add_para(doc,
+        'Under penalties of perjury, {petitioner_label} declare'
+        '{^multiple_petitioners}s{/multiple_petitioners} that {petitioner_label} '
+        '{petitioner_verb_has} read the foregoing, and the facts alleged are true, to the '
+        'best of {petitioner_poss} knowledge and belief.',
+        first_indent=indent, space_after=18)
+
+    _add_broward_ai_certification(doc, 'Petition for Summary Administration')
+
+    _add_probate_signature_block(doc)
+
+    out_path = os.path.join(TEMPLATE_DIR, 'P2-PETITION.docx')
+    doc.save(out_path)
+    _inject_numbering_part(out_path)
+    print(f'Wrote {out_path}')
+
+
+# ---------------------------------------------------------------------------
+# P2-ORDER  Smart Order of Summary Administration
+#   Testate path: combined Order Admitting Will to Probate AND of Summary
+#                 Administration (per firm convention — David always uses
+#                 the combined order for testate).
+#   Intestate path: just Order of Summary Administration.
+#
+#   Replaces P2-0300/0310/0320/0322/0325 + P2-0500 (and the firm's intent
+#   for testate-nonresident combined, which FLSSI does not provide directly).
+#
+#   Axes: is_testate × is_ancillary × is_self_proved (testate only)
+#         × is_auth_copy_of_will (testate ancillary only)
+# ---------------------------------------------------------------------------
+
+def build_p2_order():
+    doc = Document()
+    _apply_page_setup(doc)
+    _apply_running_header(doc, 'Estate of {decedent_name}')
+    _ensure_pleading_numbering(doc)
+
+    _add_probate_caption(doc)
+
+    # Title — branches on testate × ancillary × auth-copy
+    _add_para(doc,
+        '{#is_testate}ORDER ADMITTING WILL'
+        '{#is_ancillary} OF NONRESIDENT{/is_ancillary} TO PROBATE'
+        '{/is_testate}'
+        '{#is_testate} AND OF SUMMARY ADMINISTRATION{/is_testate}'
+        '{^is_testate}ORDER OF SUMMARY ADMINISTRATION{/is_testate}',
+        align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=0)
+
+    _add_para(doc,
+        '{#is_testate}{#is_self_proved}(self-proved){/is_self_proved}'
+        '{#is_auth_copy_of_will}(authenticated copy of will){/is_auth_copy_of_will}'
+        '{/is_testate}'
+        '{^is_testate}{#is_ancillary}(nonresident decedent){/is_ancillary}{/is_testate}',
+        align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, space_after=18)
+
+    indent = Inches(0.5)
+
+    # Recital — branches heavily on testate / self-proved
+    _add_para(doc,
+        'On the petition of {petitioner_names} for summary administration of the estate of '
+        '{decedent_full_name}, deceased, the court finding that the decedent died on '
+        '{decedent_death_date}; that all interested persons have been served proper notice '
+        'of the petition and hearing or have waived notice thereof; that the material '
+        'allegations of the petition are true; '
+        '{#is_testate}that the writing presented to this court as the last will of '
+        '{decedent_full_name}, deceased, '
+        '{#is_self_proved}having been executed in conformity with law and made self-proved '
+        'at the time of its execution by the acknowledgement of the decedent and the '
+        'affidavits of the witnesses, made before an officer authorized to administer '
+        'oaths and evidenced by the officer’s certificate attached to or following '
+        'the will in the form required by law, and{/is_self_proved}'
+        '{^is_self_proved}having been established by the oath of {will_witnesses}, a '
+        'subscribing and attesting witness, as being the last will of the decedent, and'
+        '{/is_self_proved} no objection having been made to its probate; '
+        '{/is_testate}'
+        'and that the decedent’s estate qualifies for summary administration and an '
+        'Order '
+        '{#is_testate}Admitting Will to Probate and of Summary Administration{/is_testate}'
+        '{^is_testate}of Summary Administration{/is_testate} should be entered, it is',
+        first_indent=indent, space_after=12)
+
+    _add_para(doc, 'ADJUDGED that:', bold=True, space_after=12)
+
+    # Testate-only: numbered ¶1 admits the will to probate.
+    # Wrapped in {#is_testate}...{/is_testate} marker paragraphs so the entire
+    # numbered paragraph is dropped (and renumbered) in intestate mode.
+    _add_para(doc, '{#is_testate}', space_after=0)
+    _pleading_para(doc,
+        'The will dated {will_date}'
+        '{#codicil_dates}, together with codicil(s) dated {codicil_dates},{/codicil_dates}'
+        ' attested by {will_witnesses} as subscribing and attesting witnesses, is admitted '
+        'to probate according to law as the last will of the decedent.')
+    _add_para(doc, '{/is_testate}', space_after=0)
+
+    # Always: distribution preamble (numbered ¶2 in testate, ¶1 in intestate)
+    _pleading_para(doc,
+        'There be immediate distribution of the assets of the decedent as follows:',
+        keep_with_next=True)
+    _distribution_table(doc)
+
+    _pleading_para(doc,
+        'Those to whom specified assets of the decedent’s estate are distributed by '
+        'this order have the right to receive and collect those assets and to maintain '
+        'actions to enforce their rights.')
+
+    _pleading_para(doc,
+        'Debtors of the decedent, those holding property of the decedent, and those with '
+        'whom securities or other property of decedent are registered, are authorized and '
+        'directed to comply with this order by paying, delivering, or transferring to the '
+        'beneficiaries specified above the parts of the decedent’s estate distributed '
+        'to them by this order, and the persons so paying, delivering, or transferring '
+        'shall not be accountable to anyone else for the property.')
+
+    _add_para(doc, '', space_after=12)
+    _add_para(doc, 'ORDERED on _____ day of ______________________, 20____.',
+              space_after=36)
+
+    _add_para(doc, '_______________________________________', space_after=0)
+    _add_para(doc, 'Circuit Judge', space_after=18)
+
+    out_path = os.path.join(TEMPLATE_DIR, 'P2-ORDER.docx')
+    doc.save(out_path)
+    _inject_numbering_part(out_path)
+    print(f'Wrote {out_path}')
+
+
+# ---------------------------------------------------------------------------
+# P2-0355  Notice to Creditors (summary administration)
+# ---------------------------------------------------------------------------
+
+def build_p2_0355():
+    doc = Document()
+    _apply_page_setup(doc)
+    _apply_running_header(doc, 'Estate of {decedent_name}')
+    _ensure_pleading_numbering(doc)
+
+    _add_probate_caption(doc)
+
+    _add_para(doc, 'NOTICE TO CREDITORS',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=0)
+    _add_para(doc, '(summary administration)',
+              align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, space_after=18)
+
+    _add_para(doc, 'TO ALL PERSONS HAVING CLAIMS OR DEMANDS AGAINST',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=0)
+    _add_para(doc, 'THE ABOVE ESTATE:',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=18)
+
+    indent = Inches(0.5)
+    _add_para(doc,
+        'You are hereby notified that an Order of Summary Administration has been entered '
+        'in the estate of {decedent_full_name}, deceased, File Number {file_no}, by the '
+        'Circuit Court for {county} County, Florida, Probate Division, the address of '
+        'which is {court_address}; that the decedent’s date of death was '
+        '{decedent_death_date}; that the total value of the estate is {total_estate_value} '
+        'and that the names and addresses of those to whom it has been assigned by such '
+        'order are:',
+        first_indent=indent, space_after=12)
+
+    _distribution_table(doc)
+
+    _add_para(doc, '', space_after=12)
+    _add_para(doc, 'ALL INTERESTED PERSONS ARE NOTIFIED THAT:',
+              bold=True, space_after=12)
+
+    _add_para(doc,
+        'All creditors of the estate of the decedent and persons having claims or demands '
+        'against the estate of the decedent other than those for whom provision for full '
+        'payment was made in the Order of Summary Administration must file their claims '
+        'with this court WITHIN THE TIME PERIODS SET FORTH IN FLORIDA STATUTES SECTION '
+        '733.702. ALL CLAIMS AND DEMANDS NOT SO FILED WILL BE FOREVER BARRED. '
+        'NOTWITHSTANDING ANY OTHER APPLICABLE TIME PERIOD, ANY CLAIM FILED TWO (2) YEARS '
+        'OR MORE AFTER THE DECEDENT’S DATE OF DEATH IS BARRED.',
+        first_indent=indent, space_after=18)
+
+    _add_para(doc,
+        'The date of first publication of this Notice is _____ day of '
+        '______________________, 20____.',
+        first_indent=indent, space_after=24)
+
+    _add_broward_ai_certification(doc, 'Notice to Creditors (Summary Administration)')
+
+    # Signature: attorney + petitioner (Person Giving Notice).
+    _add_para(doc, 'Signed on this _____ day of ______________________, 20____.',
+              first_indent=indent, space_after=24)
+    _add_para(doc, '_______________________________________', space_after=0)
+    _add_para(doc, '{petitioner_name}, Person Giving Notice', space_after=24)
+
+    _add_para(doc, '_______________________________________', space_after=0)
+    _add_para(doc, '{attorney_name}, Attorney for {petitioner_label}', space_after=18)
+    _add_para(doc, 'Email Addresses:', space_after=0)
+    _add_para(doc, '{attorney_email}', space_after=0)
+    _add_para(doc, '{#attorney_email_secondary}{attorney_email_secondary}{/attorney_email_secondary}', space_after=0)
+    _add_para(doc, 'Florida Bar No. {attorney_bar_no}', space_after=12)
+    _add_para(doc, '{attorney_firm}', space_after=0)
+    _add_para(doc, '{attorney_address}', space_after=12)
+    _add_para(doc, 'Telephone {attorney_phone}', space_after=0)
+
+    out_path = os.path.join(TEMPLATE_DIR, 'P2-0355.docx')
+    doc.save(out_path)
+    _inject_numbering_part(out_path)
+    print(f'Wrote {out_path}')
+
+
 if __name__ == '__main__':
     os.makedirs(TEMPLATE_DIR, exist_ok=True)
     build_p3_petition()
@@ -580,3 +1303,11 @@ if __name__ == '__main__':
     build_p3_order()
     build_p3_letters()
     build_p1_0900()
+    build_p1_0400()
+    build_p1_0500()
+    build_p1_0510()
+    build_p1_0530()
+    build_p1_caveat()
+    build_p2_petition()
+    build_p2_order()
+    build_p2_0355()
