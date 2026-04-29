@@ -1,12 +1,12 @@
 # CHAT HANDOFF — RESUME-READY
-**Last updated:** 2026-04-28 (end of day)
-**Status:** Phases 1–8e all merged + pushed to `main` and live. 38 forms in `forms.json`, 38 active templates in `templates/`. **Probate side: NOT YET LIVE-TESTED for Phase 8 (P1 batch, P1-CAVEAT, P2 summary admin, curator suite, oath of witness, proof of will, codicil flow integration, P1-0800).** Guardianship side (Phase 7a/7b) also not yet live-tested by Jill / Maribel. Tag audit passes.
+**Last updated:** 2026-04-29 (end of day)
+**Status:** Phases 1–9 all merged + pushed to `main` and live. 38 forms, 38 active templates. Phase 8 + 7a/7b live-tested by Cowork on 2026-04-29 — 41/50 PASS, 5 real bugs found, all 5 fixed same day in commits `7fcc787` (BUG-3 + AI cert refactor) and `1d9ec4f` (BUG-1, BUG-4, BUG-5). Auto-test harness (`scripts/auto_test.py`) added in `7ed3c0a` — 19 PASS / 0 FAIL on current main, runs without browser/Cowork. Tag audit passes.
 
 ---
 
 # 0. Where things stand
 
-**Live:** https://davidshulman22.github.io/guardianship-forms/ — `main` is the deployed branch. Two rounds of probate live testing on 2026-04-28 passed; guardianship parity work shipped same day. Guardianship side has not yet been live-tested by Jill / Maribel.
+**Live:** https://davidshulman22.github.io/guardianship-forms/ — `main` is the deployed branch. Probate Phase 8 and guardianship Phase 7a/7b were live-tested by Cowork on 2026-04-29 (Chrome MCP + JS console). Five bugs found and fixed same day. Guardianship side still hasn't been put in front of Jill or Maribel for human user-feedback.
 
 **Local pickup on any machine:**
 ```bash
@@ -22,7 +22,11 @@ cd guardianship-forms
 ```
 
 **Recent commit history (newest first):**
-1. `6e1d893` Phase 8e: P1-0800 Notice of Trust
+1. `7ed3c0a` Auto-test harness: 19 checks, no Cowork required (Phase 9c)
+2. `76e5fba` Test artifacts from 2026-04-29 live test run (Phase 9b)
+3. `1d9ec4f` Fix live-test bugs 1, 4, 5 (Phase 9a)
+4. `7fcc787` AI cert: opt-in per form + add Miami-Dade AO 26-04 (Phase 9 — also fixes BUG-3)
+5. `6e1d893` Phase 8e: P1-0800 Notice of Trust
 2. `af94d8d` Phase 8d: integrate codicil flow into will templates (no standalone codicil templates)
 3. `6fe3bc5` Phase 8c: P1-0100, P1-0620 (with notary), confidential info, curator suite, oath of witness, proof of will
 4. `5ba68d9` Phase 8b: smart consolidations for Formal Notice + Proof of Service
@@ -139,7 +143,14 @@ Address values are objects: `{ street, line2, city, state, zip, foreign, foreign
 
 ---
 
-# 5. Work Completed 2026-04-23 → 2026-04-28
+# 5. Work Completed 2026-04-23 → 2026-04-29
+
+**Phase 9 (2026-04-29) — Cowork live-test pass + bug-fix sweep + auto-tester:**
+- Cowork (Chrome MCP, JS console) ran 8 cohorts / ~50 tests against `main` per `TESTING_PLAN.md`. Results in `TEST_RESULTS.md`: 41 PASS, 5 real bugs.
+- **AI cert refactor (commit `7fcc787`)** — replaces auto-render-when-county-matches with explicit per-form opt-in. New `used_ai` checkbox in a "Generative AI Disclosure" section at the bottom of every form that can carry a cert (default OFF). Templates wrap cert in `{#used_ai}{#county_is_*}...{/}{/}`. Adds Miami-Dade AO 26-04 cert with verbatim text (BUG-3). **Hard rule (per David, 2026-04-29):** nothing signed by a judge ever carries the AI cert — verified by `auto_test.py` against P3-ORDER, P3-LETTERS, P2-ORDER, P3-CURATOR-ORDER, P3-CURATOR-LETTERS.
+- **Bug fixes (commit `1d9ec4f`)** — BUG-1: hoist `prs[0]` → top-level in `prepareTemplateData()` so single-PR FL-resident path renders correctly. BUG-4: P3-LETTERS codicil clause now includes `dated {codicil_dates}`. BUG-5: strip leading "Estate of " on matter save + update input label/placeholder.
+- **Test artifacts (commit `76e5fba`)** — `TESTING_PLAN.md` (Cowork's plan), `TEST_RESULTS.md` (Cowork's findings), `docs/TEST_PROMPTS.md` (alternative prompt set, retained for reference).
+- **Auto-test harness (commit `7ed3c0a`)** — `scripts/auto_test.py` runs 19 checks without browser/Cowork: tag audit, builder content-determinism, hard-rule scan for judge-signed templates, forms.json sanity, plus 15 render tests via Node + docxtemplater (regression checks for BUG-1/3/4, opt-in cert behavior matrix, judge-signed render check, intestate/ancillary/multi-petitioner/Jill-as-attorney paths). Setup: `cd scripts/test && npm install`. Run: `python3 scripts/auto_test.py [-v] [--md]`. Current state: 19 PASS / 0 FAIL.
 
 **Phases 1–4 (2026-04-23 evening):** drop draft-time-unknown fields; info/date/address field types; `visible_if` conditional visibility; row-lock for repeating groups; petitioner-same-as-PR auto-copy; venue checkbox list; felony danger callout; minor Y/N gate for beneficiary year-of-birth; structured address with foreign toggle.
 
