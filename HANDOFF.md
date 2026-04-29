@@ -201,7 +201,6 @@ Address values are objects: `{ street, line2, city, state, zip, foreign, foreign
 - [x] **P3-PROOF-WILL** smart (P3-0320/0330 — will/codicil) — Phase 8c
 - [ ] **P1-0800** Notice of Trust (standalone)
 - [ ] **P1-0520** Notice of Action (publication)
-- [ ] **P1-0531** Notice of Hearing Adversary — fold into P1-0530 with adversary axis
 - [ ] **P3-0740 Notice to Creditors** (formal admin) — small, self-contained
 - [ ] **P3-0900 Inventory** (rewire to `estate_assets` repeating group; address type for asset addresses)
 - [ ] **Discharge (full-waiver path only):** P5-0550/0551 → P5-PETITION-DISCHARGE-FULL-WAIVER smart; P5-0510/0511 → P5-RECEIPT smart; P5-0700/0701 → P5-REPORT-DIST smart; P5-0800/0810 → P5-ORDER-DISCHARGE smart. David never uses non-full-waiver path (P5-0400/0401/0500/0501/0300/0340/0410/0411/0420 — all dropped).
@@ -245,6 +244,13 @@ Address values are objects: `{ street, line2, city, state, zip, foreign, foreign
 **Priority 6 — Ancillary Broward checklists** (PDFs in `reference/` — Discharge, Disposition, Formal-Ancillary, Homestead, Instructions, Sell-Real-Property, Summary-Ancillary). Same passthrough pattern when forms are wired up.
 
 **Priority 7 — Case management / file management system (long-term).** See `docs/CASE_MANAGEMENT_SYSTEM_PLAN.md`.
+
+**Priority 8 — Adversary-flavored forms (deprioritized per David 2026-04-28):**
+The adversary axis is already built into P1-FORMAL-NOTICE and P1-PROOF-OF-SERVICE-FN, so those work for adversary use today. These remaining adversary-only forms are last in the queue:
+- [ ] **P1-0531** Notice of Hearing Adversary — fold into P1-0530 with adversary axis (same pattern as P1-FORMAL-NOTICE)
+- [ ] **P4-0600** Declaration that Proceeding is Adversary
+- [ ] **P4-0610** Order that Proceeding is Adversary
+- [ ] **P4-0650** Notice of Civil Action
 
 ---
 
