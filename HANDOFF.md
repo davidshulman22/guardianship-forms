@@ -1,6 +1,6 @@
 # CHAT HANDOFF — RESUME-READY
-**Last updated:** 2026-04-28 (afternoon)
-**Status:** Phases 1–7b merged to `main` and deployed live. Probate + guardianship questionnaire UX overhaul complete. Branch `phase1-2-questionnaire-cleanup` retained for git history.
+**Last updated:** 2026-04-28 (evening)
+**Status:** Phases 1–7e merged to `main` and deployed live. Probate + guardianship questionnaire UX overhaul complete. Universal caption fix (bold + county ALL CAPS) shipped across both builders. Branch `phase1-2-questionnaire-cleanup` retained for git history.
 
 ---
 
@@ -22,18 +22,19 @@ cd guardianship-forms
 ```
 
 **Recent commit history (newest first):**
-1. `fd0a4fa` Phase 7b: drop signing dates + consolidate AIP DOB across guardianship
-2. `0ea3f33` Phase 7a: bring questionnaire UX upgrades to guardianship forms
-3. `b9ae61e` docs: refresh HANDOFF + CLAUDE for post-merge state
-4. `fd46146` Merge phase1-2-questionnaire-cleanup → main
-5. `9915bb8` Phase 6b: second-batch live-test fixes
-6. `0539ea3` Phase 6: live-test fixes (1/5/12/13/15 + drop file_no/division)
-7. `8e6730f` Phase 5: PDF passthrough for Broward checklists + P1-0900 rebuild
-8. `aedd90b` Phase 4 fix: preserve legacy string addresses on migration
-9. `77c96cf` Phase 4: Structured address field type with foreign toggle
-10. `b5fbff6` Phase 3: Date field type + SSN pattern input
-11. `e505ef8` Phase 2: Questionnaire UX improvements
-12. `5a23de3` Phase 1: Drop draft-time-unknown fields from formal-admin
+1. `(this commit)` Phase 7e: universal caption fix — bold every caption line + force county ALL CAPS via `{county_caption}`
+2. `65b70d2` Phase 7d: guardianship live-test fixes (residence, same-as-petitioner)
+3. `5008188` Phase 7c: structured address in client modal + toggle defaults unchecked
+4. `fd0a4fa` Phase 7b: drop signing dates + consolidate AIP DOB across guardianship
+5. `0ea3f33` Phase 7a: bring questionnaire UX upgrades to guardianship forms
+6. `fd46146` Merge phase1-2-questionnaire-cleanup → main
+7. `9915bb8` Phase 6b: second-batch live-test fixes
+8. `0539ea3` Phase 6: live-test fixes (1/5/12/13/15 + drop file_no/division)
+9. `8e6730f` Phase 5: PDF passthrough for Broward checklists + P1-0900 rebuild
+10. `77c96cf` Phase 4: Structured address field type with foreign toggle
+11. `b5fbff6` Phase 3: Date field type + SSN pattern input
+12. `e505ef8` Phase 2: Questionnaire UX improvements
+13. `5a23de3` Phase 1: Drop draft-time-unknown fields from formal-admin
 
 ---
 
@@ -158,6 +159,13 @@ Address values are objects: `{ street, line2, city, state, zip, foreign, foreign
 - G3-010: collapsed `aip_dob_month` / `aip_dob_day` / `aip_dob_year` (three text fields) into a single `aip_dob` field of type `date`. Template body uses `{aip_dob}` (auto-formatted to "Month D, YYYY" by `formatDateFieldValue`).
 - All 5 G*.docx templates rebuilt; tag audit passes.
 
+**Phase 7e (2026-04-28 evening):** Universal caption fix across both builders.
+- `prepareTemplateData()` now sets `data.county_caption = (matter.county || '').toUpperCase()`. Body-text references to `{county}` keep the matter's original casing; only the caption line uses `{county_caption}`.
+- `_add_probate_caption()` and `_add_guardianship_caption()` now render every line bold (`IN THE CIRCUIT COURT...`, `IN RE: ESTATE OF` / `IN RE: GUARDIANSHIP OF`, `PROBATE DIVISION`, the case-title line, `File No.`, `Division`) and use `{county_caption}` for the centered top line.
+- Both builders re-ran; all 10 active builder-pattern templates (G2-010, G2-140, G3-010, G3-025, G3-026, P3-PETITION, P3-OATH, P3-ORDER, P3-LETTERS, P1-0900) rebuilt.
+- `audit_tags.py` allow-list updated to include `county_caption`; tag audit passes.
+- The remaining ~24 legacy probate templates will inherit the fix when they're rebuilt on the new pattern.
+
 ---
 
 # 6. Remaining Work
@@ -180,9 +188,7 @@ Address values are objects: `{ street, line2, city, state, zip, foreign, foreign
 - [ ] **#6** "Interest in estate" as a `select` dropdown with "Other" option (the select type now exists, just needs the data + an "other" free-text path)
 - [ ] **#14** Self-proved will: does the petition need to capture witness names? Verify against FLSSI 2.0103 / template content
 - [ ] **#16** David started a 16th feedback item but it was cut off — confirm what he intended
-- [ ] **Universal caption fix (all templates).** Two parts, ship together:
-  1. The caption block must render **bold** — every line from "IN THE CIRCUIT COURT FOR …" through "Division Probate". Currently rendered as regular weight. Change `_add_probate_caption()` in `build_probate_templates.py` and `_add_guardianship_caption()` in `build_guardianship_templates.py` to set `bold=True` on every paragraph + cell run in the caption table. Then rebuild every template (10 active builder-pattern templates today; ~24 legacy templates will get fixed when they're rebuilt anyway).
-  2. The **county must always render ALL CAPS in the caption** — even if the matter was created with `Broward`, the caption should read `BROWARD COUNTY, FLORIDA`. Cleanest way: in `prepareTemplateData()`, set `data.county_caption = (data.county || '').toUpperCase()` and have the caption template tag use `{county_caption}` instead of `{county}`. Other places that use `{county}` (file metadata, body text where mixed case is fine) keep the original. Audit must be updated to know about `county_caption`.
+- [x] **Universal caption fix (all templates).** ✅ Shipped Phase 7e (2026-04-28 evening) — see Section 5.
 
 **Priority 1b — Matter-level data interview (architectural, weekend-sized):**
 - Lift decedent / assets / beneficiaries up from per-form `formData` to `matter.matterData`. Today's wizard propagation of `multiple_petitioners` / `multiple_prs` is a small step in this direction.

@@ -14,7 +14,7 @@ TEMPLATES = ROOT / "templates"
 FORMS_JSON = ROOT / "forms.json"
 
 AUTO_POPULATED = {
-    "county", "county_is_broward", "county_is_miami_dade",
+    "county", "county_caption", "county_is_broward", "county_is_miami_dade",
     "decedent_name", "decedent_full_name",
     "aip_name", "aip_name_upper",
     "file_no", "division",

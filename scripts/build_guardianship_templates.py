@@ -393,26 +393,29 @@ def _apply_running_header(doc, header_title):
 def _add_guardianship_caption(doc, case_title_line, *, top_line='IN RE: GUARDIANSHIP OF'):
     """
     Standard guardianship caption:
-      IN THE CIRCUIT COURT FOR {county} COUNTY, FLORIDA (centered)
-      4-row borderless table:
+      IN THE CIRCUIT COURT FOR {county_caption} COUNTY, FLORIDA (centered, bold)
+      4-row borderless table (every line bold):
         top_line                       |  PROBATE DIVISION
         {aip_name_upper},              |
         case_title_line                |  File No. {file_no}
                                        |  Division {division}
 
     Pass top_line='IN RE:' for pre-guardianship petitions (e.g. incapacity).
+
+    {county_caption} is set by prepareTemplateData() in app.js to an uppercased
+    version of the matter county.
     """
-    _add_para(doc, 'IN THE CIRCUIT COURT FOR {county} COUNTY, FLORIDA',
-              align=WD_ALIGN_PARAGRAPH.CENTER, space_after=12)
+    _add_para(doc, 'IN THE CIRCUIT COURT FOR {county_caption} COUNTY, FLORIDA',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=12)
     caption = _borderless_table(doc, rows=4, cols=2, col_widths_in=[3.5, 3.0])
-    _clear_cell(caption.cell(0, 0)); _cell_para(caption.cell(0, 0), top_line, space_after=0)
-    _clear_cell(caption.cell(0, 1)); _cell_para(caption.cell(0, 1), 'PROBATE DIVISION', space_after=0)
-    _clear_cell(caption.cell(1, 0)); _cell_para(caption.cell(1, 0), '{aip_name_upper},', space_after=0)
-    _clear_cell(caption.cell(1, 1)); _cell_para(caption.cell(1, 1), '', space_after=0)
-    _clear_cell(caption.cell(2, 0)); _cell_para(caption.cell(2, 0), case_title_line, space_after=0)
-    _clear_cell(caption.cell(2, 1)); _cell_para(caption.cell(2, 1), 'File No. {file_no}', space_after=0)
-    _clear_cell(caption.cell(3, 0)); _cell_para(caption.cell(3, 0), '', space_after=0)
-    _clear_cell(caption.cell(3, 1)); _cell_para(caption.cell(3, 1), 'Division {division}', space_after=0)
+    _clear_cell(caption.cell(0, 0)); _cell_para(caption.cell(0, 0), top_line, bold=True, space_after=0)
+    _clear_cell(caption.cell(0, 1)); _cell_para(caption.cell(0, 1), 'PROBATE DIVISION', bold=True, space_after=0)
+    _clear_cell(caption.cell(1, 0)); _cell_para(caption.cell(1, 0), '{aip_name_upper},', bold=True, space_after=0)
+    _clear_cell(caption.cell(1, 1)); _cell_para(caption.cell(1, 1), '', bold=True, space_after=0)
+    _clear_cell(caption.cell(2, 0)); _cell_para(caption.cell(2, 0), case_title_line, bold=True, space_after=0)
+    _clear_cell(caption.cell(2, 1)); _cell_para(caption.cell(2, 1), 'File No. {file_no}', bold=True, space_after=0)
+    _clear_cell(caption.cell(3, 0)); _cell_para(caption.cell(3, 0), '', bold=True, space_after=0)
+    _clear_cell(caption.cell(3, 1)); _cell_para(caption.cell(3, 1), 'Division {division}', bold=True, space_after=0)
     _add_para(doc, '', space_after=18)
 
 

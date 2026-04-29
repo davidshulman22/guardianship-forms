@@ -2726,6 +2726,10 @@ function prepareTemplateData() {
 
     // Matter-level fields (auto-populate into templates)
     data.county = currentMatter.county || '';
+    // Caption-only variant: always rendered ALL CAPS (e.g., "BROWARD COUNTY,
+    // FLORIDA"). Body-text references to {county} keep the matter's original
+    // casing.
+    data.county_caption = (currentMatter.county || '').toUpperCase();
     data.decedent_name = currentMatter.subjectName || '';
     data.aip_name = currentMatter.subjectName || '';
     data.aip_name_upper = (currentMatter.subjectName || '').toUpperCase();

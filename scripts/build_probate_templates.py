@@ -49,20 +49,24 @@ from build_guardianship_templates import (
 
 def _add_probate_caption(doc, *, decedent_tag='{decedent_full_name}'):
     """Probate caption:
-      IN THE CIRCUIT COURT FOR {county} COUNTY, FLORIDA (centered)
-      4-row borderless table (decedent on the left, File No./Division on the right).
+      IN THE CIRCUIT COURT FOR {county_caption} COUNTY, FLORIDA (centered, bold)
+      4-row borderless table (decedent on the left, File No./Division on the right),
+      every line bold.
+
+    {county_caption} is set by prepareTemplateData() in app.js to an uppercased
+    version of the matter county, so e.g. "Broward" renders as "BROWARD".
     """
-    _add_para(doc, 'IN THE CIRCUIT COURT FOR {county} COUNTY, FLORIDA',
-              align=WD_ALIGN_PARAGRAPH.CENTER, space_after=12)
+    _add_para(doc, 'IN THE CIRCUIT COURT FOR {county_caption} COUNTY, FLORIDA',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=12)
     caption = _borderless_table(doc, rows=4, cols=2, col_widths_in=[3.5, 3.0])
-    _clear_cell(caption.cell(0, 0)); _cell_para(caption.cell(0, 0), 'IN RE: ESTATE OF', space_after=0)
-    _clear_cell(caption.cell(0, 1)); _cell_para(caption.cell(0, 1), 'PROBATE DIVISION', space_after=0)
-    _clear_cell(caption.cell(1, 0)); _cell_para(caption.cell(1, 0), f'{decedent_tag},', space_after=0)
-    _clear_cell(caption.cell(1, 1)); _cell_para(caption.cell(1, 1), '', space_after=0)
-    _clear_cell(caption.cell(2, 0)); _cell_para(caption.cell(2, 0), 'Deceased.', space_after=0)
-    _clear_cell(caption.cell(2, 1)); _cell_para(caption.cell(2, 1), 'File No. {file_no}', space_after=0)
-    _clear_cell(caption.cell(3, 0)); _cell_para(caption.cell(3, 0), '', space_after=0)
-    _clear_cell(caption.cell(3, 1)); _cell_para(caption.cell(3, 1), 'Division {division}', space_after=0)
+    _clear_cell(caption.cell(0, 0)); _cell_para(caption.cell(0, 0), 'IN RE: ESTATE OF', bold=True, space_after=0)
+    _clear_cell(caption.cell(0, 1)); _cell_para(caption.cell(0, 1), 'PROBATE DIVISION', bold=True, space_after=0)
+    _clear_cell(caption.cell(1, 0)); _cell_para(caption.cell(1, 0), f'{decedent_tag},', bold=True, space_after=0)
+    _clear_cell(caption.cell(1, 1)); _cell_para(caption.cell(1, 1), '', bold=True, space_after=0)
+    _clear_cell(caption.cell(2, 0)); _cell_para(caption.cell(2, 0), 'Deceased.', bold=True, space_after=0)
+    _clear_cell(caption.cell(2, 1)); _cell_para(caption.cell(2, 1), 'File No. {file_no}', bold=True, space_after=0)
+    _clear_cell(caption.cell(3, 0)); _cell_para(caption.cell(3, 0), '', bold=True, space_after=0)
+    _clear_cell(caption.cell(3, 1)); _cell_para(caption.cell(3, 1), 'Division {division}', bold=True, space_after=0)
     _add_para(doc, '', space_after=18)
 
 
