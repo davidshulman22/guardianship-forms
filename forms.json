@@ -226,6 +226,16 @@
               "type": "text"
             }
           ]
+        },
+        {
+          "title": "Generative AI Disclosure",
+          "fields": [
+            {
+              "name": "used_ai",
+              "label": "Was generative AI used to draft this document?",
+              "type": "checkbox"
+            }
+          ]
         }
       ]
     },
@@ -246,6 +256,16 @@
               "name": "cos_service_method",
               "label": "Method of service (e.g., email, hand delivery)",
               "type": "text"
+            }
+          ]
+        },
+        {
+          "title": "Generative AI Disclosure",
+          "fields": [
+            {
+              "name": "used_ai",
+              "label": "Was generative AI used to draft this document?",
+              "type": "checkbox"
             }
           ]
         }
@@ -466,6 +486,16 @@
               "type": "text"
             }
           ]
+        },
+        {
+          "title": "Generative AI Disclosure",
+          "fields": [
+            {
+              "name": "used_ai",
+              "label": "Was generative AI used to draft this document?",
+              "type": "checkbox"
+            }
+          ]
         }
       ]
     },
@@ -661,6 +691,16 @@
                   "type": "text"
                 }
               ]
+            }
+          ]
+        },
+        {
+          "title": "Generative AI Disclosure",
+          "fields": [
+            {
+              "name": "used_ai",
+              "label": "Was generative AI used to draft this document?",
+              "type": "checkbox"
             }
           ]
         }
@@ -933,6 +973,16 @@
               "name": "appointment_reason",
               "label": "Reason for appointing proposed guardian",
               "type": "textarea"
+            }
+          ]
+        },
+        {
+          "title": "Generative AI Disclosure",
+          "fields": [
+            {
+              "name": "used_ai",
+              "label": "Was generative AI used to draft this document?",
+              "type": "checkbox"
             }
           ]
         }
@@ -1260,6 +1310,16 @@
               }
             }
           ]
+        },
+        {
+          "title": "Generative AI Disclosure",
+          "fields": [
+            {
+              "name": "used_ai",
+              "label": "Was generative AI used to draft this document?",
+              "type": "checkbox"
+            }
+          ]
         }
       ]
     },
@@ -1333,6 +1393,16 @@
               "name": "decedent_full_name",
               "label": "Decedent full legal name",
               "type": "text"
+            }
+          ]
+        },
+        {
+          "title": "Generative AI Disclosure",
+          "fields": [
+            {
+              "name": "used_ai",
+              "label": "Was generative AI used to draft this document?",
+              "type": "checkbox"
             }
           ]
         }
@@ -1852,6 +1922,16 @@
               ]
             }
           ]
+        },
+        {
+          "title": "Generative AI Disclosure",
+          "fields": [
+            {
+              "name": "used_ai",
+              "label": "Was generative AI used to draft this document?",
+              "type": "checkbox"
+            }
+          ]
         }
       ]
     },
@@ -2012,6 +2092,16 @@
               ]
             }
           ]
+        },
+        {
+          "title": "Generative AI Disclosure",
+          "fields": [
+            {
+              "name": "used_ai",
+              "label": "Was generative AI used to draft this document?",
+              "type": "checkbox"
+            }
+          ]
         }
       ]
     },
@@ -2070,6 +2160,16 @@
               "type": "date"
             }
           ]
+        },
+        {
+          "title": "Generative AI Disclosure",
+          "fields": [
+            {
+              "name": "used_ai",
+              "label": "Was generative AI used to draft this document?",
+              "type": "checkbox"
+            }
+          ]
         }
       ]
     },
@@ -2077,7 +2177,18 @@
       "id": "P1-0900",
       "name": "Notice of Designation of Email Addresses for Service",
       "template": "templates/P1-0900.docx",
-      "sections": []
+      "sections": [
+        {
+          "title": "Generative AI Disclosure",
+          "fields": [
+            {
+              "name": "used_ai",
+              "label": "Was generative AI used to draft this document?",
+              "type": "checkbox"
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "P1-0400",
@@ -2136,6 +2247,16 @@
               "placeholder": "e.g., U.S. Mail, email"
             }
           ]
+        },
+        {
+          "title": "Generative AI Disclosure",
+          "fields": [
+            {
+              "name": "used_ai",
+              "label": "Was generative AI used to draft this document?",
+              "type": "checkbox"
+            }
+          ]
         }
       ]
     },
@@ -2185,6 +2306,16 @@
                 "field": "is_adversary",
                 "equals": true
               }
+            }
+          ]
+        },
+        {
+          "title": "Generative AI Disclosure",
+          "fields": [
+            {
+              "name": "used_ai",
+              "label": "Was generative AI used to draft this document?",
+              "type": "checkbox"
             }
           ]
         }
@@ -2260,6 +2391,16 @@
                 "field": "is_adversary",
                 "equals": true
               }
+            }
+          ]
+        },
+        {
+          "title": "Generative AI Disclosure",
+          "fields": [
+            {
+              "name": "used_ai",
+              "label": "Was generative AI used to draft this document?",
+              "type": "checkbox"
             }
           ]
         }
@@ -2349,6 +2490,16 @@
               "label": "Court personnel for accommodation requests (name, address, phone)",
               "type": "textarea",
               "placeholder": "Broward default: ADA Coordinator, Judicial Complex, 201 S.E. 6th Street, Room 17150, Fort Lauderdale, FL 33301; (954) 831-7721"
+            }
+          ]
+        },
+        {
+          "title": "Generative AI Disclosure",
+          "fields": [
+            {
+              "name": "used_ai",
+              "label": "Was generative AI used to draft this document?",
+              "type": "checkbox"
             }
           ]
         }
@@ -2444,6 +2595,16 @@
               "type": "date"
             }
           ]
+        },
+        {
+          "title": "Generative AI Disclosure",
+          "fields": [
+            {
+              "name": "used_ai",
+              "label": "Was generative AI used to draft this document?",
+              "type": "checkbox"
+            }
+          ]
         }
       ]
     },
@@ -2520,6 +2681,16 @@
               "name": "sdb_colessees",
               "label": "Co-lessee name(s) if any (leave blank if none known)",
               "type": "text"
+            }
+          ]
+        },
+        {
+          "title": "Generative AI Disclosure",
+          "fields": [
+            {
+              "name": "used_ai",
+              "label": "Was generative AI used to draft this document?",
+              "type": "checkbox"
             }
           ]
         }
@@ -2638,6 +2809,16 @@
               "label": "Method of service",
               "type": "text",
               "placeholder": "e.g., e-mail, mail"
+            }
+          ]
+        },
+        {
+          "title": "Generative AI Disclosure",
+          "fields": [
+            {
+              "name": "used_ai",
+              "label": "Was generative AI used to draft this document?",
+              "type": "checkbox"
             }
           ]
         }
@@ -2792,6 +2973,16 @@
               "label": "Reason a curator should be appointed",
               "type": "textarea",
               "placeholder": "e.g., delay in appointment of personal representative"
+            }
+          ]
+        },
+        {
+          "title": "Generative AI Disclosure",
+          "fields": [
+            {
+              "name": "used_ai",
+              "label": "Was generative AI used to draft this document?",
+              "type": "checkbox"
             }
           ]
         }

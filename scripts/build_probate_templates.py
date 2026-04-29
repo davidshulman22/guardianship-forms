@@ -40,6 +40,7 @@ from build_guardianship_templates import (
     _ensure_pleading_numbering, _pleading_para,
     _inject_numbering_part,
     _add_broward_ai_certification,
+    _add_miami_dade_ai_certification,
 )
 
 
@@ -318,6 +319,7 @@ def build_p3_petition():
         first_indent=indent, space_after=18)
 
     _add_broward_ai_certification(doc, 'Petition for Administration')
+    _add_miami_dade_ai_certification(doc, 'Petition for Administration')
 
     _add_probate_signature_block(doc)
 
@@ -395,6 +397,7 @@ def build_p3_oath():
     _add_para(doc, 'Resident Agent', space_after=18)
 
     _add_broward_ai_certification(doc, 'Oath of Personal Representative')
+    _add_miami_dade_ai_certification(doc, 'Oath of Personal Representative')
 
     out_path = os.path.join(TEMPLATE_DIR, 'P3-OATH.docx')
     doc.save(out_path)
@@ -571,6 +574,7 @@ def build_p1_0900():
         first_indent=indent, space_after=18)
 
     _add_broward_ai_certification(doc, 'Notice of Designation of Email Addresses')
+    _add_miami_dade_ai_certification(doc, 'Notice of Designation of Email Addresses')
 
     # Attorney-only signature block (no petitioner sig on a service notice).
     _add_para(doc, 'Signed on this _____ day of ______________________, 20____.',
@@ -654,6 +658,7 @@ def build_p1_0400():
         first_indent=indent, space_after=18)
 
     _add_broward_ai_certification(doc, 'Request for Notice and Copies')
+    _add_miami_dade_ai_certification(doc, 'Request for Notice and Copies')
 
     # Requestor signature, then attorney signature.
     _add_para(doc, 'Signed on this _____ day of ______________________, 20____.',
@@ -746,6 +751,7 @@ def build_p1_formal_notice():
         first_indent=indent, space_after=18)
 
     _add_broward_ai_certification(doc, 'Formal Notice')
+    _add_miami_dade_ai_certification(doc, 'Formal Notice')
 
     _add_attorney_signature_block(doc)
 
@@ -839,6 +845,7 @@ def build_p1_proof_of_service_fn():
         first_indent=indent, space_after=18)
 
     _add_broward_ai_certification(doc, 'Proof of Service of Formal Notice')
+    _add_miami_dade_ai_certification(doc, 'Proof of Service of Formal Notice')
 
     _add_attorney_signature_block(doc)
 
@@ -892,6 +899,7 @@ def build_p1_0530():
         first_indent=indent, space_after=18)
 
     _add_broward_ai_certification(doc, 'Notice of Hearing')
+    _add_miami_dade_ai_certification(doc, 'Notice of Hearing')
 
     _add_attorney_signature_block(doc)
 
@@ -991,6 +999,7 @@ def build_p1_caveat():
         first_indent=indent, space_after=18)
 
     _add_broward_ai_certification(doc, 'Caveat')
+    _add_miami_dade_ai_certification(doc, 'Caveat')
 
     # Caveator signature (always)
     _add_para(doc, 'Signed on this _____ day of ______________________, 20____.',
@@ -1181,6 +1190,7 @@ def build_p2_petition():
         first_indent=indent, space_after=18)
 
     _add_broward_ai_certification(doc, 'Petition for Summary Administration')
+    _add_miami_dade_ai_certification(doc, 'Petition for Summary Administration')
 
     _add_probate_signature_block(doc)
 
@@ -1354,6 +1364,7 @@ def build_p2_0355():
         first_indent=indent, space_after=24)
 
     _add_broward_ai_certification(doc, 'Notice to Creditors (Summary Administration)')
+    _add_miami_dade_ai_certification(doc, 'Notice to Creditors (Summary Administration)')
 
     # Signature: attorney + petitioner (Person Giving Notice).
     _add_para(doc, 'Signed on this _____ day of ______________________, 20____.',
@@ -1463,6 +1474,7 @@ def build_p1_0100():
         first_indent=indent, space_after=18)
 
     _add_broward_ai_certification(doc, 'Petition to Open Safe Deposit Box')
+    _add_miami_dade_ai_certification(doc, 'Petition to Open Safe Deposit Box')
 
     _add_probate_signature_block(doc)
 
@@ -1583,6 +1595,7 @@ def build_p1_notice_confidential():
         first_indent=indent, space_after=18)
 
     _add_broward_ai_certification(doc, 'Notice of Confidential Information')
+    _add_miami_dade_ai_certification(doc, 'Notice of Confidential Information')
 
     _add_para(doc, 'Signed on this _____ day of ______________________, 20____.',
               first_indent=indent, space_after=24)
@@ -1680,6 +1693,7 @@ def build_p3_curator_petition():
         first_indent=indent, space_after=18)
 
     _add_broward_ai_certification(doc, 'Petition to Appoint Curator')
+    _add_miami_dade_ai_certification(doc, 'Petition to Appoint Curator')
 
     _add_probate_signature_block(doc)
 
@@ -2063,6 +2077,7 @@ def build_p1_0800():
         first_indent=indent, space_after=18)
 
     _add_broward_ai_certification(doc, 'Notice of Trust')
+    _add_miami_dade_ai_certification(doc, 'Notice of Trust')
 
     # Trustee signature block
     _add_para(doc, 'Signed on this _____ day of ______________________, 20____.',

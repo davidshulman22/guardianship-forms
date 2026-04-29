@@ -342,6 +342,7 @@ def build_g3_025():
         first_indent=indent, space_after=18)
 
     _add_broward_ai_certification(doc, 'Petition for Appointment of Plenary Guardian of Property')
+    _add_miami_dade_ai_certification(doc, 'Petition for Appointment of Plenary Guardian of Property')
 
     _add_signature_block(doc)
 
@@ -491,19 +492,43 @@ def _property_items_table(doc):
 
 
 def _add_broward_ai_certification(doc, doc_title):
-    """Broward 17th Circuit AO 2026-03-Gen certification. Rendered only when
-    county is Broward — wrapped in a docxtemplater {#county_is_broward}
-    conditional so it disappears automatically for other counties. The
-    {county_is_broward} boolean is set by prepareTemplateData() in app.js.
+    """Broward 17th Circuit AO 2026-03-Gen certification. Renders only when
+    BOTH the per-form 'used_ai' checkbox is on AND the matter county is
+    Broward — wrapped in nested docxtemplater conditionals. The user must
+    affirmatively check 'Was generative AI used to draft this document?' on
+    the questionnaire (default OFF); these are court-published forms with
+    deterministic merge-field substitution and most filings will not require
+    the disclosure.
     """
     indent = Inches(0.5)
     text = (
-        '{#county_is_broward}The undersigned hereby certifies that generative artificial '
+        '{#used_ai}{#county_is_broward}The undersigned hereby certifies that generative artificial '
         f'intelligence was used to prepare this {doc_title}. The undersigned has '
         'independently verified the accuracy of every citation to the law and/or the '
         'record, and the accuracy of any language drafted by generative artificial '
         'intelligence, including quotations, citations, paraphrased assertions, facts, '
-        'and legal analysis.{/county_is_broward}'
+        'and legal analysis.{/county_is_broward}{/used_ai}'
+    )
+    _add_para(doc, text, first_indent=indent, space_before=6, space_after=18)
+
+
+def _add_miami_dade_ai_certification(doc, doc_title):
+    """Miami-Dade 11th Circuit AO 26-04 certification. Renders only when
+    BOTH the per-form 'used_ai' checkbox is on AND the matter county is
+    Miami-Dade — wrapped in nested docxtemplater conditionals. Text is the
+    exact verbatim language required by AO 26-04. The {doc_title} parameter
+    is intentionally unused (AO 26-04 mandates fixed wording referring to
+    'this filing'); kept in the signature so call sites can mirror the
+    Broward helper without refactoring.
+    """
+    del doc_title  # AO 26-04 wording is fixed.
+    indent = Inches(0.5)
+    text = (
+        '{#used_ai}{#county_is_miami_dade}Generative artificial intelligence was used in the '
+        'preparation of this filing. The undersigned certifies that all factual '
+        'assertions, legal authority, and citations have been independently reviewed '
+        'and verified for accuracy and accepts full responsibility for the contents '
+        'of this filing.{/county_is_miami_dade}{/used_ai}'
     )
     _add_para(doc, text, first_indent=indent, space_before=6, space_after=18)
 
@@ -649,6 +674,7 @@ def build_g3_026():
 
     # Broward AI certification — conditional on county (populated by app.js).
     _add_broward_ai_certification(doc, 'Petition for Appointment of Limited Guardian of Person and Property')
+    _add_miami_dade_ai_certification(doc, 'Petition for Appointment of Limited Guardian of Person and Property')
 
     _add_signature_block(doc)
 
@@ -732,6 +758,7 @@ def build_g3_010():
               first_indent=indent, space_after=18)
 
     _add_broward_ai_certification(doc, 'Petition for Appointment of Emergency Temporary Guardian')
+    _add_miami_dade_ai_certification(doc, 'Petition for Appointment of Emergency Temporary Guardian')
 
     _add_signature_block(doc)
 
@@ -853,6 +880,7 @@ def build_g2_010():
               first_indent=indent, space_after=18)
 
     _add_broward_ai_certification(doc, 'Petition to Determine Incapacity')
+    _add_miami_dade_ai_certification(doc, 'Petition to Determine Incapacity')
 
     _add_signature_block(doc)
 
@@ -900,6 +928,7 @@ def build_g2_140():
 
     # Broward AI certification — only renders in Broward-county matters.
     _add_broward_ai_certification(doc, 'Notice of Designation of E-Mail Addresses for Service')
+    _add_miami_dade_ai_certification(doc, 'Notice of Designation of E-Mail Addresses for Service')
 
     _add_para(doc, '_______________________________________', space_after=0)
     _add_para(doc, '{attorney_name}, Attorney for Petitioner', space_after=18)

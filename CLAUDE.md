@@ -122,7 +122,9 @@ These map to a `wizardFormMatrix` in app.js that selects the exact right set of 
 `ATTORNEY_PROFILES` in `app.js` holds two entries: `david` and `jill`. The matter modal has a "Signing Attorney" dropdown so any matter can explicitly pick David or Jill regardless of type — e.g. a probate matter Jill is handling. Leaving it on "Default for matter type" preserves the old behavior. Maribel is a paralegal, not in `ATTORNEY_PROFILES`; her drafts still list Jill as attorney of record.
 
 ### County-Specific AI Certifications
-`prepareTemplateData()` sets `county_is_broward` / `county_is_miami_dade` booleans based on the matter's county. Templates wrap AI-certification text in `{#county_is_broward}...{/county_is_broward}` so it renders only when appropriate. Broward language matches AO 2026-03-Gen (17th Circuit); Miami-Dade matches AO 26-04 (11th Circuit).
+Opt-in per form. Every form that can carry an AI cert exposes a `used_ai` checkbox in a "Generative AI Disclosure" section at the bottom of its questionnaire — default OFF. Templates wrap the cert text in nested conditionals: `{#used_ai}{#county_is_broward}...{/county_is_broward}{/used_ai}` and `{#used_ai}{#county_is_miami_dade}...{/county_is_miami_dade}{/used_ai}`. Cert renders only when both flags are true. Broward language matches AO 2026-03-Gen (17th Circuit); Miami-Dade matches AO 26-04 (11th Circuit) verbatim.
+
+**Hard rule: nothing signed by a judge ever carries the AI cert.** All Order and Letters templates (P3-ORDER, P3-LETTERS, P2-ORDER, P3-CURATOR-ORDER, P3-CURATOR-LETTERS) are deliberately built without any cert call. Reason: court-published merge templates with deterministic field substitution don't constitute generative AI use within the meaning of the AOs; the `used_ai` checkbox lets the user affirmatively flip it on the rare form where they actually drafted prose with AI.
 
 ### Seed Test Data
 Margaret "Maggie" Torres with 3 matters:
