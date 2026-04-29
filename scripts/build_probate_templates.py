@@ -681,12 +681,40 @@ def build_p1_0400():
 
 
 # ---------------------------------------------------------------------------
-# P1-0500  Formal Notice
+# Shared: adversary caption supplement
 # ---------------------------------------------------------------------------
 
-def build_p1_0500():
+def _add_adversary_caption_supplement(doc):
+    """Adds the adversary-proceeding caption block ABOVE _add_probate_caption().
+
+    Wraps each line in {#is_adversary}...{/is_adversary} marker paragraphs so
+    the entire block disappears in non-adversary mode (no trailing whitespace).
+    """
+    _add_para(doc, '{#is_adversary}', space_after=0)
+    _add_para(doc, 'Adversary Proceeding No. {adversary_proceeding_no}',
+              align=WD_ALIGN_PARAGRAPH.RIGHT, space_after=12)
+    _add_para(doc, '{petitioner_name},', space_after=0)
+    indent = Inches(0.5)
+    _add_para(doc, 'Petitioner,', first_indent=indent, space_after=0)
+    _add_para(doc, 'vs.', space_after=0)
+    _add_para(doc, '{respondent_name},', space_after=0)
+    _add_para(doc, 'Respondent.', first_indent=indent, space_after=18)
+    _add_para(doc, '{/is_adversary}', space_after=0)
+
+
+# ---------------------------------------------------------------------------
+# P1-FORMAL-NOTICE  Smart Formal Notice (consolidates P1-0500/0501)
+#   Axis: is_adversary
+# ---------------------------------------------------------------------------
+
+def build_p1_formal_notice():
     """Florida Probate Rule 5.040(a) formal notice. Served by attorney with
     a copy of the underlying petition; recipient has 20 days to respond.
+
+    Adversary variant adds:
+      - "Adversary Proceeding No. ___" line above caption
+      - Petitioner / vs. / Respondent block
+      - "(adversary)" subtitle on title
     """
     doc = Document()
     _apply_page_setup(doc)
@@ -694,9 +722,12 @@ def build_p1_0500():
     _ensure_pleading_numbering(doc)
 
     _add_probate_caption(doc)
+    _add_adversary_caption_supplement(doc)
 
     _add_para(doc, 'FORMAL NOTICE',
-              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=18)
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=0)
+    _add_para(doc, '{#is_adversary}(adversary){/is_adversary}',
+              align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, space_after=18)
 
     indent = Inches(0.5)
     _add_para(doc, 'TO:', space_after=6)
@@ -718,50 +749,100 @@ def build_p1_0500():
 
     _add_attorney_signature_block(doc)
 
-    out_path = os.path.join(TEMPLATE_DIR, 'P1-0500.docx')
+    out_path = os.path.join(TEMPLATE_DIR, 'P1-FORMAL-NOTICE.docx')
     doc.save(out_path)
     _inject_numbering_part(out_path)
     print(f'Wrote {out_path}')
 
 
 # ---------------------------------------------------------------------------
-# P1-0510  Proof of Service of Formal Notice
+# P1-PROOF-OF-SERVICE-FN  Smart Proof of Service of Formal Notice
+#   Consolidates FLSSI P1-0507/0510/0511/0512/0513.
+#   Axes: is_adversary × service_type (certified / first_class / in_manner_of)
 # ---------------------------------------------------------------------------
 
-def build_p1_0510():
-    """Sworn proof that formal notice + underlying pleading were served per
-    Florida Probate Rule 5.040(a). Signed by attorney."""
+def build_p1_proof_of_service_fn():
+    """Sworn proof of service.
+      service_type=formal_notice_certified  → P1-0510 / P1-0511
+      service_type=formal_notice_first_class → P1-0507 (no adversary version
+                                                in FLSSI; we support is_adversary
+                                                for completeness)
+      service_type=in_the_manner_of          → P1-0512 / P1-0513
+    """
     doc = Document()
     _apply_page_setup(doc)
     _apply_running_header(doc, 'Estate of {decedent_name}')
     _ensure_pleading_numbering(doc)
 
     _add_probate_caption(doc)
+    _add_adversary_caption_supplement(doc)
 
-    _add_para(doc, 'PROOF OF SERVICE OF FORMAL NOTICE',
-              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=18)
+    # Title — three branches by service_type
+    _add_para(doc,
+        '{#service_type_certified}PROOF OF SERVICE OF FORMAL NOTICE{/service_type_certified}'
+        '{#service_type_first_class}PROOF OF SERVICE OF FORMAL NOTICE BY FIRST CLASS MAIL{/service_type_first_class}'
+        '{#service_type_in_manner_of}PROOF OF SERVICE IN THE MANNER OF FORMAL NOTICE{/service_type_in_manner_of}',
+        align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=0)
+    _add_para(doc, '{#is_adversary}(adversary){/is_adversary}',
+              align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, space_after=18)
 
     indent = Inches(0.5)
+
+    # Body — branches on service_type
     _add_para(doc,
         'Under penalties of perjury, I swear or affirm that on {service_date}, '
-        'a copy of {pleading_title} and a copy of the formal notice thereof '
-        'filed in the above proceeding were mailed by United States registered '
-        'or certified mail, return receipt requested, postage prepaid, or were '
-        'delivered in a manner permitted by Florida Probate Rule 5.040(a), to:',
+        'a copy of {pleading_title} '
+        '{#service_type_in_manner_of}filed in the above proceeding was mailed by '
+        'United States registered or certified mail, return receipt requested, '
+        'postage prepaid, or was delivered in a manner permitted by Florida '
+        'Probate Rule 5.040(a), to:'
+        '{/service_type_in_manner_of}'
+        '{#service_type_certified}and a copy of the formal notice thereof filed '
+        'in the above proceeding were mailed by United States registered or '
+        'certified mail, return receipt requested, postage prepaid, or were '
+        'delivered in a manner permitted by Florida Probate Rule 5.040(a), to:'
+        '{/service_type_certified}'
+        '{#service_type_first_class}and a copy of the formal notice thereof '
+        'filed in the above proceeding were mailed by United States First Class '
+        'Mail, to:'
+        '{/service_type_first_class}',
         first_indent=indent, space_after=12)
 
     _add_para(doc, '{service_recipients}', first_indent=indent, space_after=18)
 
+    # First-class only: Florida Probate Rule 5.040(a)(3)(D) justification
+    _add_para(doc, '{#service_type_first_class}', space_after=0)
     _add_para(doc,
-        "Signed receipts or other evidence that service was made on each "
-        "addressee or the addressee's agent are attached.",
+        'Service by First Class Mail is appropriate under Florida Probate Rule '
+        '5.040(a)(3)(D), because:',
+        first_indent=indent, space_after=6)
+    _add_para(doc,
+        '(i) registered or certified mail service to the addressee requiring a '
+        'signed receipt is unavailable and delivery by commercial delivery '
+        'service requiring a signed receipt was also unavailable;',
+        first_indent=indent, space_after=6)
+    _add_para(doc,
+        '(ii) delivery pursuant to subdivision (a)(3)(A) was attempted and was '
+        'refused by the addressee; or',
+        first_indent=indent, space_after=6)
+    _add_para(doc,
+        '(iii) delivery pursuant to subdivision (a)(3)(A) was attempted and was '
+        'unclaimed after notice to the addressee by the delivering entity.',
+        first_indent=indent, space_after=18)
+    _add_para(doc, '{/service_type_first_class}', space_after=0)
+
+    # Certified / in-the-manner-of: receipts attached language
+    _add_para(doc,
+        '{^service_type_first_class}Signed receipts or other evidence that '
+        "service was made on each addressee or the addressee's agent are "
+        'attached.{/service_type_first_class}',
         first_indent=indent, space_after=18)
 
     _add_broward_ai_certification(doc, 'Proof of Service of Formal Notice')
 
     _add_attorney_signature_block(doc)
 
-    out_path = os.path.join(TEMPLATE_DIR, 'P1-0510.docx')
+    out_path = os.path.join(TEMPLATE_DIR, 'P1-PROOF-OF-SERVICE-FN.docx')
     doc.save(out_path)
     _inject_numbering_part(out_path)
     print(f'Wrote {out_path}')
@@ -1304,8 +1385,8 @@ if __name__ == '__main__':
     build_p3_letters()
     build_p1_0900()
     build_p1_0400()
-    build_p1_0500()
-    build_p1_0510()
+    build_p1_formal_notice()
+    build_p1_proof_of_service_fn()
     build_p1_0530()
     build_p1_caveat()
     build_p2_petition()

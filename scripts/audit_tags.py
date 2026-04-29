@@ -36,6 +36,8 @@ AUTO_POPULATED = {
     "caveator_is_creditor", "caveator_is_ip",
     # Summary admin (P2-PETITION) derived flags from creditors_status select
     "creditors_all_barred", "creditors_no_debt", "creditors_has_debt",
+    # Proof of Service of Formal Notice (P1-PROOF-OF-SERVICE-FN) derived flags
+    "service_type_certified", "service_type_first_class", "service_type_in_manner_of",
     # Derived display fields for numeric estate assets (from prepareTemplateData)
     "asset_value_formatted",
     "estate_assets_total", "estate_assets_total_formatted",

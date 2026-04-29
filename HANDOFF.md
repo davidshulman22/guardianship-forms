@@ -190,11 +190,15 @@ Address values are objects: `{ street, line2, city, state, zip, foreign, foreign
 - [x] BW-0010 Criminal History affidavit (PDF passthrough)
 - [x] BW-0020/0030/0040/0050 Mandatory Checklists (PDF passthrough)
 - [x] Live test formal admin opening — two rounds passed, all bugs fixed
-- [ ] **P3-0740 Notice to Creditors** (next rebuild candidate — small, self-contained)
+- [x] **P1-CAVEAT** smart template (4 FLSSI variants → 1, Phase 8a)
+- [x] **P1-0400 / P1-0500 / P1-0510 / P1-0530** built individually (Phase 8a) — NOT YET LIVE-TESTED
+- [x] **Summary admin (P2-PETITION + P2-ORDER + P2-0355)** — 19 legacy P2 forms collapsed into 3 smart templates (Phase 8a) — NOT YET LIVE-TESTED
+- [ ] **P1-FORMAL-NOTICE** smart template (consolidate P1-0500/0501 — adversary y/n) — replaces standalone P1-0500 from Phase 8a — IN-FLIGHT
+- [ ] **P1-PROOF-OF-SERVICE-FN** smart template (consolidate P1-0507/0510/0511/0512/0513 — adversary × mail method × "in the manner of") — replaces standalone P1-0510 from Phase 8a — IN-FLIGHT
+- [ ] **P1 Batch 2 remainder:** P1-0620 (Joinder Waiver Consent — needs notary block per local rules), P1-0640 (Notice of Confidential Info), P1-0800 (Notice of Trust)
+- [ ] **P3-0740 Notice to Creditors** (formal admin) — small, self-contained
 - [ ] **P3-0900 Inventory** (rewire to `estate_assets` repeating group; address type for asset addresses)
-- [ ] **P3-NOTICE-ADMIN** (new — consolidate FLSSI P3-0802/0804 into one smart template)
-- [ ] Summary admin (P2-*, 19 templates) — strong candidate for smart-template consolidation
-- [ ] Discharge (P5-0400, P5-0800)
+- [ ] **Discharge (full-waiver path only):** P5-0550/0551 → P5-PETITION-DISCHARGE-FULL-WAIVER smart; P5-0510/0511 → P5-RECEIPT smart; P5-0700/0701 → P5-REPORT-DIST smart; P5-0800/0810 → P5-ORDER-DISCHARGE smart. David never uses non-full-waiver path (P5-0400/0401/0500/0501/0300/0340/0410/0411/0420 — all dropped).
 - [ ] BW-0060 Affidavit of Heirs (last remaining BW legacy .docx)
 
 **Priority 1a — Live-test follow-ups deferred from 2026-04-28 testing:**

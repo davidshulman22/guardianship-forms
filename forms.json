@@ -2045,9 +2045,9 @@
       ]
     },
     {
-      "id": "P1-0500",
-      "name": "Formal Notice",
-      "template": "templates/P1-0500.docx",
+      "id": "P1-FORMAL-NOTICE",
+      "name": "Formal Notice (smart \u2014 regular or adversary)",
+      "template": "templates/P1-FORMAL-NOTICE.docx",
       "sections": [
         {
           "title": "Formal Notice",
@@ -2064,17 +2064,64 @@
               "placeholder": "e.g., Petition for Administration"
             }
           ]
+        },
+        {
+          "title": "Adversary Proceeding (optional)",
+          "fields": [
+            {
+              "name": "is_adversary",
+              "label": "Adversary proceeding (adds Petitioner/vs./Respondent block + adversary subtitle)",
+              "type": "checkbox"
+            },
+            {
+              "name": "adversary_proceeding_no",
+              "label": "Adversary Proceeding No.",
+              "type": "text",
+              "visible_if": {
+                "field": "is_adversary",
+                "equals": true
+              }
+            },
+            {
+              "name": "respondent_name",
+              "label": "Respondent's name",
+              "type": "text",
+              "visible_if": {
+                "field": "is_adversary",
+                "equals": true
+              }
+            }
+          ]
         }
       ]
     },
     {
-      "id": "P1-0510",
-      "name": "Proof of Service of Formal Notice",
-      "template": "templates/P1-0510.docx",
+      "id": "P1-PROOF-OF-SERVICE-FN",
+      "name": "Proof of Service of Formal Notice (smart \u2014 certified / first class / in-the-manner-of, regular or adversary)",
+      "template": "templates/P1-PROOF-OF-SERVICE-FN.docx",
       "sections": [
         {
-          "title": "Service Details",
+          "title": "Service",
           "fields": [
+            {
+              "name": "service_type",
+              "label": "Type of service",
+              "type": "select",
+              "options": [
+                {
+                  "value": "formal_notice_certified",
+                  "label": "Formal notice \u2014 certified mail / 5.040(a) (most common)"
+                },
+                {
+                  "value": "formal_notice_first_class",
+                  "label": "Formal notice \u2014 first class mail (under FPR 5.040(a)(3)(D))"
+                },
+                {
+                  "value": "in_the_manner_of",
+                  "label": "In the manner of formal notice (for non-formal-notice pleadings)"
+                }
+              ]
+            },
             {
               "name": "service_date",
               "label": "Date of service",
@@ -2082,7 +2129,7 @@
             },
             {
               "name": "pleading_title",
-              "label": "Title of pleading served (along with the formal notice)",
+              "label": "Title of pleading served",
               "type": "text",
               "placeholder": "e.g., Petition for Administration"
             },
@@ -2090,6 +2137,34 @@
               "name": "service_recipients",
               "label": "Addressees served (names and addresses)",
               "type": "textarea"
+            }
+          ]
+        },
+        {
+          "title": "Adversary Proceeding (optional)",
+          "fields": [
+            {
+              "name": "is_adversary",
+              "label": "Adversary proceeding (adds Petitioner/vs./Respondent block + adversary subtitle)",
+              "type": "checkbox"
+            },
+            {
+              "name": "adversary_proceeding_no",
+              "label": "Adversary Proceeding No.",
+              "type": "text",
+              "visible_if": {
+                "field": "is_adversary",
+                "equals": true
+              }
+            },
+            {
+              "name": "respondent_name",
+              "label": "Respondent's name",
+              "type": "text",
+              "visible_if": {
+                "field": "is_adversary",
+                "equals": true
+              }
             }
           ]
         }

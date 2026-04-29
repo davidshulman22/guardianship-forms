@@ -2920,6 +2920,12 @@ function prepareTemplateData() {
     data.creditors_no_debt = data.creditors_status === 'no_debt';
     data.creditors_has_debt = data.creditors_status === 'has_debt';
 
+    // Proof of Service of Formal Notice (P1-PROOF-OF-SERVICE-FN) derived flags.
+    // service_type select drives title + body language.
+    data.service_type_certified = data.service_type === 'formal_notice_certified';
+    data.service_type_first_class = data.service_type === 'formal_notice_first_class';
+    data.service_type_in_manner_of = data.service_type === 'in_the_manner_of';
+
     // ISO "YYYY-MM-DD" → "Month D, YYYY" for every field declared type=date.
     // Applies to top-level and repeating-group subfields across all selected
     // forms. Legacy free-text dates pass through unchanged.
