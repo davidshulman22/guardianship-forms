@@ -6,3 +6,7 @@ config.js
 __pycache__/
 *.pyc
 Test Documents/
+
+# Auto-test harness deps — install via `cd scripts/test && npm install`
+scripts/test/node_modules/
+scripts/test/package-lock.json
