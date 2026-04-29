@@ -1246,9 +1246,18 @@
               "type": "date"
             },
             {
+              "name": "has_codicil",
+              "label": "Is there a codicil?",
+              "type": "checkbox"
+            },
+            {
               "name": "codicil_dates",
-              "label": "Codicil date(s) (blank if none; separate multiple with commas)",
-              "type": "text"
+              "label": "Codicil date(s) \u2014 separate multiple with commas",
+              "type": "text",
+              "visible_if": {
+                "field": "has_codicil",
+                "equals": true
+              }
             }
           ]
         }
@@ -1419,9 +1428,18 @@
               "type": "date"
             },
             {
+              "name": "has_codicil",
+              "label": "Is there a codicil?",
+              "type": "checkbox"
+            },
+            {
               "name": "codicil_dates",
-              "label": "Codicil date(s) (blank if none; separate multiple with commas)",
-              "type": "text"
+              "label": "Codicil date(s) \u2014 separate multiple with commas",
+              "type": "text",
+              "visible_if": {
+                "field": "has_codicil",
+                "equals": true
+              }
             },
             {
               "name": "will_is_self_proved",
@@ -1483,9 +1501,18 @@
           "title": "Will Disposition (testate only)",
           "fields": [
             {
+              "name": "has_codicil",
+              "label": "Is there a codicil?",
+              "type": "checkbox"
+            },
+            {
               "name": "codicil_dates",
-              "label": "Codicil date(s) (blank if none; separate multiple with commas)",
-              "type": "text"
+              "label": "Codicil date(s) \u2014 separate multiple with commas",
+              "type": "text",
+              "visible_if": {
+                "field": "has_codicil",
+                "equals": true
+              }
             }
           ]
         }
@@ -1664,11 +1691,16 @@
               }
             },
             {
+              "name": "has_codicil",
+              "label": "Is there a codicil?",
+              "type": "checkbox"
+            },
+            {
               "name": "codicil_dates",
-              "label": "Codicil date(s) (blank if none; separate multiple with commas)",
+              "label": "Codicil date(s) \u2014 separate multiple with commas",
               "type": "text",
               "visible_if": {
-                "matter_flag": "is_testate",
+                "field": "has_codicil",
                 "equals": true
               }
             }
@@ -1883,11 +1915,16 @@
               }
             },
             {
+              "name": "has_codicil",
+              "label": "Is there a codicil?",
+              "type": "checkbox"
+            },
+            {
               "name": "codicil_dates",
-              "label": "Codicil date(s)",
+              "label": "Codicil date(s) \u2014 separate multiple with commas",
               "type": "text",
               "visible_if": {
-                "matter_flag": "is_testate",
+                "field": "has_codicil",
                 "equals": true
               }
             },

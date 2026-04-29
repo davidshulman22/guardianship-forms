@@ -293,7 +293,7 @@ def build_p3_petition():
     # this petition"; revise at filing if the original was previously deposited.
     _pleading_para(doc,
         '{#is_testate}The decedent\u2019s last will dated {will_date}'
-        '{#codicil_dates}, and codicil(s) dated {codicil_dates}{/codicil_dates}, '
+        '{#has_codicil}, and codicil(s) dated {codicil_dates}{/has_codicil}, '
         'accompanies this petition. Petitioner is unaware of any unrevoked will or codicil '
         'of decedent other than as set forth above.{/is_testate}'
         '{^is_testate}After the exercise of reasonable diligence, petitioner is unaware '
@@ -446,7 +446,7 @@ def build_p3_order():
     # Testate-only: admit will
     _pleading_para(doc,
         '{#is_testate}The decedent\u2019s last will dated {will_date}'
-        '{#codicil_dates}, and codicil(s) dated {codicil_dates}{/codicil_dates} '
+        '{#has_codicil}, and codicil(s) dated {codicil_dates}{/has_codicil} '
         '{#will_is_self_proved}{pr_verb_is} self-proved and {/will_is_self_proved}'
         '{pr_verb_is} admitted to probate according to law.{/is_testate}'
         '{^is_testate}The decedent died intestate. Administration of the '
@@ -498,7 +498,7 @@ def build_p3_letters():
         '{#is_ancillary}{decedent_domicile_state}{/is_ancillary}, died on '
         '{decedent_death_date}, '
         '{#is_testate}owning assets in this state, and a duly executed last will'
-        '{#codicil_dates} and codicil(s){/codicil_dates} of the decedent has been '
+        '{#has_codicil} and codicil(s){/has_codicil} of the decedent has been '
         'admitted to probate in this Court; and{/is_testate}'
         '{^is_testate}leaving assets in this state and having died intestate; and'
         '{/is_testate}',
@@ -1075,11 +1075,11 @@ def build_p2_petition():
     _pleading_para(doc,
         '{#is_testate}'
         '{^is_ancillary}The original of the decedent’s last will, dated {will_date}'
-        '{#codicil_dates}, and codicil(s) dated {codicil_dates}{/codicil_dates}, '
+        '{#has_codicil}, and codicil(s) dated {codicil_dates}{/has_codicil}, '
         'is/are in the possession of the above court or accompany/accompanies this petition.'
         '{/is_ancillary}'
         '{#is_ancillary}An authenticated copy of the decedent’s last will, dated '
-        '{will_date}{#codicil_dates}, and codicil(s) dated {codicil_dates}{/codicil_dates}, '
+        '{will_date}{#has_codicil}, and codicil(s) dated {codicil_dates}{/has_codicil}, '
         'and an authenticated copy of so much of the domiciliary proceedings as is required '
         'by Florida Probate Rule 5.470 accompany this petition.{/is_ancillary}'
         '{/is_testate}'
@@ -1262,7 +1262,7 @@ def build_p2_order():
     _add_para(doc, '{#is_testate}', space_after=0)
     _pleading_para(doc,
         'The will dated {will_date}'
-        '{#codicil_dates}, together with codicil(s) dated {codicil_dates},{/codicil_dates}'
+        '{#has_codicil}, together with codicil(s) dated {codicil_dates},{/has_codicil}'
         ' attested by {will_witnesses} as subscribing and attesting witnesses, is admitted '
         'to probate according to law as the last will of the decedent.')
     _add_para(doc, '{/is_testate}', space_after=0)

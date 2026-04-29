@@ -173,6 +173,11 @@ Address values are objects: `{ street, line2, city, state, zip, foreign, foreign
 - All affected templates (10 builder-pattern + 5 new + P1-CAVEAT + 3 P2) rebuilt; tag audit passes.
 - **NOT YET LIVE-TESTED.** Needs end-to-end test on a summary admin matter before declaring done.
 
+**Phase 8d (2026-04-28 late evening):** Codicil flow integrated into opening order — no separate "Order Admitting Codicil" template needed.
+- Added `has_codicil` checkbox upfront in P3-PETITION, P3-ORDER, P3-LETTERS, P2-PETITION, P2-ORDER. `codicil_dates` field gated `visible_if has_codicil === true`.
+- Builder templates switched from `{#codicil_dates}...{/codicil_dates}` (truthy-test on string) to explicit `{#has_codicil}...{/has_codicil}` conditional.
+- **Result:** when David opens an estate with a will + codicil, the codicil is admitted to probate as part of P3-ORDER (testate path: "the decedent's last will dated X, and codicil(s) dated Y is/are admitted to probate"). FLSSI P3-0460/0470 (separate Order Admitting Codicil) — handled by this integrated flow; no separate template needed unless a codicil is filed AFTER the original will admission (rare; not in scope).
+
 **Phase 7e (2026-04-28 evening):** Universal caption fix across both builders.
 - `prepareTemplateData()` now sets `data.county_caption = (matter.county || '').toUpperCase()`. Body-text references to `{county}` keep the matter's original casing; only the caption line uses `{county_caption}`.
 - `_add_probate_caption()` and `_add_guardianship_caption()` now render every line bold (`IN THE CIRCUIT COURT...`, `IN RE: ESTATE OF` / `IN RE: GUARDIANSHIP OF`, `PROBATE DIVISION`, the case-title line, `File No.`, `Division`) and use `{county_caption}` for the centered top line.
