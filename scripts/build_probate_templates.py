@@ -501,7 +501,7 @@ def build_p3_letters():
         '{#is_ancillary}{decedent_domicile_state}{/is_ancillary}, died on '
         '{decedent_death_date}, '
         '{#is_testate}owning assets in this state, and a duly executed last will'
-        '{#has_codicil} and codicil(s){/has_codicil} of the decedent has been '
+        '{#has_codicil} and codicil(s) dated {codicil_dates}{/has_codicil} of the decedent has been '
         'admitted to probate in this Court; and{/is_testate}'
         '{^is_testate}leaving assets in this state and having died intestate; and'
         '{/is_testate}',

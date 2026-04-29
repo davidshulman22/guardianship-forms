@@ -1023,10 +1023,17 @@ function handleMatterFormSubmit(e) {
     // by the clerk after filing. Existing matters keep whatever they have;
     // new matters start blank and templates render `{file_no}` / `{division}`
     // as empty strings.
+    // Strip leading "Estate of " (any case, with or without trailing space)
+    // so users who type "Estate of Helen Torres" don't end up with display
+    // strings like "Probate — Estate of Estate of Helen Torres". The display
+    // layer prepends "Estate of " automatically for probate matters.
+    const rawSubject = document.getElementById('matterSubjectName').value.trim();
+    const subjectName = rawSubject.replace(/^estate\s+of\s+/i, '');
+
     const data = {
         type: document.getElementById('matterType').value,
         county: document.getElementById('matterCounty').value,
-        subjectName: document.getElementById('matterSubjectName').value,
+        subjectName,
         attorneyId: document.getElementById('matterAttorneyId').value || null,
     };
 
@@ -2881,6 +2888,24 @@ function prepareTemplateData() {
         data.pr_names = Array.isArray(data.prs)
             ? data.prs.map(p => p.pr_name).filter(Boolean).join(' and ')
             : (data.pr_name || '');
+    }
+    // Single-PR templates (P3-PETITION, etc.) read top-level pr_address /
+    // pr_is_fl_resident / pr_relationship. Hoist from prs[0] when the
+    // questionnaire wrote into the array but didn't set top-level values.
+    // Without this, an FL-resident PR renders inverted ("is not a resident
+    // of Florida but is related to the decedent as ...") with empty
+    // relationship.
+    if (Array.isArray(data.prs) && data.prs[0]) {
+        const first = data.prs[0];
+        if (data.pr_address === undefined || data.pr_address === '') {
+            data.pr_address = first.pr_address || '';
+        }
+        if (data.pr_is_fl_resident === undefined) {
+            data.pr_is_fl_resident = first.pr_is_fl_resident !== false;
+        }
+        if (data.pr_relationship === undefined || data.pr_relationship === '') {
+            data.pr_relationship = first.pr_relationship || '';
+        }
     }
 
     // Pre-compute grammar strings so templates read clean instead of nesting
