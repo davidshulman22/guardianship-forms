@@ -2926,6 +2926,14 @@ function prepareTemplateData() {
     data.service_type_first_class = data.service_type === 'formal_notice_first_class';
     data.service_type_in_manner_of = data.service_type === 'in_the_manner_of';
 
+    // Proof of Will (P3-PROOF-WILL) derived flags. Two selects drive body
+    // language for unavailable-witness reason + affiant's relation to estate.
+    data.witness_unavailable_cannot_be_found = data.witness_unavailable_reason === 'cannot_be_found';
+    data.witness_unavailable_incapacitated = data.witness_unavailable_reason === 'incapacitated';
+    data.witness_unavailable_unavailable = data.witness_unavailable_reason === 'unavailable';
+    data.affiant_is_pr_nominated = data.affiant_relation === 'is_pr_nominated';
+    data.affiant_has_no_interest = data.affiant_relation === 'no_interest';
+
     // ISO "YYYY-MM-DD" → "Month D, YYYY" for every field declared type=date.
     // Applies to top-level and repeating-group subfields across all selected
     // forms. Legacy free-text dates pass through unchanged.

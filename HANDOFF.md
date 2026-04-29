@@ -193,9 +193,15 @@ Address values are objects: `{ street, line2, city, state, zip, foreign, foreign
 - [x] **P1-CAVEAT** smart template (4 FLSSI variants → 1, Phase 8a)
 - [x] **P1-0400 / P1-0500 / P1-0510 / P1-0530** built individually (Phase 8a) — NOT YET LIVE-TESTED
 - [x] **Summary admin (P2-PETITION + P2-ORDER + P2-0355)** — 19 legacy P2 forms collapsed into 3 smart templates (Phase 8a) — NOT YET LIVE-TESTED
-- [ ] **P1-FORMAL-NOTICE** smart template (consolidate P1-0500/0501 — adversary y/n) — replaces standalone P1-0500 from Phase 8a — IN-FLIGHT
-- [ ] **P1-PROOF-OF-SERVICE-FN** smart template (consolidate P1-0507/0510/0511/0512/0513 — adversary × mail method × "in the manner of") — replaces standalone P1-0510 from Phase 8a — IN-FLIGHT
-- [ ] **P1 Batch 2 remainder:** P1-0620 (Joinder Waiver Consent — needs notary block per local rules), P1-0640 (Notice of Confidential Info), P1-0800 (Notice of Trust)
+- [x] **P1-FORMAL-NOTICE** smart template (P1-0500/0501) — Phase 8b
+- [x] **P1-PROOF-OF-SERVICE-FN** smart template (P1-0507/0510/0511/0512/0513) — Phase 8b
+- [x] **P1-0100** Petition to Open Safe Deposit Box, **P1-0620** Joinder Waiver Consent (with notary), **P1-NOTICE-CONFIDENTIAL** smart (P1-0640/0641 — contemporaneous y/n) — Phase 8c
+- [x] **Curator suite (4 templates):** P3-CURATOR-PETITION, P3-CURATOR-ORDER smart (P3-0065/0070, bond y/n), P3-CURATOR-OATH (with notary), P3-CURATOR-LETTERS — Phase 8c
+- [x] **P3-OATH-WITNESS** smart (P3-0300/0301/0310/0311 — will/codicil × original/copy) — Phase 8c
+- [x] **P3-PROOF-WILL** smart (P3-0320/0330 — will/codicil) — Phase 8c
+- [ ] **P1-0800** Notice of Trust (standalone)
+- [ ] **P1-0520** Notice of Action (publication)
+- [ ] **P1-0531** Notice of Hearing Adversary — fold into P1-0530 with adversary axis
 - [ ] **P3-0740 Notice to Creditors** (formal admin) — small, self-contained
 - [ ] **P3-0900 Inventory** (rewire to `estate_assets` repeating group; address type for asset addresses)
 - [ ] **Discharge (full-waiver path only):** P5-0550/0551 → P5-PETITION-DISCHARGE-FULL-WAIVER smart; P5-0510/0511 → P5-RECEIPT smart; P5-0700/0701 → P5-REPORT-DIST smart; P5-0800/0810 → P5-ORDER-DISCHARGE smart. David never uses non-full-waiver path (P5-0400/0401/0500/0501/0300/0340/0410/0411/0420 — all dropped).

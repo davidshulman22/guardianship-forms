@@ -1377,6 +1377,643 @@ def build_p2_0355():
     print(f'Wrote {out_path}')
 
 
+# ---------------------------------------------------------------------------
+# Shared notary block (acknowledged before notary; Phase 7b style — handwritten
+# date and ID at notarization). Used by P1-0620 and P3-CURATOR-OATH.
+# ---------------------------------------------------------------------------
+
+def _add_notary_block(doc, *, signer_tag='{joining_party_name}'):
+    indent = Inches(0.5)
+    _add_para(doc,
+        'Sworn to (or affirmed) and subscribed before me by means of '
+        '☐ online notarization or ☐ physical presence this _____ day '
+        f'of ______________________, 20____, by {signer_tag}, who is personally '
+        'known to me or produced ______________________________ as identification.',
+        first_indent=indent, space_after=18)
+    _add_para(doc, '_______________________________________', space_after=0)
+    _add_para(doc, 'Notary Public', space_after=0)
+    _add_para(doc, 'State of Florida', space_after=0)
+    _add_para(doc, 'My Commission Expires: ______________________', space_after=0)
+
+
+# ---------------------------------------------------------------------------
+# P1-0100  Petition to Open Safe Deposit Box
+# ---------------------------------------------------------------------------
+
+def build_p1_0100():
+    doc = Document()
+    _apply_page_setup(doc)
+    _apply_running_header(doc, 'Estate of {decedent_name}')
+    _ensure_pleading_numbering(doc)
+
+    _add_probate_caption(doc)
+
+    _add_para(doc, 'PETITION TO OPEN SAFE DEPOSIT BOX',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=18)
+
+    _add_para(doc, 'Petitioner, {petitioner_name}, alleges:', space_after=12)
+
+    _pleading_para(doc,
+        "Petitioner has an interest in the above estate as {petitioner_interest}. "
+        "Petitioner's address is {petitioner_address}, and the name and address of "
+        "petitioner's attorney are set forth at the end of this petition.")
+
+    _pleading_para(doc,
+        'Decedent, {decedent_full_name}, whose last known address was '
+        '{decedent_address}, and, if known, whose age was {decedent_age_at_death}, '
+        'died on {decedent_death_date}, at {decedent_death_place}, and on the date '
+        'of death decedent was domiciled in {decedent_domicile} County, Florida.')
+
+    _pleading_para(doc,
+        'The decedent was the lessee or co-lessee of a safe deposit box (No. '
+        '{sdb_number}) leased to the decedent by {sdb_lessor_name}, the address '
+        'of which is {sdb_lessor_address}. The name(s) of any co-lessee(s), if '
+        'known, is/are: {sdb_colessees}.')
+
+    _pleading_para(doc,
+        'Petitioner is informed and believes that the decedent may have left in '
+        'the safe deposit box: (a) a will or codicil of the decedent or a writing '
+        'described in Florida Statutes section 732.515 purporting to identify '
+        'devises of tangible property; (b) a deed to a burial plot; (c) a writing '
+        'giving burial instructions; and/or (d) insurance policies on the life of '
+        'the decedent.')
+
+    indent = Inches(0.5)
+    _add_para(doc,
+        'Petitioner requests that an order be entered authorizing petitioner, in '
+        'the presence of an officer of the lessor, to open and examine the contents '
+        'of the safe deposit box leased or co-leased by the decedent and directing '
+        'the lessor to deliver: (a) to the court having probate jurisdiction in the '
+        'county where the lessor is located, any writing purporting to be a will or '
+        'codicil of the decedent and any writing described in Florida Statutes '
+        'section 732.515 purporting to identify devises of tangible property; '
+        '(b) to petitioner, any writing purporting to be a deed to a burial plot or '
+        'to give burial instructions; and (c) to the beneficiary named therein, any '
+        'document purporting to be an insurance policy on the life of the decedent; '
+        'and directing the lessor to make a complete copy of any document removed '
+        'and delivered and to place that copy, together with a memorandum of '
+        'delivery identifying the officer, the person to whom the document was '
+        'delivered and the date of delivery, in the safe deposit box leased or '
+        'co-leased by the decedent.',
+        first_indent=indent, space_after=18)
+
+    _add_para(doc,
+        'Under penalties of perjury, I declare that I have read the foregoing, '
+        'and the facts alleged are true, to the best of my knowledge and belief.',
+        first_indent=indent, space_after=18)
+
+    _add_broward_ai_certification(doc, 'Petition to Open Safe Deposit Box')
+
+    _add_probate_signature_block(doc)
+
+    out_path = os.path.join(TEMPLATE_DIR, 'P1-0100.docx')
+    doc.save(out_path)
+    _inject_numbering_part(out_path)
+    print(f'Wrote {out_path}')
+
+
+# ---------------------------------------------------------------------------
+# P1-0620  Joinder, Waiver and Consent (with notary block per local rules)
+# ---------------------------------------------------------------------------
+
+def build_p1_0620():
+    doc = Document()
+    _apply_page_setup(doc)
+    _apply_running_header(doc, 'Estate of {decedent_name}')
+    _ensure_pleading_numbering(doc)
+
+    _add_probate_caption(doc)
+
+    _add_para(doc, 'JOINDER, WAIVER AND CONSENT',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=18)
+
+    indent = Inches(0.5)
+    _add_para(doc,
+        'The undersigned, whose name is {joining_party_name}, and who has an '
+        'interest in this estate as {joining_party_interest}, acknowledges receipt '
+        'of a copy of the {petition_title} heretofore filed in this proceeding, '
+        'joins in the petition, waives hearing and notice of hearing thereon, and '
+        'consents to the entry of an order granting the relief requested in the '
+        'petition.',
+        first_indent=indent, space_after=24)
+
+    _add_para(doc, 'Signed on this _____ day of ______________________, 20____.',
+              first_indent=indent, space_after=24)
+    _add_para(doc, '_______________________________________', space_after=0)
+    _add_para(doc, '{joining_party_name}', space_after=24)
+
+    _add_notary_block(doc, signer_tag='{joining_party_name}')
+
+    out_path = os.path.join(TEMPLATE_DIR, 'P1-0620.docx')
+    doc.save(out_path)
+    _inject_numbering_part(out_path)
+    print(f'Wrote {out_path}')
+
+
+# ---------------------------------------------------------------------------
+# P1-NOTICE-CONFIDENTIAL  Smart Notice of Confidential Info
+#   Consolidates FLSSI P1-0640 (non-contemporaneous) + P1-0641 (contemporaneous).
+#   Axis: is_contemporaneous
+# ---------------------------------------------------------------------------
+
+def build_p1_notice_confidential():
+    doc = Document()
+    _apply_page_setup(doc)
+    _apply_running_header(doc, 'Estate of {decedent_name}')
+    _ensure_pleading_numbering(doc)
+
+    _add_probate_caption(doc)
+
+    _add_para(doc, 'NOTICE OF CONFIDENTIAL INFORMATION',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=0)
+    _add_para(doc, 'WITHIN COURT FILING',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=0)
+    _add_para(doc,
+        '{#is_contemporaneous}(contemporaneous filing){/is_contemporaneous}'
+        '{^is_contemporaneous}(non-contemporaneous filing){/is_contemporaneous}',
+        align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, space_after=18)
+
+    indent = Inches(0.5)
+    _add_para(doc,
+        'Pursuant to Florida Rule of General Practice and Judicial Administration '
+        '2.420(d)(2), I hereby certify:',
+        first_indent=indent, space_after=12)
+
+    # Body — branches on is_contemporaneous
+    _add_para(doc,
+        '{#is_contemporaneous}I am filing herewith a document containing '
+        'confidential information as described in Rule 2.420(d)(1)(B), and '
+        'that:{/is_contemporaneous}'
+        '{^is_contemporaneous}A document was previously filed in this case that '
+        'contains confidential information as described in Rule 2.420(d)(1)(B), '
+        'but a Notice of Confidential Information within Court Filing was not '
+        'filed with the document and the confidential information was not '
+        'maintained as confidential by the clerk of the court. I hereby notify '
+        'the clerk that this confidential information is located as '
+        'follows:{/is_contemporaneous}',
+        first_indent=indent, space_after=12)
+
+    # Document title (always)
+    _add_para(doc,
+        '(a) Title/type of document: {conf_doc_title}',
+        first_indent=indent, space_after=6)
+
+    # Non-contemporaneous: extra fields (filing date, doc date, docket entry)
+    _add_para(doc,
+        '{^is_contemporaneous}(b) Date of filing: {conf_doc_filing_date}'
+        '{/is_contemporaneous}',
+        first_indent=indent, space_after=6)
+    _add_para(doc,
+        '{^is_contemporaneous}(c) Date of document: {conf_doc_date}'
+        '{/is_contemporaneous}',
+        first_indent=indent, space_after=6)
+    _add_para(doc,
+        '{^is_contemporaneous}(d) Docket entry number: {conf_docket_entry}'
+        '{/is_contemporaneous}',
+        first_indent=indent, space_after=6)
+
+    # Confidential location (always — relabel index based on contemporaneous)
+    _add_para(doc,
+        '{#is_contemporaneous}(b){/is_contemporaneous}'
+        '{^is_contemporaneous}(e){/is_contemporaneous} '
+        '{#conf_entire_document}Entire document is confidential.'
+        '{/conf_entire_document}'
+        '{^conf_entire_document}Precise location of confidential information '
+        'in document: {conf_precise_location}{/conf_entire_document}',
+        first_indent=indent, space_after=18)
+
+    _add_broward_ai_certification(doc, 'Notice of Confidential Information')
+
+    _add_para(doc, 'Signed on this _____ day of ______________________, 20____.',
+              first_indent=indent, space_after=24)
+    _add_para(doc, '_______________________________________', space_after=0)
+    _add_para(doc, '{attorney_name}, Attorney for {petitioner_label}', space_after=24)
+
+    # Certificate of Service
+    _add_para(doc, 'CERTIFICATE OF SERVICE',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=12)
+    _add_para(doc,
+        'I HEREBY CERTIFY that a copy of the foregoing was furnished by '
+        '{cos_method} to {cos_recipients} on this _____ day of '
+        '______________________, 20____.',
+        first_indent=indent, space_after=24)
+    _add_para(doc, '_______________________________________', space_after=0)
+    _add_para(doc, '{attorney_name}, Attorney for {petitioner_label}', space_after=18)
+    _add_para(doc, 'Email Addresses:', space_after=0)
+    _add_para(doc, '{attorney_email}', space_after=0)
+    _add_para(doc, '{#attorney_email_secondary}{attorney_email_secondary}{/attorney_email_secondary}', space_after=0)
+    _add_para(doc, 'Florida Bar No. {attorney_bar_no}', space_after=12)
+    _add_para(doc, '{attorney_firm}', space_after=0)
+    _add_para(doc, '{attorney_address}', space_after=12)
+    _add_para(doc, 'Telephone {attorney_phone}', space_after=0)
+
+    out_path = os.path.join(TEMPLATE_DIR, 'P1-NOTICE-CONFIDENTIAL.docx')
+    doc.save(out_path)
+    _inject_numbering_part(out_path)
+    print(f'Wrote {out_path}')
+
+
+# ---------------------------------------------------------------------------
+# P3-CURATOR-PETITION  Petition to Appoint Curator
+# ---------------------------------------------------------------------------
+
+def build_p3_curator_petition():
+    doc = Document()
+    _apply_page_setup(doc)
+    _apply_running_header(doc, 'Estate of {decedent_name}')
+    _ensure_pleading_numbering(doc)
+
+    _add_probate_caption(doc)
+
+    _add_para(doc, 'PETITION TO APPOINT CURATOR',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=18)
+
+    _add_para(doc, 'Petitioner, {petitioner_name}, alleges:', space_after=12)
+
+    _pleading_para(doc,
+        'Petitioner has an interest in the above estate as {petitioner_interest}. '
+        "Petitioner's address is {petitioner_address}, and the name and office "
+        "address of petitioner's attorney are set forth at the end of this petition.")
+
+    _pleading_para(doc,
+        'Decedent, {decedent_full_name}, whose last known address was '
+        '{decedent_address}, and, if known, whose age was {decedent_age_at_death} '
+        'and the last four digits of whose social security number are '
+        '{decedent_ssn_last4}, died on {decedent_death_date} at '
+        '{decedent_death_place}. On the date of death, decedent was domiciled in '
+        '{decedent_domicile} County, Florida.')
+
+    _pleading_para(doc,
+        'So far as is known, the names of persons apparently entitled to letters '
+        'of administration, the beneficiaries of this estate and the decedent’s '
+        'surviving spouse, if any, their addresses and relationships to decedent, '
+        'and the years of birth of any who are minors, are:',
+        keep_with_next=True)
+    _beneficiaries_table(doc)
+
+    _pleading_para(doc,
+        'Venue of this proceeding is in this county because {venue_reason}.')
+
+    _pleading_para(doc,
+        'The nature and approximate value of the assets of the estate are:',
+        keep_with_next=True)
+    _estate_assets_table(doc)
+
+    _pleading_para(doc,
+        'Petitioner proposes that {proposed_curator_name}, whose address is '
+        '{proposed_curator_address}, and who is qualified under the laws of the '
+        "State of Florida to serve as personal representative of the decedent's "
+        'estate, be appointed as curator of the estate.')
+
+    _pleading_para(doc,
+        'The court should appoint a curator because {curator_appointment_reason}.')
+
+    indent = Inches(0.5)
+    _add_para(doc,
+        'WHEREFORE, Petitioner respectfully requests that {proposed_curator_name} '
+        'be appointed curator of the estate of the decedent.',
+        first_indent=indent, space_before=12, space_after=12)
+
+    _add_para(doc,
+        'Under penalties of perjury, I declare that I have read the foregoing, '
+        'and the facts alleged are true, to the best of my knowledge and belief.',
+        first_indent=indent, space_after=18)
+
+    _add_broward_ai_certification(doc, 'Petition to Appoint Curator')
+
+    _add_probate_signature_block(doc)
+
+    out_path = os.path.join(TEMPLATE_DIR, 'P3-CURATOR-PETITION.docx')
+    doc.save(out_path)
+    _inject_numbering_part(out_path)
+    print(f'Wrote {out_path}')
+
+
+# ---------------------------------------------------------------------------
+# P3-CURATOR-ORDER  Smart Order Appointing Curator (bond y/n)
+#   Consolidates FLSSI P3-0065 (no bond) + P3-0070 (bond required).
+# ---------------------------------------------------------------------------
+
+def build_p3_curator_order():
+    doc = Document()
+    _apply_page_setup(doc)
+    _apply_running_header(doc, 'Estate of {decedent_name}')
+    _ensure_pleading_numbering(doc)
+
+    _add_probate_caption(doc)
+
+    _add_para(doc, 'ORDER APPOINTING CURATOR',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=0)
+    _add_para(doc,
+        '{#bond_required}(bond required){/bond_required}'
+        '{^bond_required}(no bond){/bond_required}',
+        align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, space_after=18)
+
+    indent = Inches(0.5)
+    _add_para(doc,
+        'On the petition of {petitioner_name} to appoint a curator of the estate '
+        'of {decedent_full_name}, deceased, the court finding that the decedent '
+        'died on {decedent_death_date}, and that {curator_name} is entitled to '
+        'appointment as curator of the estate because {curator_appointment_reason}, '
+        'it is',
+        first_indent=indent, space_after=12)
+
+    _add_para(doc, 'ADJUDGED that:', bold=True, space_after=12)
+
+    _pleading_para(doc,
+        '{curator_name} is appointed curator of the estate of the decedent, and '
+        'that upon taking the prescribed oath and filing designation and '
+        'acceptance of resident agent'
+        '{#bond_required} and posting bond in the amount of {bond_amount}'
+        '{/bond_required}, letters of curatorship shall be issued.')
+
+    _pleading_para(doc, 'The curator shall have the following powers: {curator_powers}')
+
+    _add_para(doc, '', space_after=12)
+    _add_para(doc, 'ORDERED on _____ day of ______________________, 20____.',
+              space_after=36)
+    _add_para(doc, '_______________________________________', space_after=0)
+    _add_para(doc, 'Circuit Judge', space_after=0)
+
+    out_path = os.path.join(TEMPLATE_DIR, 'P3-CURATOR-ORDER.docx')
+    doc.save(out_path)
+    _inject_numbering_part(out_path)
+    print(f'Wrote {out_path}')
+
+
+# ---------------------------------------------------------------------------
+# P3-CURATOR-OATH  Oath of Curator + Designation/Acceptance of Resident Agent
+# ---------------------------------------------------------------------------
+
+def build_p3_curator_oath():
+    doc = Document()
+    _apply_page_setup(doc)
+    _apply_running_header(doc, 'Estate of {decedent_name}')
+    _ensure_pleading_numbering(doc)
+
+    _add_probate_caption(doc)
+
+    _add_para(doc, 'OATH OF CURATOR AND',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=0)
+    _add_para(doc, 'DESIGNATION AND ACCEPTANCE OF RESIDENT AGENT',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=18)
+
+    indent = Inches(0.5)
+    _add_para(doc, 'STATE OF FLORIDA', space_after=0)
+    _add_para(doc, 'COUNTY OF {notary_county}', space_after=18)
+
+    _add_para(doc,
+        'I, {curator_name} (Affiant), state under oath that:',
+        space_after=12)
+
+    _pleading_para(doc,
+        'I am qualified within the provisions of sections 733.302, 733.303, '
+        '733.304, and 733.501, Florida Statutes, to serve as curator of the '
+        "estate of {decedent_full_name}, deceased. I have reviewed the statutes "
+        "and understand the qualifications. Under penalties of perjury, I "
+        'certify that the following statements are true: (a) I am 18 years of '
+        'age or older; (b) I have never been convicted of a felony; (c) I have '
+        'never been convicted in any state or foreign jurisdiction of abuse, '
+        'neglect or exploitation of an elderly person or a disabled adult, as '
+        'those terms are defined in Florida Statutes section 825.101; (d) I am '
+        'mentally and physically able to perform the duties of curator; and '
+        '(e) I am a resident of the State of Florida, or, if I am not, I am '
+        'qualified to serve under Florida Statutes section 733.304.')
+
+    _pleading_para(doc,
+        'I will faithfully administer the estate of the decedent according to '
+        'law.')
+
+    _pleading_para(doc,
+        'My place of residence is {curator_residence} and my post office '
+        'address is {curator_mailing_address}.')
+
+    _pleading_para(doc,
+        'I will promptly file and serve a notice on all interested persons at '
+        'any time I know that I would not be qualified for appointment, and '
+        'will include the reason I would not then be qualified and the date on '
+        'which the disqualifying event occurred.')
+
+    _pleading_para(doc,
+        'I will file and serve a notice within 20 days on all interested '
+        'persons in the event there is a change in my residence address, '
+        'street address, or mailing address.')
+
+    _pleading_para(doc,
+        'I hereby designate {resident_agent_name}, who '
+        '{#resident_agent_is_fla_bar}is{/resident_agent_is_fla_bar}'
+        '{^resident_agent_is_fla_bar}is not{/resident_agent_is_fla_bar} a '
+        'member of The Florida Bar, whose address is {resident_agent_address}, '
+        'as my agent for the service of process or notice in any action '
+        'against me, either in my representative capacity, or personally, if '
+        'the personal action accrued in the administration of the estate.')
+
+    _add_para(doc, '_______________________________________', space_after=0)
+    _add_para(doc, '{curator_name}, Affiant', space_after=24)
+
+    _add_notary_block(doc, signer_tag='{curator_name}')
+
+    # Acceptance by resident agent
+    _add_para(doc, '', space_after=12)
+    _add_para(doc, 'ACCEPTANCE',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=12)
+    _add_para(doc,
+        'I CERTIFY that my address is as indicated above. I hereby accept the '
+        'foregoing designation as Resident Agent.',
+        first_indent=indent, space_after=24)
+    _add_para(doc, 'Signed on this _____ day of ______________________, 20____.',
+              first_indent=indent, space_after=24)
+    _add_para(doc, '_______________________________________', space_after=0)
+    _add_para(doc, '{resident_agent_name}, Resident Agent', space_after=0)
+
+    out_path = os.path.join(TEMPLATE_DIR, 'P3-CURATOR-OATH.docx')
+    doc.save(out_path)
+    _inject_numbering_part(out_path)
+    print(f'Wrote {out_path}')
+
+
+# ---------------------------------------------------------------------------
+# P3-CURATOR-LETTERS  Letters of Curatorship (judge-signed)
+# ---------------------------------------------------------------------------
+
+def build_p3_curator_letters():
+    doc = Document()
+    _apply_page_setup(doc)
+    _apply_running_header(doc, 'Estate of {decedent_name}')
+    _ensure_pleading_numbering(doc)
+
+    _add_probate_caption(doc)
+
+    _add_para(doc, 'LETTERS OF CURATORSHIP',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=18)
+
+    indent = Inches(0.5)
+    _add_para(doc, 'TO ALL WHOM IT MAY CONCERN', bold=True, space_after=12)
+
+    _add_para(doc,
+        'WHEREAS, {decedent_full_name}, a resident of {decedent_address}, died '
+        'on {decedent_death_date}, owning assets in the State of Florida, and',
+        first_indent=indent, space_after=12)
+
+    _add_para(doc,
+        'WHEREAS, {curator_name} has been appointed curator of the estate of '
+        'the decedent and has performed all acts prerequisite to issuance of '
+        'Letters of Curatorship in the estate,',
+        first_indent=indent, space_after=12)
+
+    _add_para(doc,
+        'NOW, THEREFORE, I, the undersigned circuit judge, declare {curator_name} '
+        'duly qualified to act as curator of this estate of {decedent_full_name}, '
+        'deceased, and to perform the following duties or functions of a personal '
+        'representative: {curator_powers}',
+        first_indent=indent, space_after=24)
+
+    _add_para(doc, 'ORDERED on _____ day of ______________________, 20____.',
+              space_after=36)
+    _add_para(doc, '_______________________________________', space_after=0)
+    _add_para(doc, 'Circuit Judge', space_after=0)
+
+    out_path = os.path.join(TEMPLATE_DIR, 'P3-CURATOR-LETTERS.docx')
+    doc.save(out_path)
+    _inject_numbering_part(out_path)
+    print(f'Wrote {out_path}')
+
+
+# ---------------------------------------------------------------------------
+# P3-OATH-WITNESS  Smart Oath of Witness to Will or Codicil
+#   Consolidates FLSSI P3-0300 (will), P3-0301 (will copy), P3-0310 (codicil),
+#   P3-0311 (codicil copy). Axes: is_codicil × is_copy.
+# ---------------------------------------------------------------------------
+
+def build_p3_oath_witness():
+    doc = Document()
+    _apply_page_setup(doc)
+    _apply_running_header(doc, 'Estate of {decedent_name}')
+    _ensure_pleading_numbering(doc)
+
+    _add_probate_caption(doc)
+
+    _add_para(doc,
+        '{^is_codicil}OATH OF WITNESS TO WILL{/is_codicil}'
+        '{#is_codicil}OATH OF WITNESS TO CODICIL{/is_codicil}',
+        align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=0)
+    _add_para(doc, '{#is_copy}(copy){/is_copy}',
+              align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, space_after=18)
+
+    indent = Inches(0.5)
+    _add_para(doc, 'STATE OF FLORIDA', space_after=0)
+    _add_para(doc, 'COUNTY OF {notary_county}', space_after=18)
+
+    # Body — branches on is_copy and is_codicil
+    _add_para(doc,
+        'The undersigned, {witness_name}, being duly sworn says that '
+        '{#is_copy}the photographic copy annexed to this oath is a true copy of '
+        '{/is_copy}'
+        '{^is_copy}the writing exhibited to the undersigned as {/is_copy}'
+        '{^is_codicil}the last will of {decedent_full_name}, deceased{/is_codicil}'
+        '{#is_codicil}the {codicil_ordinal} codicil to the last will of '
+        '{decedent_full_name}, deceased{/is_codicil}, '
+        '{#is_copy}that the decedent executed{/is_copy}'
+        '{^is_copy}is the same writing that the decedent executed{/is_copy} '
+        'and that the undersigned and {co_witness_name} subscribed as attesting '
+        'witnesses on {execution_date}; that the decedent signed the '
+        '{#is_copy}original of the {/is_copy}writing at the end in the presence '
+        'of the attesting witnesses or acknowledged in the presence of the '
+        'attesting witnesses that the decedent had previously signed the writing '
+        'at the end; and that the witnesses, in the presence of the decedent and '
+        'in the presence of each other, subscribed their names to the '
+        '{#is_copy}original of the {/is_copy}writing as attesting witnesses.',
+        first_indent=indent, space_after=24)
+
+    _add_para(doc, '_______________________________________', space_after=0)
+    _add_para(doc, '{witness_name}, Affiant', space_after=24)
+
+    _add_para(doc,
+        'Sworn to and subscribed before me on _____ day of '
+        '______________________, 20____.',
+        first_indent=indent, space_after=18)
+    _add_para(doc, '_______________________________________', space_after=0)
+    _add_para(doc, '(Circuit Judge) (Clerk) (Deputy Clerk)', space_after=0)
+
+    out_path = os.path.join(TEMPLATE_DIR, 'P3-OATH-WITNESS.docx')
+    doc.save(out_path)
+    _inject_numbering_part(out_path)
+    print(f'Wrote {out_path}')
+
+
+# ---------------------------------------------------------------------------
+# P3-PROOF-WILL  Smart Proof of Will or Codicil
+#   Consolidates FLSSI P3-0320 (will) + P3-0330 (codicil). Axis: is_codicil.
+#   Two select-driven branches: witness_unavailable_reason, affiant_relation.
+# ---------------------------------------------------------------------------
+
+def build_p3_proof_will():
+    doc = Document()
+    _apply_page_setup(doc)
+    _apply_running_header(doc, 'Estate of {decedent_name}')
+    _ensure_pleading_numbering(doc)
+
+    _add_probate_caption(doc)
+
+    _add_para(doc,
+        '{^is_codicil}PROOF OF WILL{/is_codicil}'
+        '{#is_codicil}PROOF OF CODICIL{/is_codicil}',
+        align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=18)
+
+    indent = Inches(0.5)
+    _add_para(doc, 'STATE OF FLORIDA', space_after=0)
+    _add_para(doc, 'COUNTY OF {notary_county}', space_after=18)
+
+    _add_para(doc,
+        'The undersigned, {affiant_name}, being duly sworn says that:',
+        space_after=12)
+
+    _pleading_para(doc,
+        'The attesting witnesses to the writing dated {execution_date}, '
+        'exhibited to the undersigned as '
+        '{^is_codicil}the last will of {decedent_full_name}, deceased{/is_codicil}'
+        '{#is_codicil}the {codicil_ordinal} codicil to the last will of '
+        '{decedent_full_name}, deceased{/is_codicil}: '
+        '{#witness_unavailable_cannot_be_found}cannot be found.'
+        '{/witness_unavailable_cannot_be_found}'
+        '{#witness_unavailable_incapacitated}have become incapacitated after the '
+        'execution of the {^is_codicil}will{/is_codicil}{#is_codicil}codicil'
+        '{/is_codicil}.{/witness_unavailable_incapacitated}'
+        '{#witness_unavailable_unavailable}are unavailable so that their '
+        'testimony cannot be taken within a reasonable time.'
+        '{/witness_unavailable_unavailable}')
+
+    _pleading_para(doc,
+        'The undersigned: '
+        '{#affiant_is_pr_nominated}is the personal representative nominated by '
+        'the {^is_codicil}will{/is_codicil}{#is_codicil}will or codicil'
+        '{/is_codicil}.{/affiant_is_pr_nominated}'
+        '{#affiant_has_no_interest}has no interest in the estate under the '
+        '{^is_codicil}will{/is_codicil}{#is_codicil}will or codicil'
+        '{/is_codicil}.{/affiant_has_no_interest}')
+
+    _pleading_para(doc,
+        'The undersigned believes the writing exhibited to the undersigned to '
+        'be the {^is_codicil}last will{/is_codicil}'
+        '{#is_codicil}{codicil_ordinal} codicil to the last will{/is_codicil} '
+        'of the decedent.')
+
+    _add_para(doc, '_______________________________________', space_after=0)
+    _add_para(doc, '{affiant_name}, Affiant', space_after=24)
+
+    _add_para(doc,
+        'Sworn to and subscribed before me on _____ day of '
+        '______________________, 20____.',
+        first_indent=indent, space_after=18)
+    _add_para(doc, '_______________________________________', space_after=0)
+    _add_para(doc, '(Circuit Judge) (Clerk) (Deputy Clerk)', space_after=0)
+
+    out_path = os.path.join(TEMPLATE_DIR, 'P3-PROOF-WILL.docx')
+    doc.save(out_path)
+    _inject_numbering_part(out_path)
+    print(f'Wrote {out_path}')
+
+
 if __name__ == '__main__':
     os.makedirs(TEMPLATE_DIR, exist_ok=True)
     build_p3_petition()
@@ -1392,3 +2029,13 @@ if __name__ == '__main__':
     build_p2_petition()
     build_p2_order()
     build_p2_0355()
+    # Phase 8c
+    build_p1_0100()
+    build_p1_0620()
+    build_p1_notice_confidential()
+    build_p3_curator_petition()
+    build_p3_curator_order()
+    build_p3_curator_oath()
+    build_p3_curator_letters()
+    build_p3_oath_witness()
+    build_p3_proof_will()

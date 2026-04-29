@@ -24,6 +24,11 @@ AUTO_POPULATED = {
     "attorney_email", "attorney_email_secondary",
     "attorney_bar_no", "attorney_address", "attorney_phone",
     "petitioners",
+    # Subfields of the petitioners[] array — auto-populated from the client
+    # via getAutoPopulateDefaults(). Forms that use _add_probate_signature_block
+    # loop on them via {#petitioners}{pet_name}{/petitioners} without
+    # re-declaring the array (they're not asking the user — it's already there).
+    "pet_name", "pet_address", "pet_interest",
     # Smart-template derived grammar fields (computed in prepareTemplateData)
     "multiple_petitioners", "multiple_prs",
     "petitioner_label", "petitioner_poss",
@@ -38,6 +43,10 @@ AUTO_POPULATED = {
     "creditors_all_barred", "creditors_no_debt", "creditors_has_debt",
     # Proof of Service of Formal Notice (P1-PROOF-OF-SERVICE-FN) derived flags
     "service_type_certified", "service_type_first_class", "service_type_in_manner_of",
+    # Proof of Will (P3-PROOF-WILL) derived flags
+    "witness_unavailable_cannot_be_found", "witness_unavailable_incapacitated",
+    "witness_unavailable_unavailable",
+    "affiant_is_pr_nominated", "affiant_has_no_interest",
     # Derived display fields for numeric estate assets (from prepareTemplateData)
     "asset_value_formatted",
     "estate_assets_total", "estate_assets_total_formatted",

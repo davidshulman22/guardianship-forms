@@ -2353,6 +2353,629 @@
       ]
     },
     {
+      "id": "P1-0100",
+      "name": "Petition to Open Safe Deposit Box",
+      "template": "templates/P1-0100.docx",
+      "sections": [
+        {
+          "title": "Decedent",
+          "fields": [
+            {
+              "name": "decedent_full_name",
+              "label": "Decedent full legal name",
+              "type": "text"
+            },
+            {
+              "name": "decedent_address",
+              "label": "Decedent's last known address",
+              "type": "address"
+            },
+            {
+              "name": "decedent_age_at_death",
+              "label": "Decedent's age at death (if known)",
+              "type": "text"
+            },
+            {
+              "name": "decedent_death_date",
+              "label": "Date of death",
+              "type": "date"
+            },
+            {
+              "name": "decedent_death_place",
+              "label": "Place of death (city/county)",
+              "type": "text"
+            },
+            {
+              "name": "decedent_domicile",
+              "label": "County of domicile at death",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "title": "Petitioner's Interest",
+          "fields": [
+            {
+              "name": "petitioner_interest",
+              "label": "Interest in the estate",
+              "type": "text",
+              "placeholder": "e.g., a beneficiary, surviving spouse, sole heir"
+            }
+          ]
+        },
+        {
+          "title": "Safe Deposit Box",
+          "fields": [
+            {
+              "name": "sdb_number",
+              "label": "Safe deposit box number",
+              "type": "text"
+            },
+            {
+              "name": "sdb_lessor_name",
+              "label": "Lessor (financial institution)",
+              "type": "text"
+            },
+            {
+              "name": "sdb_lessor_address",
+              "label": "Lessor address",
+              "type": "address"
+            },
+            {
+              "name": "sdb_colessees",
+              "label": "Co-lessee name(s) if any (leave blank if none known)",
+              "type": "text"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P1-0620",
+      "name": "Joinder, Waiver and Consent (with notary)",
+      "template": "templates/P1-0620.docx",
+      "sections": [
+        {
+          "title": "Joining Party",
+          "fields": [
+            {
+              "name": "joining_party_name",
+              "label": "Name of joining party",
+              "type": "text"
+            },
+            {
+              "name": "joining_party_interest",
+              "label": "Interest in the estate",
+              "type": "text",
+              "placeholder": "e.g., a beneficiary, surviving spouse, creditor"
+            },
+            {
+              "name": "petition_title",
+              "label": "Title of petition being joined",
+              "type": "text",
+              "placeholder": "e.g., Petition for Administration"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P1-NOTICE-CONFIDENTIAL",
+      "name": "Notice of Confidential Information Within Court Filing (smart \u2014 contemporaneous or after the fact)",
+      "template": "templates/P1-NOTICE-CONFIDENTIAL.docx",
+      "sections": [
+        {
+          "title": "Type of Notice",
+          "fields": [
+            {
+              "name": "is_contemporaneous",
+              "label": "Filing this notice contemporaneously with the confidential document",
+              "type": "checkbox"
+            }
+          ]
+        },
+        {
+          "title": "Confidential Document",
+          "fields": [
+            {
+              "name": "conf_doc_title",
+              "label": "Title/type of document",
+              "type": "text"
+            },
+            {
+              "name": "conf_entire_document",
+              "label": "Entire document is confidential",
+              "type": "checkbox"
+            },
+            {
+              "name": "conf_precise_location",
+              "label": "If not entire document, precise location of confidential information",
+              "type": "textarea",
+              "visible_if": {
+                "field": "conf_entire_document",
+                "equals": false
+              }
+            }
+          ]
+        },
+        {
+          "title": "After-the-fact Filing Details (only if not contemporaneous)",
+          "fields": [
+            {
+              "name": "conf_doc_filing_date",
+              "label": "Date the original document was filed",
+              "type": "date",
+              "visible_if": {
+                "field": "is_contemporaneous",
+                "equals": false
+              }
+            },
+            {
+              "name": "conf_doc_date",
+              "label": "Date of the original document",
+              "type": "date",
+              "visible_if": {
+                "field": "is_contemporaneous",
+                "equals": false
+              }
+            },
+            {
+              "name": "conf_docket_entry",
+              "label": "Docket entry number",
+              "type": "text",
+              "visible_if": {
+                "field": "is_contemporaneous",
+                "equals": false
+              }
+            }
+          ]
+        },
+        {
+          "title": "Certificate of Service",
+          "fields": [
+            {
+              "name": "cos_recipients",
+              "label": "Recipients (parties and affected non-parties)",
+              "type": "textarea"
+            },
+            {
+              "name": "cos_method",
+              "label": "Method of service",
+              "type": "text",
+              "placeholder": "e.g., e-mail, mail"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P3-CURATOR-PETITION",
+      "name": "Petition to Appoint Curator",
+      "template": "templates/P3-CURATOR-PETITION.docx",
+      "sections": [
+        {
+          "title": "Petitioner's Interest",
+          "fields": [
+            {
+              "name": "petitioner_interest",
+              "label": "Interest in the estate",
+              "type": "text",
+              "placeholder": "e.g., a beneficiary, surviving spouse, creditor"
+            }
+          ]
+        },
+        {
+          "title": "Decedent",
+          "fields": [
+            {
+              "name": "decedent_full_name",
+              "label": "Decedent full legal name",
+              "type": "text"
+            },
+            {
+              "name": "decedent_address",
+              "label": "Decedent's last known address",
+              "type": "address"
+            },
+            {
+              "name": "decedent_age_at_death",
+              "label": "Decedent's age at death (if known)",
+              "type": "text"
+            },
+            {
+              "name": "decedent_ssn_last4",
+              "label": "Last 4 digits of decedent's SSN",
+              "type": "text",
+              "pattern": "\\d{4}",
+              "maxlength": 4,
+              "inputmode": "numeric"
+            },
+            {
+              "name": "decedent_death_date",
+              "label": "Date of death",
+              "type": "date"
+            },
+            {
+              "name": "decedent_death_place",
+              "label": "Place of death",
+              "type": "text"
+            },
+            {
+              "name": "decedent_domicile",
+              "label": "County of domicile at death",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "title": "Beneficiaries",
+          "fields": [
+            {
+              "name": "beneficiaries",
+              "label": "Beneficiaries / persons apparently entitled to letters / surviving spouse",
+              "type": "repeating_group",
+              "subfields": [
+                {
+                  "name": "ben_name",
+                  "label": "Name",
+                  "type": "text"
+                },
+                {
+                  "name": "ben_address",
+                  "label": "Address",
+                  "type": "address"
+                },
+                {
+                  "name": "ben_relationship",
+                  "label": "Relationship",
+                  "type": "text"
+                },
+                {
+                  "name": "ben_is_minor",
+                  "label": "Minor?",
+                  "type": "checkbox"
+                },
+                {
+                  "name": "ben_year_of_birth",
+                  "label": "Year of birth (if minor)",
+                  "type": "text",
+                  "pattern": "\\d{4}",
+                  "maxlength": 4,
+                  "inputmode": "numeric",
+                  "visible_if": {
+                    "field": "ben_is_minor",
+                    "equals": true
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Venue + Assets",
+          "fields": [
+            {
+              "name": "venue_reason",
+              "label": "Venue reason",
+              "type": "textarea",
+              "placeholder": "e.g., Decedent was domiciled in this county at the time of death"
+            },
+            {
+              "name": "estate_assets",
+              "label": "Nature and approximate value of assets",
+              "type": "repeating_group",
+              "subfields": [
+                {
+                  "name": "asset_description",
+                  "label": "Description",
+                  "type": "text"
+                },
+                {
+                  "name": "asset_value",
+                  "label": "Approximate value",
+                  "type": "text"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Proposed Curator",
+          "fields": [
+            {
+              "name": "proposed_curator_name",
+              "label": "Proposed curator name",
+              "type": "text"
+            },
+            {
+              "name": "proposed_curator_address",
+              "label": "Proposed curator address",
+              "type": "address"
+            },
+            {
+              "name": "curator_appointment_reason",
+              "label": "Reason a curator should be appointed",
+              "type": "textarea",
+              "placeholder": "e.g., delay in appointment of personal representative"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P3-CURATOR-ORDER",
+      "name": "Order Appointing Curator (smart \u2014 bond required y/n)",
+      "template": "templates/P3-CURATOR-ORDER.docx",
+      "sections": [
+        {
+          "title": "Curator + Bond",
+          "fields": [
+            {
+              "name": "curator_name",
+              "label": "Curator's name",
+              "type": "text"
+            },
+            {
+              "name": "curator_appointment_reason",
+              "label": "Reason for appointment",
+              "type": "textarea"
+            },
+            {
+              "name": "curator_powers",
+              "label": "Powers of the curator",
+              "type": "textarea",
+              "placeholder": "Describe powers granted to the curator"
+            },
+            {
+              "name": "bond_required",
+              "label": "Bond required",
+              "type": "checkbox"
+            },
+            {
+              "name": "bond_amount",
+              "label": "Bond amount",
+              "type": "text",
+              "placeholder": "e.g., $50,000",
+              "visible_if": {
+                "field": "bond_required",
+                "equals": true
+              }
+            }
+          ]
+        },
+        {
+          "title": "From Petition (auto-populates)",
+          "fields": [
+            {
+              "name": "decedent_full_name",
+              "label": "Decedent full legal name",
+              "type": "text"
+            },
+            {
+              "name": "decedent_death_date",
+              "label": "Date of death",
+              "type": "date"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P3-CURATOR-OATH",
+      "name": "Oath of Curator + Designation and Acceptance of Resident Agent",
+      "template": "templates/P3-CURATOR-OATH.docx",
+      "sections": [
+        {
+          "title": "Curator + Resident Agent",
+          "fields": [
+            {
+              "name": "curator_name",
+              "label": "Curator's name (Affiant)",
+              "type": "text"
+            },
+            {
+              "name": "curator_residence",
+              "label": "Curator's place of residence",
+              "type": "address"
+            },
+            {
+              "name": "curator_mailing_address",
+              "label": "Curator's mailing address",
+              "type": "address"
+            },
+            {
+              "name": "resident_agent_name",
+              "label": "Resident agent name",
+              "type": "text"
+            },
+            {
+              "name": "resident_agent_is_fla_bar",
+              "label": "Resident agent is a member of The Florida Bar",
+              "type": "checkbox"
+            },
+            {
+              "name": "resident_agent_address",
+              "label": "Resident agent address",
+              "type": "address"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P3-CURATOR-LETTERS",
+      "name": "Letters of Curatorship",
+      "template": "templates/P3-CURATOR-LETTERS.docx",
+      "sections": [
+        {
+          "title": "Curator + Powers",
+          "fields": [
+            {
+              "name": "curator_name",
+              "label": "Curator's name",
+              "type": "text"
+            },
+            {
+              "name": "curator_powers",
+              "label": "Duties/functions granted",
+              "type": "textarea"
+            },
+            {
+              "name": "decedent_full_name",
+              "label": "Decedent full legal name",
+              "type": "text"
+            },
+            {
+              "name": "decedent_address",
+              "label": "Decedent's last residence",
+              "type": "address"
+            },
+            {
+              "name": "decedent_death_date",
+              "label": "Date of death",
+              "type": "date"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P3-OATH-WITNESS",
+      "name": "Oath of Witness to Will or Codicil (smart \u2014 will/codicil \u00d7 original/photocopy)",
+      "template": "templates/P3-OATH-WITNESS.docx",
+      "sections": [
+        {
+          "title": "Document Specifics",
+          "fields": [
+            {
+              "name": "is_codicil",
+              "label": "Witness oath is to a codicil (not the will itself)",
+              "type": "checkbox"
+            },
+            {
+              "name": "codicil_ordinal",
+              "label": "Codicil ordinal (e.g., 'first', 'second', 'third')",
+              "type": "text",
+              "visible_if": {
+                "field": "is_codicil",
+                "equals": true
+              }
+            },
+            {
+              "name": "is_copy",
+              "label": "Oath is to a photographic copy (not the original)",
+              "type": "checkbox"
+            },
+            {
+              "name": "witness_name",
+              "label": "Witness's name",
+              "type": "text"
+            },
+            {
+              "name": "co_witness_name",
+              "label": "Co-witness's name (other attesting witness)",
+              "type": "text"
+            },
+            {
+              "name": "execution_date",
+              "label": "Date will/codicil was executed",
+              "type": "date"
+            }
+          ]
+        },
+        {
+          "title": "From Matter (auto-populates)",
+          "fields": [
+            {
+              "name": "decedent_full_name",
+              "label": "Decedent full legal name",
+              "type": "text"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P3-PROOF-WILL",
+      "name": "Proof of Will or Codicil (smart \u2014 will/codicil)",
+      "template": "templates/P3-PROOF-WILL.docx",
+      "sections": [
+        {
+          "title": "Document + Witness Status",
+          "fields": [
+            {
+              "name": "is_codicil",
+              "label": "Proof is for a codicil (not the will itself)",
+              "type": "checkbox"
+            },
+            {
+              "name": "codicil_ordinal",
+              "label": "Codicil ordinal (e.g., 'first', 'second')",
+              "type": "text",
+              "visible_if": {
+                "field": "is_codicil",
+                "equals": true
+              }
+            },
+            {
+              "name": "execution_date",
+              "label": "Date will/codicil was executed",
+              "type": "date"
+            },
+            {
+              "name": "witness_unavailable_reason",
+              "label": "Why the attesting witnesses are unavailable",
+              "type": "select",
+              "options": [
+                {
+                  "value": "cannot_be_found",
+                  "label": "Cannot be found"
+                },
+                {
+                  "value": "incapacitated",
+                  "label": "Have become incapacitated after the execution of the will"
+                },
+                {
+                  "value": "unavailable",
+                  "label": "Are unavailable so testimony cannot be taken within a reasonable time"
+                }
+              ]
+            },
+            {
+              "name": "affiant_relation",
+              "label": "Affiant's relationship to estate",
+              "type": "select",
+              "options": [
+                {
+                  "value": "is_pr_nominated",
+                  "label": "Is the personal representative nominated by the will"
+                },
+                {
+                  "value": "no_interest",
+                  "label": "Has no interest in the estate under the will"
+                }
+              ]
+            },
+            {
+              "name": "affiant_name",
+              "label": "Affiant's name",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "title": "From Matter (auto-populates)",
+          "fields": [
+            {
+              "name": "decedent_full_name",
+              "label": "Decedent full legal name",
+              "type": "text"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "P3-0740",
       "name": "Notice to Creditors (formal administration)",
       "template": "templates/P3-0740.docx",
