@@ -2016,6 +2016,64 @@
       ]
     },
     {
+      "id": "P1-0800",
+      "name": "Notice of Trust",
+      "template": "templates/P1-0800.docx",
+      "sections": [
+        {
+          "title": "Trust",
+          "fields": [
+            {
+              "name": "trust_name",
+              "label": "Trust name (full title as in trust agreement)",
+              "type": "text",
+              "placeholder": "e.g., John A. Doe Revocable Living Trust"
+            },
+            {
+              "name": "trust_date",
+              "label": "Trust agreement date",
+              "type": "date"
+            }
+          ]
+        },
+        {
+          "title": "Trustee",
+          "fields": [
+            {
+              "name": "trustee_name",
+              "label": "Trustee name",
+              "type": "text"
+            },
+            {
+              "name": "trustee_address",
+              "label": "Trustee address",
+              "type": "address"
+            }
+          ]
+        },
+        {
+          "title": "From Matter (auto-populates)",
+          "fields": [
+            {
+              "name": "decedent_full_name",
+              "label": "Decedent (settlor) full legal name",
+              "type": "text"
+            },
+            {
+              "name": "decedent_domicile",
+              "label": "County of domicile at death",
+              "type": "text"
+            },
+            {
+              "name": "decedent_death_date",
+              "label": "Date of death",
+              "type": "date"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "P1-0900",
       "name": "Notice of Designation of Email Addresses for Service",
       "template": "templates/P1-0900.docx",

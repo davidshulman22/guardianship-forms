@@ -2014,6 +2014,78 @@ def build_p3_proof_will():
     print(f'Wrote {out_path}')
 
 
+# ---------------------------------------------------------------------------
+# P1-0800  Notice of Trust (formerly P4-0800)
+#   Filed by trustee (or attorney for trustee) when settlor of a Fla. Stat.
+#   §733.707(3) trust dies — puts court + PR on notice that the trust exists
+#   and may be liable for estate administration expenses if estate is
+#   insufficient.
+# ---------------------------------------------------------------------------
+
+def build_p1_0800():
+    doc = Document()
+    _apply_page_setup(doc)
+    _apply_running_header(doc, 'Estate of {decedent_name}')
+    _ensure_pleading_numbering(doc)
+
+    _add_probate_caption(doc)
+
+    _add_para(doc, 'NOTICE OF TRUST',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=18)
+
+    indent = Inches(0.5)
+    _add_para(doc,
+        '{decedent_full_name}, a resident of {decedent_domicile} County, '
+        'Florida, who died on {decedent_death_date}, was the settlor of a '
+        'trust entitled:',
+        first_indent=indent, space_after=6)
+
+    _add_para(doc, '{trust_name}', first_indent=indent, bold=True, space_after=6)
+
+    _add_para(doc,
+        'dated {trust_date}, which is a trust described in Florida Statutes '
+        "section 733.707(3) and is liable for the expenses of the administration "
+        "of the decedent's estate and enforceable claims of the decedent's "
+        'creditors to the extent the decedent’s estate is insufficient to '
+        'pay them, as provided in Florida Statutes section 733.607(2).',
+        first_indent=indent, space_after=12)
+
+    _add_para(doc,
+        'The name and address of the trustee are set forth below.',
+        first_indent=indent, space_after=12)
+
+    _add_para(doc,
+        'The clerk shall file and index this notice of trust in the same manner '
+        'as a caveat, unless there exists a probate proceeding for the '
+        "settlor’s estate in which case this notice of trust must be filed "
+        'in the probate proceeding and the clerk shall send a copy to the '
+        'personal representative.',
+        first_indent=indent, space_after=18)
+
+    _add_broward_ai_certification(doc, 'Notice of Trust')
+
+    # Trustee signature block
+    _add_para(doc, 'Signed on this _____ day of ______________________, 20____.',
+              first_indent=indent, space_after=24)
+    _add_para(doc, '_______________________________________', space_after=0)
+    _add_para(doc, '{trustee_name}, Trustee', space_after=0)
+    _add_para(doc, '{trustee_address}', space_after=24)
+
+    # Clerk acknowledgement block (filled in by the clerk on filing)
+    _add_para(doc,
+        'Copy mailed to attorney for the Personal Representative on '
+        '_____ day of ______________________, 20____.',
+        first_indent=indent, space_after=18)
+    _add_para(doc, 'CLERK OF THE CIRCUIT COURT', space_after=12)
+    _add_para(doc, 'By: _______________________________________', space_after=0)
+    _add_para(doc, '       Deputy Clerk', space_after=0)
+
+    out_path = os.path.join(TEMPLATE_DIR, 'P1-0800.docx')
+    doc.save(out_path)
+    _inject_numbering_part(out_path)
+    print(f'Wrote {out_path}')
+
+
 if __name__ == '__main__':
     os.makedirs(TEMPLATE_DIR, exist_ok=True)
     build_p3_petition()
@@ -2039,3 +2111,5 @@ if __name__ == '__main__':
     build_p3_curator_letters()
     build_p3_oath_witness()
     build_p3_proof_will()
+    # Phase 8e
+    build_p1_0800()

@@ -204,7 +204,7 @@ Address values are objects: `{ street, line2, city, state, zip, foreign, foreign
 - [x] **Curator suite (4 templates):** P3-CURATOR-PETITION, P3-CURATOR-ORDER smart (P3-0065/0070, bond y/n), P3-CURATOR-OATH (with notary), P3-CURATOR-LETTERS — Phase 8c
 - [x] **P3-OATH-WITNESS** smart (P3-0300/0301/0310/0311 — will/codicil × original/copy) — Phase 8c
 - [x] **P3-PROOF-WILL** smart (P3-0320/0330 — will/codicil) — Phase 8c
-- [ ] **P1-0800** Notice of Trust (standalone)
+- [x] **P1-0800** Notice of Trust (Phase 8e)
 - [ ] **P1-0520** Notice of Action (publication)
 - [ ] **P3-0740 Notice to Creditors** (formal admin) — small, self-contained
 - [ ] **P3-0900 Inventory** (rewire to `estate_assets` repeating group; address type for asset addresses)
