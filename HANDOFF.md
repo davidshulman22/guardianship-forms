@@ -1,6 +1,6 @@
 # CHAT HANDOFF — RESUME-READY
-**Last updated:** 2026-04-28 (late evening)
-**Status:** Phases 1–7e merged to `main`. Phase 8a (in-flight, uncommitted): smart consolidations on the probate side — P1-CAVEAT (4→1), batch of P1 forms (P1-0400, P1-0500, P1-0510, P1-0530), and full summary admin replacement (P2-PETITION, P2-ORDER, P2-0355) collapsing 19 legacy P2 forms into 3 smart templates. Wizard rewired; legacy P2 templates deleted. Branch `phase1-2-questionnaire-cleanup` retained for git history.
+**Last updated:** 2026-04-28 (end of day)
+**Status:** Phases 1–8e all merged + pushed to `main` and live. 38 forms in `forms.json`, 38 active templates in `templates/`. **Probate side: NOT YET LIVE-TESTED for Phase 8 (P1 batch, P1-CAVEAT, P2 summary admin, curator suite, oath of witness, proof of will, codicil flow integration, P1-0800).** Guardianship side (Phase 7a/7b) also not yet live-tested by Jill / Maribel. Tag audit passes.
 
 ---
 
@@ -22,19 +22,21 @@ cd guardianship-forms
 ```
 
 **Recent commit history (newest first):**
-1. `(this commit)` Phase 7e: universal caption fix — bold every caption line + force county ALL CAPS via `{county_caption}`
-2. `65b70d2` Phase 7d: guardianship live-test fixes (residence, same-as-petitioner)
-3. `5008188` Phase 7c: structured address in client modal + toggle defaults unchecked
-4. `fd0a4fa` Phase 7b: drop signing dates + consolidate AIP DOB across guardianship
-5. `0ea3f33` Phase 7a: bring questionnaire UX upgrades to guardianship forms
-6. `fd46146` Merge phase1-2-questionnaire-cleanup → main
-7. `9915bb8` Phase 6b: second-batch live-test fixes
-8. `0539ea3` Phase 6: live-test fixes (1/5/12/13/15 + drop file_no/division)
-9. `8e6730f` Phase 5: PDF passthrough for Broward checklists + P1-0900 rebuild
-10. `77c96cf` Phase 4: Structured address field type with foreign toggle
-11. `b5fbff6` Phase 3: Date field type + SSN pattern input
-12. `e505ef8` Phase 2: Questionnaire UX improvements
-13. `5a23de3` Phase 1: Drop draft-time-unknown fields from formal-admin
+1. `6e1d893` Phase 8e: P1-0800 Notice of Trust
+2. `af94d8d` Phase 8d: integrate codicil flow into will templates (no standalone codicil templates)
+3. `6fe3bc5` Phase 8c: P1-0100, P1-0620 (with notary), confidential info, curator suite, oath of witness, proof of will
+4. `5ba68d9` Phase 8b: smart consolidations for Formal Notice + Proof of Service
+5. `7ce14f5` Phase 8a: smart consolidations on the probate side (P1 batch + P2 summary admin)
+6. `1112707` Phase 7e: universal caption fix (bold + county ALL CAPS)
+7. `65b70d2` Phase 7d: guardianship live-test fixes (residence, same-as-petitioner)
+8. `5008188` Phase 7c: structured address in client modal + toggle defaults unchecked
+9. `fd0a4fa` Phase 7b: drop signing dates + consolidate AIP DOB across guardianship
+10. `0ea3f33` Phase 7a: bring questionnaire UX upgrades to guardianship forms
+11. `fd46146` Merge phase1-2-questionnaire-cleanup → main
+12. `9915bb8` Phase 6b: second-batch live-test fixes
+13. `0539ea3` Phase 6: live-test fixes (1/5/12/13/15 + drop file_no/division)
+14. `8e6730f` Phase 5: PDF passthrough for Broward checklists + P1-0900 rebuild
+15. `77c96cf` Phase 4: Structured address field type with foreign toggle
 
 ---
 
@@ -46,13 +48,21 @@ Browser-based Florida court form generator for Ginsberg Shulman, PL. Runs client
 
 # 2. Current State
 
-**Forms (39 total):** 5 guardianship + 24 summary admin / closing / general / inventory / notice + 4 smart formal-admin (P3-PETITION/OATH/ORDER/LETTERS) + 6 Broward local (5 PDF passthrough, 1 still legacy .docx).
+**Forms (38 total in `forms.json`):**
+- **Guardianship (5):** G2-010, G2-140, G3-010, G3-025, G3-026
+- **P1 General (10):** P1-0100, P1-0400, P1-0530, P1-0620, P1-0800, P1-0900, P1-CAVEAT (smart), P1-FORMAL-NOTICE (smart), P1-PROOF-OF-SERVICE-FN (smart), P1-NOTICE-CONFIDENTIAL (smart)
+- **P2 Summary Admin (3):** P2-PETITION (smart), P2-ORDER (smart), P2-0355
+- **P3 Formal Admin (12):** P3-PETITION (smart), P3-OATH (smart), P3-ORDER (smart), P3-LETTERS (smart), P3-CURATOR-PETITION, P3-CURATOR-ORDER (smart), P3-CURATOR-OATH, P3-CURATOR-LETTERS, P3-OATH-WITNESS (smart), P3-PROOF-WILL (smart), P3-0740 (legacy), P3-0900 (legacy)
+- **P5 Discharge (2 — both legacy):** P5-0400, P5-0800
+- **BW Broward Local (6):** BW-0010..0050 (PDF passthrough), BW-0060 (legacy .docx)
 
-**Templates on the new builder pattern (10):** G2-010, G2-140, G3-010, G3-025, G3-026, P3-PETITION, P3-OATH, P3-ORDER, P3-LETTERS, P1-0900.
+**Templates on the new builder pattern (29):** All G* (5), all P1* (10), all P2* (3), the 10 P3* smart/curator/witness/proof-will templates. Built via `scripts/build_probate_templates.py` and `scripts/build_guardianship_templates.py`.
 
 **PDF passthrough (5):** BW-0010, BW-0020, BW-0030, BW-0040, BW-0050.
 
-**Legacy templates remaining (~24):** all summary admin (P2-*), closing (P5-*), BW-0060 (Affidavit of Heirs), Inventory (P3-0900), Notice to Creditors (P3-0740), formal-admin extras (P3-0120 through P3-0500). All scheduled for rebuild.
+**Legacy templates remaining (4):** P3-0740 (Notice to Creditors), P3-0900 (Inventory), P5-0400 + P5-0800 (Discharge — David uses full-waiver path only, see queue), BW-0060 (Affidavit of Heirs).
+
+**Smart consolidations to date — 47+ FLSSI forms collapsed:** P3-PETITION (12), P3-ORDER (~13), P3-LETTERS (4), P1-CAVEAT (4, pro se dropped), P1-FORMAL-NOTICE (2), P1-PROOF-OF-SERVICE-FN (5), P2-PETITION (8), P2-ORDER (6), P2-0355 (rebuilt), P3-CURATOR-ORDER (2), P3-OATH-WITNESS (4), P3-PROOF-WILL (2), P1-NOTICE-CONFIDENTIAL (2). Codicil-related forms all integrated into their will counterparts (no standalone codicil templates anywhere).
 
 **Tag audit:** `python3 scripts/audit_tags.py` → PASS.
 
@@ -261,7 +271,7 @@ The adversary axis is already built into P1-FORMAL-NOTICE and P1-PROOF-OF-SERVIC
 
 # 7. Known Issues / Risks
 
-- **~24 legacy templates** still on 2-column FLSSI layout. Rebuild queue (Priority 1).
+- **4 legacy templates** still on 2-column FLSSI layout: P3-0740, P3-0900, P5-0400, P5-0800, BW-0060. Rebuild queue (Priority 1). Phase 8a-8e collapsed all other legacy P2 + many P3 forms into smart templates.
 - **Legacy Supabase rows** with old field names (`will_year`, `signing_month`, `bond_required`, `will_status_*`, `notary_online`, `cl_*`, `scl_*`) remain in the database. Not a failure mode — they're just unused. Fresh matters won't have them.
 - **`resident_agent_address`** still a free-text input (the name field is now validated). Auto-populates from firm address; user can override. Acceptable for now.
 - **Address parser** handles `"street[, line2], city, ST zip"` (with `\n` or `,` separators) and falls back to free-text mode for anything else. Foreign / unstructured addresses go through the toggle.
@@ -272,13 +282,17 @@ The adversary axis is already built into P1-FORMAL-NOTICE and P1-PROOF-OF-SERVIC
 
 # 8. Next Best Action
 
-1. **Live-test the guardianship side.** Phase 7a/7b shipped without a Jill/Maribel test pass. Walk a G3-025 or G3-026 questionnaire end-to-end: structured addresses, felony warning callout, alternatives/preneed `visible_if`, AIP DOB date picker, blank signing line. Confirm before declaring it done.
-2. **Start Priority 1: P3-0740 Notice to Creditors rebuild.** Small, self-contained; establishes the pattern for the remaining summary-admin rebuilds.
-   - Builder: add `build_p3_0740()` in `scripts/build_probate_templates.py`
-   - Probate caption + Broward AI cert + attorney signature block
-   - Fields: `creditor_notice_published_in`, `creditor_notice_first_pub_date`, `creditor_notice_circulation_county` (verify against FLSSI 2.0220)
-3. **Or pick from Priority 1a follow-ups** if David surfaces one in the next live test.
-4. **Or schedule the Priority 1b matter-data interview** if David explicitly asks — that's the next big architectural move.
+1. **Live-test Phase 8 work.** All of Phase 8 (a/b/c/d/e) shipped without a live-test pass. Walk through end-to-end:
+   - Open a probate matter via the wizard (testate, single/multi petitioner, dom/ancillary)
+   - Fill out P3-PETITION → P3-OATH → P3-ORDER → P3-LETTERS → P1-0900
+   - Toggle `has_codicil` and verify codicil text renders / doesn't render appropriately on the petition + order + letters
+   - Open a summary admin matter via the wizard, fill out P2-PETITION → P2-ORDER → P2-0355
+   - Generate one each of: P1-CAVEAT (creditor + IP, resident + nonresident), P1-FORMAL-NOTICE (regular + adversary), P1-PROOF-OF-SERVICE-FN (all 3 service types × adversary), P1-0100, P1-0620, P1-0800, P1-NOTICE-CONFIDENTIAL (contemporaneous + after-the-fact)
+   - Generate the curator suite (P3-CURATOR-PETITION/ORDER/OATH/LETTERS), P3-OATH-WITNESS (will/codicil × original/copy), P3-PROOF-WILL (will + codicil)
+2. **Live-test the guardianship side.** Phase 7a/7b shipped without a Jill/Maribel test pass. Walk a G3-025 or G3-026 questionnaire end-to-end.
+3. **Start P3-0740 Notice to Creditors rebuild** — small, self-contained legacy template.
+4. **Discharge cluster (full-waiver path)** — P5-PETITION-DISCHARGE-FULL-WAIVER, P5-RECEIPT, P5-REPORT-DIST, P5-ORDER-DISCHARGE smart templates. ~9 FLSSI forms → 5 templates. See queue.
+5. **Or schedule the Priority 1b matter-data interview** if David explicitly asks — next big architectural move.
 
 ---
 
@@ -298,21 +312,27 @@ The adversary axis is already built into P1-FORMAL-NOTICE and P1-PROOF-OF-SERVIC
 
 `main` is current. The `phase1-2-questionnaire-cleanup` branch is merged and retained for git history. Start of session: `git pull`. New work: branch from `main` if it's a multi-day feature, or commit straight to `main` if it's a small surgical fix.
 
-### What's deployed (Phases 1–6b, merged 2026-04-28)
+### What's deployed (Phases 1–8e, all merged to `main` 2026-04-28)
 
-- Field types: `text`, `number`, `date`, `textarea`, `checkbox`, `info`, `address`, `select`, `repeating_group`
-- Conditional visibility (`visible_if` — supports `field` or `matter_flag`)
-- Row-lock for repeating groups (`row_lock_unless_matter_flag`); locked + empty renders one empty row
-- Address parser auto-converts string defaults to structured grid; toggle-off recovery
-- Validated dropdowns (resident agent: David/Jill)
-- Auto-populate: petitioners[] AND prs[] from client; resident agent from signing attorney; firm address pre-filled
-- PDF passthrough for Broward checklists + criminal-history affidavit
-- Wizard-driven row-lock booleans (`multiple_petitioners`, `multiple_prs`, `is_ancillary`) on `matter.matterData`
-- File No. and Division dropped from new-matter modal (assigned by clerk after filing)
+**Questionnaire layer** — field types: `text`, `number`, `date`, `textarea`, `checkbox`, `info`, `address`, `select`, `repeating_group`. Conditional visibility (`visible_if` reads form data or `matter_flag`). Row-lock for repeating groups. Address parser auto-converts string defaults to structured grid. Validated dropdowns (resident agent: David/Jill). Auto-populate: petitioners[] + prs[] from client; resident agent from signing attorney; firm address pre-filled. Caveator + curator name/address auto-pop. Universal caption fix (bold + county ALL CAPS).
+
+**Smart templates (Phase 8 consolidations)** — collapsed 47+ legacy FLSSI forms:
+- P3 formal admin opening: P3-PETITION (12 forms) / P3-OATH / P3-ORDER (~13 forms) / P3-LETTERS (4 forms)
+- P2 summary admin: P2-PETITION (8 forms) / P2-ORDER (6 forms, testate path = combined will-admit + summary admin) / P2-0355
+- P1 service: P1-CAVEAT (4) / P1-FORMAL-NOTICE (2) / P1-PROOF-OF-SERVICE-FN (5) / P1-NOTICE-CONFIDENTIAL (2)
+- P3 curator: P3-CURATOR-PETITION / -ORDER (2) / -OATH (with notary) / -LETTERS
+- P3 will/codicil: P3-OATH-WITNESS (4) / P3-PROOF-WILL (2)
+- Codicil flow: integrated into all will templates via `has_codicil` axis (no standalone codicil templates)
+
+**PDF passthrough**: BW-0010..0050 (Broward criminal history + 4 checklists). Wizard-driven row-lock booleans on `matter.matterData`. File No. + Division removed from new-matter modal.
+
+**FLSSI source library**: `reference/FLSSI-2025/` contains all source DOCX downloaded from `FODPROBWD2025/Converted DOCX` for body-text accuracy in builders.
 
 ### What's next
 
-Probably **P3-0740 Notice to Creditors** rebuild — pattern is established, this is a small one. Or one of the deferred items from David's live-test feedback (#2 names, #6 interest dropdown, #14 self-proved will witnesses, #16 cut-off item). Or the architectural Priority 1b matter-level data interview if David asks.
+**Live-test Phase 8** before doing any more building — that's the biggest open risk. Walk all the new smart templates end-to-end on a real matter.
+
+Then: **P3-0740 Notice to Creditors** rebuild (small, self-contained). Or **Discharge cluster (full-waiver path)** — P5-PETITION-DISCHARGE-FULL-WAIVER + P5-RECEIPT + P5-REPORT-DIST + P5-ORDER-DISCHARGE smart templates. Or any deferred Priority 1a feedback items (#2 names schema change, #6 interest dropdown, #14 self-proved will witnesses, #16 cut-off item). Or the architectural Priority 1b matter-level data interview if David asks.
 
 ### Constraints
 
