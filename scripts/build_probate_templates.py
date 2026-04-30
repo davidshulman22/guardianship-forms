@@ -2101,6 +2101,316 @@ def build_p1_0800():
     print(f'Wrote {out_path}')
 
 
+# ---------------------------------------------------------------------------
+# P3-0740  Notice to Creditors (formal administration)
+# ---------------------------------------------------------------------------
+
+def build_p3_0740():
+    """Notice to Creditors per F.S. §733.2121(2). Published in a newspaper
+    of general circulation in the county where decedent's estate is being
+    administered + served on known/reasonably ascertainable creditors."""
+    doc = Document()
+    _apply_page_setup(doc)
+    _apply_running_header(doc, 'Estate of {decedent_name}')
+
+    _add_probate_caption(doc)
+
+    _add_para(doc, 'NOTICE TO CREDITORS',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=18)
+
+    _add_para(doc,
+        'The administration of the estate of {decedent_full_name}, deceased, whose date of death was {decedent_death_date}, is pending in the Circuit Court for {county} County, Florida, Probate Division, the address of which is {court_address}. The names and addresses of the personal representative and the personal representative’s attorney are set forth below.',
+        space_after=12)
+
+    _add_para(doc,
+        'All creditors of the decedent and other persons having claims or demands against decedent’s estate on whom a copy of this notice is required to be served must file their claims with this court ON OR BEFORE THE LATER OF 3 MONTHS AFTER THE TIME OF THE FIRST PUBLICATION OF THIS NOTICE OR 30 DAYS AFTER THE DATE OF SERVICE OF A COPY OF THIS NOTICE ON THEM.',
+        space_after=12)
+
+    _add_para(doc,
+        'All other creditors of the decedent and other persons having claims or demands against decedent’s estate must file their claims with this court WITHIN 3 MONTHS AFTER THE DATE OF THE FIRST PUBLICATION OF THIS NOTICE.',
+        space_after=12)
+
+    _add_para(doc,
+        'The personal representative has no duty to discover whether any property held at the time of the decedent’s death by the decedent or the decedent’s surviving spouse is property to which the Florida Uniform Disposition of Community Property Rights at Death Act as described in ss. 732.216-732.228, applies, or may apply, unless a written demand is made by a creditor as specified under s. 732.2211, Florida Statutes.',
+        space_after=12)
+
+    _add_para(doc,
+        'ALL CLAIMS NOT FILED WITHIN THE TIME PERIODS SET FORTH IN FLORIDA STATUTES SECTION 733.702 WILL BE FOREVER BARRED.',
+        bold=True, space_after=6)
+    _add_para(doc,
+        'NOTWITHSTANDING THE TIME PERIODS SET FORTH ABOVE, ANY CLAIM FILED TWO (2) YEARS OR MORE AFTER THE DECEDENT’S DATE OF DEATH IS BARRED.',
+        bold=True, space_after=18)
+
+    _add_para(doc,
+        'The date of first publication of this notice is {publication_date}.',
+        space_after=24)
+
+    _add_broward_ai_certification(doc, 'Notice to Creditors')
+    _add_miami_dade_ai_certification(doc, 'Notice to Creditors')
+
+    # Two-column signature block: PR (right) and Attorney (left). Use a
+    # borderless table for clean alignment.
+    sig = _borderless_table(doc, rows=1, cols=2, col_widths_in=[3.25, 3.25])
+    _clear_cell(sig.cell(0, 0))
+    _cell_para(sig.cell(0, 0), 'Attorney for Personal Representative:', bold=True, space_after=12)
+    _cell_para(sig.cell(0, 0), '_______________________________________', space_after=0)
+    _cell_para(sig.cell(0, 0), '{attorney_name}', space_after=12)
+    _cell_para(sig.cell(0, 0), 'Email Addresses:', space_after=0)
+    _cell_para(sig.cell(0, 0), '{attorney_email}', space_after=0)
+    _cell_para(sig.cell(0, 0), '{#attorney_email_secondary}{attorney_email_secondary}{/attorney_email_secondary}', space_after=0)
+    _cell_para(sig.cell(0, 0), 'Florida Bar No. {attorney_bar_no}', space_after=6)
+    _cell_para(sig.cell(0, 0), '{attorney_firm}', space_after=0)
+    _cell_para(sig.cell(0, 0), '{attorney_address}', space_after=6)
+    _cell_para(sig.cell(0, 0), 'Telephone: {attorney_phone}', space_after=0)
+
+    _clear_cell(sig.cell(0, 1))
+    _cell_para(sig.cell(0, 1), 'Personal Representative:', bold=True, space_after=12)
+    _cell_para(sig.cell(0, 1), '{#prs}', space_after=0)
+    _cell_para(sig.cell(0, 1), '_______________________________________', space_after=0)
+    _cell_para(sig.cell(0, 1), '{pr_name}', space_after=6)
+    _cell_para(sig.cell(0, 1), '{pr_address}', space_after=12)
+    _cell_para(sig.cell(0, 1), '{/prs}', space_after=0)
+
+    out_path = os.path.join(TEMPLATE_DIR, 'P3-0740.docx')
+    doc.save(out_path)
+    print(f'Wrote {out_path}')
+
+
+# ---------------------------------------------------------------------------
+# P3-0900  Inventory
+# ---------------------------------------------------------------------------
+
+def build_p3_0900():
+    """Verified inventory of estate assets per F.S. §733.604. PR files this
+    within 60 days of issuance of letters of administration."""
+    doc = Document()
+    _apply_page_setup(doc)
+    _apply_running_header(doc, 'Estate of {decedent_name}')
+    _ensure_pleading_numbering(doc)
+
+    _add_probate_caption(doc)
+
+    _add_para(doc, 'INVENTORY',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=18)
+
+    _add_para(doc,
+        'The undersigned {pr_label}{^multiple_prs}{/multiple_prs}{#multiple_prs}s{/multiple_prs} of the estate of {decedent_full_name}, deceased, who died on {decedent_death_date}, submit{^multiple_prs}s{/multiple_prs} this inventory of all the property of the estate that has come into the hands, possession, control, or knowledge of {petitioner_poss}{^multiple_prs}{/multiple_prs} {pr_label}:',
+        space_after=18)
+
+    # ---- Real Estate sections ----
+    _add_para(doc, 'REAL ESTATE IN FLORIDA — Exempt (Protected) Homestead:',
+              bold=True, space_after=6)
+    _real_estate_table(doc, 'homestead_real_estate', value_col=False)
+    _add_para(doc, '', space_after=6)
+
+    _add_para(doc, 'REAL ESTATE IN FLORIDA — Non-Exempt Homestead:',
+              bold=True, space_after=6)
+    _real_estate_table(doc, 'nonexempt_homestead_real_estate', value_col=True)
+    _add_para(doc,
+        '(Whether homestead property is exempt from the claims of creditors, is properly devised and is a probate asset may have to be determined by appropriate proceedings.)',
+        italic=True, space_after=12)
+
+    _add_para(doc, 'OTHER REAL ESTATE IN FLORIDA:',
+              bold=True, space_after=6)
+    _real_estate_table(doc, 'other_real_estate', value_col=True)
+    _add_para(doc,
+        'Total Real Estate in Florida (except Exempt Homestead): ${total_real_estate}',
+        bold=True, space_after=12)
+
+    _add_para(doc, 'PERSONAL PROPERTY WHEREVER LOCATED:',
+              bold=True, space_after=6)
+    _real_estate_table(doc, 'personal_property', value_col=True)
+    _add_para(doc,
+        'Total Personal Property — Wherever Located: ${total_personal_property}',
+        bold=True, space_after=12)
+
+    _add_para(doc,
+        'TOTAL OF ALL PERSONAL PROPERTY AND FLORIDA REAL ESTATE (except Exempt Homestead): ${total_estate}',
+        bold=True, space_after=18)
+
+    _add_para(doc,
+        'All real estate located outside the State of Florida owned by the decedent of which the {pr_label} {pr_verb_is} aware{#has_out_of_state_property}, if any, is described on a schedule attached hereto{/has_out_of_state_property}{^has_out_of_state_property}: None{/has_out_of_state_property}.',
+        space_after=12)
+
+    _add_para(doc,
+        'NOTICE: Each residuary beneficiary in a testate estate or heir in an intestate estate has the right to request a written explanation of how the inventory value of any asset was determined, including whether the {pr_label} obtained an independent appraisal for that asset and, if so, a copy of the appraisal. Any other beneficiary may request this information regarding all assets distributed to or proposed to be distributed to that beneficiary.',
+        italic=True, space_after=18)
+
+    indent = Inches(0.5)
+    _add_para(doc,
+        'Under penalties of perjury, I declare that I have read the foregoing, and the facts alleged are true to the best of my knowledge and belief.',
+        first_indent=indent, space_after=18)
+
+    _add_broward_ai_certification(doc, 'Inventory')
+    _add_miami_dade_ai_certification(doc, 'Inventory')
+
+    # PR signature block (no petitioner — inventory is signed by PR only).
+    _add_para(doc, 'Signed on this _____ day of __________, 20___.',
+              first_indent=indent, space_after=24)
+    _add_para(doc, '{#prs}', space_after=0)
+    _add_para(doc, '_______________________________________', space_after=0)
+    _add_para(doc, '{pr_name}, {pr_label_title}', space_after=24)
+    _add_para(doc, '{/prs}', space_after=0)
+
+    _add_para(doc, '_______________________________________', space_after=0)
+    _add_para(doc, '{attorney_name}, Attorney for {pr_label_title}', space_after=12)
+    _add_para(doc, 'Florida Bar No. {attorney_bar_no}', space_after=0)
+    _add_para(doc, '{attorney_firm}', space_after=0)
+    _add_para(doc, '{attorney_address}', space_after=12)
+    _add_para(doc, 'Telephone: {attorney_phone}', space_after=0)
+
+    out_path = os.path.join(TEMPLATE_DIR, 'P3-0900.docx')
+    doc.save(out_path)
+    _inject_numbering_part(out_path)
+    print(f'Wrote {out_path}')
+
+
+def _real_estate_table(doc, group_name, *, value_col=True):
+    """Bordered table for real-estate / personal-property items with
+    repeating row. group_name is the docxtemplater array name (e.g.,
+    'homestead_real_estate', 'personal_property')."""
+    if value_col:
+        tbl = _table_with_borders(doc, rows=2, cols=2, col_widths_in=[4.5, 2.0])
+        for cell in tbl.rows[0].cells:
+            _clear_cell(cell)
+        _cell_para(tbl.cell(0, 0), 'Description', bold=True, space_after=0)
+        _cell_para(tbl.cell(0, 1), 'Estimated Fair Market Value', bold=True, space_after=0)
+        for cell in tbl.rows[1].cells:
+            _clear_cell(cell)
+        _cell_para(tbl.cell(1, 0), '{#' + group_name + '}{item_description}', space_after=0)
+        _cell_para(tbl.cell(1, 1), '{item_value}{/' + group_name + '}', space_after=0)
+    else:
+        tbl = _table_with_borders(doc, rows=2, cols=1, col_widths_in=[6.5])
+        for cell in tbl.rows[0].cells:
+            _clear_cell(cell)
+        _cell_para(tbl.cell(0, 0), 'Description', bold=True, space_after=0)
+        for cell in tbl.rows[1].cells:
+            _clear_cell(cell)
+        _cell_para(tbl.cell(1, 0), '{#' + group_name + '}{item_description}{/' + group_name + '}', space_after=0)
+    return tbl
+
+
+# ---------------------------------------------------------------------------
+# BW-0060  Affidavit of Heirs (Broward County local)
+# ---------------------------------------------------------------------------
+
+def build_bw_0060():
+    """Broward 17th Circuit local form. Required for intestate estates per
+    Broward Local Procedures (Oct 2023). Different caption from FLSSI —
+    'IN THE SEVENTEENTH JUDICIAL CIRCUIT' instead of 'IN THE CIRCUIT COURT
+    FOR {county} COUNTY'."""
+    doc = Document()
+    _apply_page_setup(doc)
+    _apply_running_header(doc, 'Estate of {decedent_name} — Affidavit of Heirs')
+
+    # ---- Broward-specific caption ----
+    _add_para(doc, 'IN THE SEVENTEENTH JUDICIAL CIRCUIT, IN AND FOR',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=0)
+    _add_para(doc, 'BROWARD COUNTY, FLORIDA',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=0)
+    _add_para(doc, 'PROBATE DIVISION',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=12)
+
+    cap = _borderless_table(doc, rows=1, cols=2, col_widths_in=[3.5, 3.0])
+    _clear_cell(cap.cell(0, 0))
+    _cell_para(cap.cell(0, 0), 'In Re: Estate of {decedent_full_name},', bold=True, space_after=0)
+    _cell_para(cap.cell(0, 0), 'Deceased.', bold=True, space_after=0)
+    _clear_cell(cap.cell(0, 1))
+    _cell_para(cap.cell(0, 1), 'Case No.: {file_no}', bold=True, space_after=0)
+    _cell_para(cap.cell(0, 1), 'Judge: {judge_name}', bold=True, space_after=0)
+    _add_para(doc, '', space_after=18)
+
+    _add_para(doc, 'AFFIDAVIT OF HEIRS',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=18)
+
+    _add_para(doc,
+        'For purposes of this affidavit, you must list ALL RELATIVES of the Decedent, including yourself, if applicable. Please include even the names of relatives who were deceased at the time of the Decedent’s death, indicating that they are deceased and specifying the date of death. If the Decedent never had a relative within a particular category (i.e. the decedent was the only child, and therefore had no siblings), please indicate "None" in that category. If the Decedent’s relatives in a particular category are unknown please specify "Unknown." When applicable, please indicate if the relationship is that of a half-relative (i.e. half-brother or half-sister).',
+        italic=True, space_after=18)
+
+    indent = Inches(0.5)
+
+    _add_para(doc,
+        '1. The undersigned, {affiant_name}, '
+        '{#aoh_has_interest}has an interest in this estate{/aoh_has_interest}'
+        '{^aoh_has_interest}does not have an interest in this estate{/aoh_has_interest}.',
+        first_indent=indent, space_after=6)
+
+    _add_para(doc,
+        'I am '
+        '{#aoh_is_related}related to the Decedent as follows: {aoh_relationship}{/aoh_is_related}'
+        '{^aoh_is_related}not related to the Decedent{/aoh_is_related}.',
+        first_indent=indent, space_after=6)
+
+    _add_para(doc,
+        'I have known the Decedent for {aoh_years_known} years.',
+        first_indent=indent, space_after=18)
+
+    # The categorical relative sections (2a–9). Each is a labeled
+    # textarea-rendered free-text section; the user fills in names/addresses
+    # in the questionnaire and the result lands in the .docx as a block.
+    sections = [
+        ('2a. Spouse of the Decedent.',
+         '(Provide the name, age, and address. If the spouse is deceased, provide the name and date of death.)',
+         'aoh_spouse_info'),
+        ('2b. Decedent’s former spouse(s) (due to death or divorce).',
+         '(Provide the name, age, and address. If the former spouse is deceased, provide the name and date of death. If Decedent and former spouse were divorced, provide the name of former spouse and date of divorce.)',
+         'aoh_former_spouses'),
+        ('3a. Children of the Decedent, or descendants of deceased children.',
+         '(Provide the name, age, and address. If any of the children are deceased, provide the name and date of death. In addition, indicate if Decedent has any grandchildren from the predeceased children, include the grandchild’s name here and provide further information at 4.)',
+         'aoh_children'),
+        ('3b. Non-biological children.',
+         '(If any of the children are not biologically related to both the Decedent and Decedent’s spouse at the time of Decedent’s death, provide that child’s name here and the name of that particular child’s other biological parent. If the surviving spouse has children who are not the children of the Decedent, provide their names.)',
+         'aoh_non_biological_children'),
+        ('4. Grandchildren of the Decedent.',
+         '(Provide the name, age, and address. If the grandchild is deceased, indicate the name and date of death.)',
+         'aoh_grandchildren'),
+        ('5. Parents of the Decedent.',
+         '(Provide the name, age, and address. If the parents are deceased, indicate the name and date of death.)',
+         'aoh_parents'),
+        ('6. Brothers and sisters of the Decedent, or descendants of deceased brothers or sisters.',
+         '(You must specify if the relationship is that of a half-relative, i.e., half-brother or half-sister. You must provide the name, age, and current address of the Decedent’s brothers or sisters or half-siblings. If any of the brothers or sisters or half-siblings are deceased, you must provide the name and date of death. In addition, you must list the children of any predeceased brothers or sisters or half-siblings, if any, along with their current addresses.)',
+         'aoh_siblings'),
+        ('7. Nephews and nieces of the Decedent.',
+         '(Provide the name, age, and address. If the nephew or niece is deceased, indicate the name and date of death.)',
+         'aoh_nephews_nieces'),
+        ('8. Grandparents of the Decedent.',
+         '(Provide the name, age, and address. If the grandparents are deceased, indicate the name and date of death.)',
+         'aoh_grandparents'),
+        ('9. Other relatives.',
+         '(If there are any relatives who have survived the Decedent and are not listed in the categories specified above, provide the name, relationship to the Decedent, age, and address (i.e., aunts, uncles, cousins, if applicable). Attach additional pages if necessary.)',
+         'aoh_other_relatives'),
+    ]
+    for label, instruct, tag in sections:
+        _add_para(doc, label, bold=True, space_after=0)
+        _add_para(doc, instruct, italic=True, space_after=6)
+        _add_para(doc, '{' + tag + '}', first_indent=indent, space_after=12)
+
+    _add_para(doc,
+        'UNDER PENALTIES OF PERJURY, I DECLARE THAT I HAVE READ THE FOREGOING AFFIDAVIT OF HEIRS AND THE FACTS STATED HEREIN ARE TRUE AND COMPLETE TO THE BEST OF MY KNOWLEDGE AND BELIEF.',
+        bold=True, space_after=18)
+
+    _add_broward_ai_certification(doc, 'Affidavit of Heirs')
+
+    _add_para(doc, '_______________________________________', space_after=0)
+    _add_para(doc, '{affiant_name}, Affiant', space_after=12)
+    _add_para(doc, '{affiant_address}', space_after=18)
+
+    # Notary block (the form is sworn — Broward requires).
+    _add_para(doc, 'STATE OF {notary_state}', space_after=0)
+    _add_para(doc, 'COUNTY OF {notary_county}', space_after=12)
+    _add_para(doc,
+        'Sworn to (or affirmed) and subscribed before me by means of ☐ physical presence or ☐ online notarization, on _____ day of __________, 20___, by {affiant_name}, who is personally known to me or produced ____________________ as identification.',
+        space_after=18)
+    _add_para(doc, '_______________________________________', space_after=0)
+    _add_para(doc, 'Notary Public or Deputy Clerk', space_after=12)
+    _add_para(doc, '_______________________________________', space_after=0)
+    _add_para(doc, 'Print, Type, or Stamp Commissioned Name', space_after=0)
+
+    out_path = os.path.join(TEMPLATE_DIR, 'BW-0060.docx')
+    doc.save(out_path)
+    print(f'Wrote {out_path}')
+
+
 if __name__ == '__main__':
     os.makedirs(TEMPLATE_DIR, exist_ok=True)
     build_p3_petition()
@@ -2128,3 +2438,7 @@ if __name__ == '__main__':
     build_p3_proof_will()
     # Phase 8e
     build_p1_0800()
+    # Phase 11 legacy rebuilds (item B)
+    build_p3_0740()
+    build_p3_0900()
+    build_bw_0060()

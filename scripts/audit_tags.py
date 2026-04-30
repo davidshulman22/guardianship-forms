@@ -15,7 +15,7 @@ FORMS_JSON = ROOT / "forms.json"
 
 AUTO_POPULATED = {
     "county", "county_caption", "county_is_broward", "county_is_miami_dade",
-    "decedent_name", "decedent_full_name",
+    "decedent_name", "decedent_full_name", "decedent_death_date",
     "aip_name", "aip_name_upper",
     "file_no", "division",
     "petitioner_name", "petitioner_names", "petitioner_address",
@@ -29,6 +29,11 @@ AUTO_POPULATED = {
     # loop on them via {#petitioners}{pet_name}{/petitioners} without
     # re-declaring the array (they're not asking the user — it's already there).
     "pet_name", "pet_address", "pet_interest",
+    # Subfields of the prs[] array — set by P3-OATH or P3-PETITION questionnaires;
+    # other forms in the same matter (P3-LETTERS, P3-0740, P3-0900) consume
+    # them via cross-form sharing. P3-LETTERS already lists them; the inventory
+    # + notice-to-creditors templates use them auto-populated.
+    "prs", "pr_name", "pr_address", "pr_is_fl_resident", "pr_relationship",
     # Smart-template derived grammar fields (computed in prepareTemplateData)
     "multiple_petitioners", "multiple_prs",
     "petitioner_label", "petitioner_poss",

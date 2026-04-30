@@ -4233,67 +4233,39 @@
       "template": "templates/P3-0740.docx",
       "sections": [
         {
-          "title": "Estate Information",
+          "title": "Court Information",
           "fields": [
             {
-              "name": "decedent_full_name",
-              "label": "Decedent full name",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_date",
-              "label": "Date of death",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_year",
-              "label": "Year of death",
-              "type": "text"
-            },
-            {
-              "name": "court_county",
-              "label": "Court county",
-              "type": "text"
-            },
-            {
               "name": "court_address",
-              "label": "Court address",
-              "type": "text"
+              "label": "Address of the Probate Court (clerk filing address)",
+              "type": "textarea",
+              "placeholder": "201 SE 6th Street, Fort Lauderdale, FL 33301"
             }
           ]
         },
         {
-          "title": "Publication and Attorney",
+          "title": "Publication",
           "fields": [
+            {
+              "name": "_pub_intro",
+              "type": "info",
+              "severity": "info",
+              "content": "Date the notice will first be published in a newspaper of general circulation in this county. Per F.S. \u00a7733.2121(3), publish within 3 months of receiving letters of administration; once a week for 2 consecutive weeks."
+            },
             {
               "name": "publication_date",
               "label": "Date of first publication",
-              "type": "text"
-            },
+              "type": "date"
+            }
+          ]
+        },
+        {
+          "title": "Generative AI Disclosure",
+          "fields": [
             {
-              "name": "publication_year",
-              "label": "Year",
-              "type": "text"
-            },
-            {
-              "name": "attorney_email",
-              "label": "Attorney email",
-              "type": "text"
-            },
-            {
-              "name": "attorney_email_secondary",
-              "label": "Secondary email",
-              "type": "text"
-            },
-            {
-              "name": "attorney_bar_no",
-              "label": "Florida Bar No.",
-              "type": "text"
-            },
-            {
-              "name": "attorney_phone",
-              "label": "Telephone",
-              "type": "text"
+              "name": "used_ai",
+              "label": "Was generative AI used to draft this document?",
+              "type": "checkbox"
             }
           ]
         }
@@ -4305,62 +4277,137 @@
       "template": "templates/P3-0900.docx",
       "sections": [
         {
-          "title": "Estate Information",
+          "title": "Real Estate \u2014 Exempt (Protected) Homestead",
           "fields": [
             {
-              "name": "decedent_full_name",
-              "label": "Decedent full name",
+              "name": "_homestead_intro",
+              "type": "info",
+              "severity": "info",
+              "content": "Florida real estate qualifying as protected homestead under Article X \u00a74(a) of the Florida Constitution. List description only \u2014 no value column for protected homestead."
+            },
+            {
+              "name": "homestead_real_estate",
+              "label": "Homestead properties (description only)",
+              "type": "repeating_group",
+              "subfields": [
+                {
+                  "name": "item_description",
+                  "label": "Description",
+                  "type": "textarea"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Real Estate \u2014 Non-Exempt Homestead",
+          "fields": [
+            {
+              "name": "nonexempt_homestead_real_estate",
+              "label": "Non-exempt homestead properties",
+              "type": "repeating_group",
+              "subfields": [
+                {
+                  "name": "item_description",
+                  "label": "Description",
+                  "type": "textarea"
+                },
+                {
+                  "name": "item_value",
+                  "label": "Estimated Fair Market Value (e.g. $250,000)",
+                  "type": "text"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Real Estate \u2014 Other Florida Real Estate",
+          "fields": [
+            {
+              "name": "other_real_estate",
+              "label": "Other Florida real estate",
+              "type": "repeating_group",
+              "subfields": [
+                {
+                  "name": "item_description",
+                  "label": "Description",
+                  "type": "textarea"
+                },
+                {
+                  "name": "item_value",
+                  "label": "Estimated Fair Market Value (e.g. $250,000)",
+                  "type": "text"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Personal Property",
+          "fields": [
+            {
+              "name": "personal_property",
+              "label": "Personal property (wherever located)",
+              "type": "repeating_group",
+              "subfields": [
+                {
+                  "name": "item_description",
+                  "label": "Description",
+                  "type": "textarea"
+                },
+                {
+                  "name": "item_value",
+                  "label": "Estimated Fair Market Value (e.g. $250,000)",
+                  "type": "text"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Totals",
+          "fields": [
+            {
+              "name": "_totals_intro",
+              "type": "info",
+              "severity": "info",
+              "content": "Compute and enter dollar totals manually (no automatic summation yet). These appear in summary lines on the inventory."
+            },
+            {
+              "name": "total_real_estate",
+              "label": "Total Real Estate in Florida \u2014 except Exempt Homestead (e.g. 1,250,000)",
               "type": "text"
             },
             {
-              "name": "decedent_death_date",
-              "label": "Date of death",
+              "name": "total_personal_property",
+              "label": "Total Personal Property \u2014 wherever located",
               "type": "text"
             },
             {
-              "name": "decedent_death_year",
-              "label": "Year of death",
+              "name": "total_estate",
+              "label": "Total of all Personal Property and Florida Real Estate (except Exempt Homestead)",
               "type": "text"
             }
           ]
         },
         {
-          "title": "Signing and Attorney",
+          "title": "Out-of-State Real Estate",
           "fields": [
             {
-              "name": "signing_day",
-              "label": "Day",
-              "type": "text"
-            },
+              "name": "has_out_of_state_property",
+              "label": "Decedent owned real estate outside of Florida",
+              "type": "checkbox"
+            }
+          ]
+        },
+        {
+          "title": "Generative AI Disclosure",
+          "fields": [
             {
-              "name": "signing_month",
-              "label": "Month",
-              "type": "text"
-            },
-            {
-              "name": "signing_year",
-              "label": "Year",
-              "type": "text"
-            },
-            {
-              "name": "attorney_email",
-              "label": "Attorney email",
-              "type": "text"
-            },
-            {
-              "name": "attorney_email_secondary",
-              "label": "Secondary email",
-              "type": "text"
-            },
-            {
-              "name": "attorney_bar_no",
-              "label": "Florida Bar No.",
-              "type": "text"
-            },
-            {
-              "name": "attorney_phone",
-              "label": "Telephone",
-              "type": "text"
+              "name": "used_ai",
+              "label": "Was generative AI used to draft this document?",
+              "type": "checkbox"
             }
           ]
         }
@@ -4567,83 +4614,100 @@
           "title": "Affiant Information",
           "fields": [
             {
-              "name": "judge_name",
-              "label": "Circuit Judge name",
+              "name": "affiant_name",
+              "label": "Affiant's full name",
               "type": "text"
             },
             {
-              "name": "affiant_name",
-              "label": "Affiant name (person swearing)",
-              "type": "text"
+              "name": "affiant_address",
+              "label": "Affiant's address",
+              "type": "address"
             },
             {
               "name": "aoh_has_interest",
-              "label": "Affiant HAS an interest in this estate",
-              "type": "checkbox"
-            },
-            {
-              "name": "aoh_no_interest",
-              "label": "Affiant does NOT have an interest in this estate",
+              "label": "Affiant has an interest in this estate",
               "type": "checkbox"
             },
             {
               "name": "aoh_is_related",
-              "label": "Affiant IS related to the Decedent",
-              "type": "checkbox"
-            },
-            {
-              "name": "aoh_not_related",
-              "label": "Affiant is NOT related to the Decedent",
-              "type": "checkbox"
+              "label": "Affiant is related to the Decedent",
+              "type": "checkbox",
+              "default_value": true
             },
             {
               "name": "aoh_relationship",
-              "label": "Relationship to Decedent",
-              "type": "text"
+              "label": "Relationship to Decedent (if related)",
+              "type": "text",
+              "visible_if": {
+                "field": "aoh_is_related",
+                "equals": true
+              }
             },
             {
               "name": "aoh_years_known",
-              "label": "Years affiant has known the Decedent",
-              "type": "text"
+              "label": "Years affiant knew the Decedent",
+              "type": "number"
             }
           ]
         },
         {
-          "title": "Family Information",
+          "title": "Court / Judge",
           "fields": [
             {
+              "name": "judge_name",
+              "label": "Assigned probate judge (if known)",
+              "type": "text",
+              "placeholder": "Hon. ..."
+            }
+          ]
+        },
+        {
+          "title": "Relatives \u2014 Spouse, Former Spouse, Children, Grandchildren",
+          "fields": [
+            {
+              "name": "_relatives_instructions",
+              "type": "info",
+              "severity": "warning",
+              "content": "List <strong>ALL</strong> relatives in each category. For deceased relatives, write the name + date of death. If a category has none, write 'None'. If unknown, write 'Unknown'."
+            },
+            {
               "name": "aoh_spouse_info",
-              "label": "2a. Spouse (name, age, address; if deceased: name, DOD)",
+              "label": "2a. Spouse (name, age, address; or name + date of death if deceased)",
               "type": "textarea"
             },
             {
               "name": "aoh_former_spouses",
-              "label": "2b. Former spouse(s) (name, age, address; divorce/death details)",
+              "label": "2b. Former spouse(s) (death or divorce \u2014 provide details)",
               "type": "textarea"
             },
             {
               "name": "aoh_children",
-              "label": "3a. Children / descendants of deceased children (name, age, address)",
+              "label": "3a. Children, or descendants of deceased children",
               "type": "textarea"
             },
             {
               "name": "aoh_non_biological_children",
-              "label": "3b. Non-biological children / stepchildren",
+              "label": "3b. Non-biological children (if applicable)",
               "type": "textarea"
             },
             {
               "name": "aoh_grandchildren",
-              "label": "4. Grandchildren (name, age, address)",
+              "label": "4. Grandchildren",
               "type": "textarea"
-            },
+            }
+          ]
+        },
+        {
+          "title": "Relatives \u2014 Parents, Siblings, Nephews/Nieces, Grandparents, Other",
+          "fields": [
             {
               "name": "aoh_parents",
-              "label": "5. Parents (name, age, address)",
+              "label": "5. Parents",
               "type": "textarea"
             },
             {
               "name": "aoh_siblings",
-              "label": "6. Brothers/sisters/half-siblings and their descendants",
+              "label": "6. Brothers and sisters (incl. half-siblings) \u2014 or descendants of deceased",
               "type": "textarea"
             },
             {
@@ -4658,58 +4722,34 @@
             },
             {
               "name": "aoh_other_relatives",
-              "label": "9. Other surviving relatives (aunts, uncles, cousins)",
+              "label": "9. Other relatives (aunts, uncles, cousins, etc.)",
               "type": "textarea"
             }
           ]
         },
         {
-          "title": "Notary",
+          "title": "Notarization",
           "fields": [
             {
               "name": "notary_state",
-              "label": "State",
-              "type": "text"
+              "label": "State of notarization",
+              "type": "text",
+              "default_value": "FLORIDA"
             },
             {
               "name": "notary_county",
-              "label": "County",
+              "label": "County of notarization",
               "type": "text"
-            },
+            }
+          ]
+        },
+        {
+          "title": "Generative AI Disclosure",
+          "fields": [
             {
-              "name": "notary_means",
-              "label": "Means of appearance (check mark for physical)",
-              "type": "text"
-            },
-            {
-              "name": "notary_day",
-              "label": "Day",
-              "type": "text"
-            },
-            {
-              "name": "notary_month",
-              "label": "Month",
-              "type": "text"
-            },
-            {
-              "name": "notary_year_short",
-              "label": "Year (2-digit)",
-              "type": "text"
-            },
-            {
-              "name": "notary_personally_known",
-              "label": "Personally known",
+              "name": "used_ai",
+              "label": "Was generative AI used to draft this document?",
               "type": "checkbox"
-            },
-            {
-              "name": "notary_produced_id",
-              "label": "Produced identification",
-              "type": "checkbox"
-            },
-            {
-              "name": "notary_identification",
-              "label": "Type of identification",
-              "type": "text"
             }
           ]
         }
