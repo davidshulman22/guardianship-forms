@@ -2,7 +2,7 @@
 
 **Generated:** 2026-04-16
 **Source:** `/FODPROBWD2025/Converted DOCX/` (194 forms, 169 after removing index + 25 guardianship-adjacent)
-**Status:** 31 probate built, 138 not yet built
+**Status (updated 2026-04-30, Phase 11):** 35 probate forms built directly + 59 legacy IDs collapsed into smart templates + 9 dropped from scope (non-full-waiver discharge path). 7 guardianship smart templates (45+ FLSSI G-forms collapsed) live separately. The catalog rows below are partial — bulk auto-update set status from forms.json + smart-template replacement map; manual review still owed before declaring catalog accurate.
 
 **How to use:** Default = build everything missing. Put `[x]` in the SKIP column for anything you do NOT want built. Write "SKIP ALL" next to a section header to skip the whole section.
 
@@ -15,32 +15,32 @@ Legend: ✅ = already built · ⬜ = missing · SKIP `[x]` = do not build
 ### Safe deposit box
 | ID | Form | Status | SKIP |
 |---|---|---|---|
-| P1-0100 | Petition to Open Safe Deposit Box | ⬜ | [ ] |
+| P1-0100 | Petition to Open Safe Deposit Box | ✅ | [ ] |
 | P1-0110 | Order to Open Safe Deposit Box | ⬜ | [ ] |
 
 ### Caveats
 | ID | Form | Status | SKIP |
 |---|---|---|---|
 | P1-0300 | Caveat by Creditor Nonresident (pro se) | ⬜ | [ ] |
-| P1-0301 | Caveat by Creditor Nonresident (FL atty) | ⬜ | [ ] |
-| P1-0305 | Caveat by Creditor Resident | ⬜ | [ ] |
+| P1-0301 | Caveat by Creditor Nonresident (FL atty) | ✅ (P1-CAVEAT) | [ ] |
+| P1-0305 | Caveat by Creditor Resident | ✅ (P1-CAVEAT) | [ ] |
 | P1-0310 | Caveat by Interested Person | ⬜ | [ ] |
-| P1-0311 | Caveat by Creditor (other than nonresident, by attorney) | ⬜ | [ ] |
-| P1-0315 | Caveat by Interested Person (other than creditor) | ⬜ | [ ] |
+| P1-0311 | Caveat by Creditor (other than nonresident, by attorney) | ✅ (P1-CAVEAT) | [ ] |
+| P1-0315 | Caveat by Interested Person (other than creditor) | ✅ (P1-CAVEAT) | [ ] |
 
 ### Notice & service
 | ID | Form | Status | SKIP |
 |---|---|---|---|
-| P1-0400 | Request for Notice and Copies | ⬜ | [ ] |
-| P1-0500 | Formal Notice | ⬜ | [ ] |
-| P1-0501 | Formal Notice (Adversary) | ⬜ | [ ] |
-| P1-0507 | Proof of Service Formal Notice (First Class Mail) | ⬜ | [ ] |
-| P1-0510 | Proof of Service of Formal Notice | ⬜ | [ ] |
-| P1-0511 | Proof of Service of Formal Notice (Adversary) | ⬜ | [ ] |
-| P1-0512 | Proof of Service in the manner of Formal Notice | ⬜ | [ ] |
-| P1-0513 | Proof of Service in the manner of Formal Notice (Adversary) | ⬜ | [ ] |
+| P1-0400 | Request for Notice and Copies | ✅ | [ ] |
+| P1-0500 | Formal Notice | ✅ (P1-FORMAL-NOTICE) | [ ] |
+| P1-0501 | Formal Notice (Adversary) | ✅ (P1-FORMAL-NOTICE) | [ ] |
+| P1-0507 | Proof of Service Formal Notice (First Class Mail) | ✅ (P1-PROOF-OF-SERVICE-FN) | [ ] |
+| P1-0510 | Proof of Service of Formal Notice | ✅ (P1-PROOF-OF-SERVICE-FN) | [ ] |
+| P1-0511 | Proof of Service of Formal Notice (Adversary) | ✅ (P1-PROOF-OF-SERVICE-FN) | [ ] |
+| P1-0512 | Proof of Service in the manner of Formal Notice | ✅ (P1-PROOF-OF-SERVICE-FN) | [ ] |
+| P1-0513 | Proof of Service in the manner of Formal Notice (Adversary) | ✅ (P1-PROOF-OF-SERVICE-FN) | [ ] |
 | P1-0520 | Notice of Action (formal notice by publication) | ⬜ | [ ] |
-| P1-0530 | Notice of Hearing | ⬜ | [ ] |
+| P1-0530 | Notice of Hearing | ✅ | [ ] |
 | P1-0531 | Notice of Hearing (Adversary) | ⬜ | [ ] |
 
 ### Consents / waivers / disqualification / confidential info
@@ -48,15 +48,15 @@ Legend: ✅ = already built · ⬜ = missing · SKIP `[x]` = do not build
 |---|---|---|---|
 | P1-0600 | Consent and Waiver of Notice | ⬜ | [ ] |
 | P1-0610 | Consent and Waiver of Notice (copy of petition attached) | ⬜ | [ ] |
-| P1-0620 | Joinder, Waiver and Consent | ⬜ | [ ] |
+| P1-0620 | Joinder, Waiver and Consent | ✅ | [ ] |
 | P1-0630 | Notice of Disqualification of Personal Representative | ⬜ | [ ] |
-| P1-0640 | Notice of Confidential Information Within Court Filing | ⬜ | [ ] |
-| P1-0641 | Notice of Confidential Information Within Court Filing (contemporaneous) | ⬜ | [ ] |
+| P1-0640 | Notice of Confidential Information Within Court Filing | ✅ (P1-NOTICE-CONFIDENTIAL) | [ ] |
+| P1-0641 | Notice of Confidential Information Within Court Filing (contemporaneous) | ✅ (P1-NOTICE-CONFIDENTIAL) | [ ] |
 
 ### Trust / email / compensation
 | ID | Form | Status | SKIP |
 |---|---|---|---|
-| P1-0800 | Notice of Trust (formerly P4-0800) | ⬜ | [ ] |
+| P1-0800 | Notice of Trust (formerly P4-0800) | ✅ | [ ] |
 | P1-0900 | Notice of Designation of Email Addresses for Service | ✅ | — |
 | P1-0910 | Statement Regarding Compensation of PR (will) | ⬜ | [ ] |
 | P1-0915 | Statement Regarding Compensation of PR (codicil) | ⬜ | [ ] |
@@ -84,21 +84,21 @@ Legend: ✅ = already built · ⬜ = missing · SKIP `[x]` = do not build
 ### Curator
 | ID | Form | Status | SKIP |
 |---|---|---|---|
-| P3-0050 | Petition to Appoint Curator | ⬜ | [ ] |
-| P3-0065 | Order Appointing Curator (no bond) | ⬜ | [ ] |
-| P3-0070 | Order Appointing Curator (bond required) | ⬜ | [ ] |
-| P3-0071 | Oath of Curator and Designation/Acceptance of Resident Agent | ⬜ | [ ] |
-| P3-0075 | Letters of Curatorship | ⬜ | [ ] |
+| P3-0050 | Petition to Appoint Curator | ✅ (P3-CURATOR-PETITION) | [ ] |
+| P3-0065 | Order Appointing Curator (no bond) | ✅ (P3-CURATOR-ORDER) | [ ] |
+| P3-0070 | Order Appointing Curator (bond required) | ✅ (P3-CURATOR-ORDER) | [ ] |
+| P3-0071 | Oath of Curator and Designation/Acceptance of Resident Agent | ✅ (P3-CURATOR-OATH) | [ ] |
+| P3-0075 | Letters of Curatorship | ✅ (P3-CURATOR-LETTERS) | [ ] |
 
 ### Petitions for Administration (missing variants)
 | ID | Form | Status | SKIP |
 |---|---|---|---|
 | P3-0110 | Petition — testate, FL resident, multiple petitioners, single PR | ⬜ | [ ] |
 | P3-0111 | Petition — testate, FL resident, multiple petitioners and PRs | ⬜ | [ ] |
-| P3-0130 | Petition — intestate, FL resident, multiple petitioners, single PR | ⬜ | [ ] |
+| P3-0130 | Petition — intestate, FL resident, multiple petitioners, single PR | ✅ (P3-PETITION) | [ ] |
 | P3-0131 | Petition — intestate, FL resident, multiple petitioners and PRs | ⬜ | [ ] |
-| P3-0140 | Petition — testate, nonresident, single petitioner | ⬜ | [ ] |
-| P3-0150 | Petition — testate, nonresident, multiple petitioners, single PR | ⬜ | [ ] |
+| P3-0140 | Petition — testate, nonresident, single petitioner | ✅ (P3-ORDER) | [ ] |
+| P3-0150 | Petition — testate, nonresident, multiple petitioners, single PR | ✅ (P3-ORDER) | [ ] |
 | P3-0151 | Petition — testate, nonresident, multiple petitioners and PRs | ⬜ | [ ] |
 | P3-0160 | Petition — intestate, nonresident, single petitioner | ⬜ | [ ] |
 | P3-0170 | Petition — intestate, nonresident, multiple petitioners, single PR | ⬜ | [ ] |
@@ -108,20 +108,20 @@ Legend: ✅ = already built · ⬜ = missing · SKIP `[x]` = do not build
 | ID | Form | Status | SKIP |
 |---|---|---|---|
 | P3-0190 | Waiver of Notice by Domiciliary PR | ⬜ | [ ] |
-| P3-0200 | Waiver of Priority, Consent to PR, Waiver of Notice and Bond (single) | ⬜ | [ ] |
+| P3-0200 | Waiver of Priority, Consent to PR, Waiver of Notice and Bond (single) | ✅ (P3-ORDER) | [ ] |
 | P3-0210 | Waiver of Priority, Consent to PR, Waiver of Notice and Bond (multiple) | ⬜ | [ ] |
 
 ### Proof of will / codicil / commissioner
 | ID | Form | Status | SKIP |
 |---|---|---|---|
-| P3-0300 | Oath of Witness to Will | ⬜ | [ ] |
-| P3-0301 | Oath of Witness to Will (copy) | ⬜ | [ ] |
-| P3-0310 | Oath of Witness to Codicil | ⬜ | [ ] |
-| P3-0311 | Oath of Witness to Codicil (copy) | ⬜ | [ ] |
-| P3-0320 | Proof of Will | ⬜ | [ ] |
-| P3-0330 | Proof of Codicil | ⬜ | [ ] |
+| P3-0300 | Oath of Witness to Will | ✅ (P3-OATH-WITNESS) | [ ] |
+| P3-0301 | Oath of Witness to Will (copy) | ✅ (P3-OATH-WITNESS) | [ ] |
+| P3-0310 | Oath of Witness to Codicil | ✅ (P3-OATH-WITNESS) | [ ] |
+| P3-0311 | Oath of Witness to Codicil (copy) | ✅ (P3-OATH-WITNESS) | [ ] |
+| P3-0320 | Proof of Will | ✅ (P3-PROOF-WILL) | [ ] |
+| P3-0330 | Proof of Codicil | ✅ (P3-PROOF-WILL) | [ ] |
 | P3-0350 | Petition to Appoint Commissioner | ⬜ | [ ] |
-| P3-0360 | Order to Appoint Commissioner | ⬜ | [ ] |
+| P3-0360 | Order to Appoint Commissioner | ✅ (P3-LETTERS) | [ ] |
 
 ### Orders admitting will / appointing PR (testate)
 | ID | Form | Status | SKIP |
@@ -276,32 +276,32 @@ Legend: ✅ = already built · ⬜ = missing · SKIP `[x]` = do not build
 |---|---|---|---|
 | P5-0100 | Petition to Extend Time for Filing Final Accounting + Petition for Discharge | ⬜ | [ ] |
 | P5-0200 | Order Extending Time for Filing Final Accounting + Petition for Discharge | ⬜ | [ ] |
-| P5-0300 | Notice of Interim Accounting | ⬜ | [ ] |
-| P5-0340 | Accounting of Personal Representatives | ⬜ | [ ] |
+| P5-0300 | Notice of Interim Accounting | 🚫 dropped | [ ] |
+| P5-0340 | Accounting of Personal Representatives | 🚫 dropped | [ ] |
 
 ### Petition for Discharge (accounting path)
 | ID | Form | Status | SKIP |
 |---|---|---|---|
-| P5-0401 | Petition for Discharge (multiple PR) | ⬜ | [ ] |
-| P5-0410 | Notice of Final Accounting and Petition for Discharge | ⬜ | [ ] |
-| P5-0411 | Proof of Service of Notice of Final Accounting + Petition for Discharge | ⬜ | [ ] |
-| P5-0420 | Receipt of Petition for Discharge and Accounting + Consent to Distribution | ⬜ | [ ] |
+| P5-0401 | Petition for Discharge (multiple PR) | 🚫 dropped | [ ] |
+| P5-0410 | Notice of Final Accounting and Petition for Discharge | 🚫 dropped | [ ] |
+| P5-0411 | Proof of Service of Notice of Final Accounting + Petition for Discharge | 🚫 dropped | [ ] |
+| P5-0420 | Receipt of Petition for Discharge and Accounting + Consent to Distribution | 🚫 dropped | [ ] |
 
 ### Waiver-of-accounting path
 | ID | Form | Status | SKIP |
 |---|---|---|---|
-| P5-0500 | Waiver of Accounting and Service of Petition for Discharge | ⬜ | [ ] |
-| P5-0501 | Waiver of Accounting and Service of Petition for Discharge + Consent to Distribution | ⬜ | [ ] |
-| P5-0510 | Receipt | ⬜ | [ ] |
-| P5-0511 | Receipt (with refunding language) | ⬜ | [ ] |
+| P5-0500 | Waiver of Accounting and Service of Petition for Discharge | 🚫 dropped | [ ] |
+| P5-0501 | Waiver of Accounting and Service of Petition for Discharge + Consent to Distribution | 🚫 dropped | [ ] |
+| P5-0510 | Receipt | ✅ (P5-RECEIPT) | [ ] |
+| P5-0511 | Receipt (with refunding language) | ✅ (P5-RECEIPT) | [ ] |
 | P5-0520 | Waiver of Accounting + Receipt of Beneficiary + Consent to Discharge | ⬜ | [ ] |
 | P5-0530 | Receipt of Beneficiary and Consent to Discharge | ⬜ | [ ] |
 
 ### Full-waiver discharge
 | ID | Form | Status | SKIP |
 |---|---|---|---|
-| P5-0550 | Petition for Discharge (full waiver) | ⬜ | [ ] |
-| P5-0551 | Petition for Discharge (full waiver, multiple PRs) | ⬜ | [ ] |
+| P5-0550 | Petition for Discharge (full waiver) | ✅ (P5-PETITION-DISCHARGE-FULL-WAIVER) | [ ] |
+| P5-0551 | Petition for Discharge (full waiver, multiple PRs) | ✅ (P5-PETITION-DISCHARGE-FULL-WAIVER) | [ ] |
 
 ### Release / distribution / report
 | ID | Form | Status | SKIP |
@@ -309,13 +309,13 @@ Legend: ✅ = already built · ⬜ = missing · SKIP `[x]` = do not build
 | P5-0600 | PR Release and Certificate of Distribution of Real Property (single PR) | ⬜ | [ ] |
 | P5-0605 | PR Release and Certificate of Distribution of Real Property (multiple PR) | ⬜ | [ ] |
 | P5-0610 | PR Release and Certificate of Distribution of Real Property (corporate PR) | ⬜ | [ ] |
-| P5-0700 | Report of Distribution (single PR) | ⬜ | [ ] |
-| P5-0701 | Report of Distribution (multiple PR) | ⬜ | [ ] |
+| P5-0700 | Report of Distribution (single PR) | ✅ (P5-REPORT-DIST) | [ ] |
+| P5-0701 | Report of Distribution (multiple PR) | ✅ (P5-REPORT-DIST) | [ ] |
 
 ### Orders of Discharge / further admin
 | ID | Form | Status | SKIP |
 |---|---|---|---|
-| P5-0810 | Order of Discharge (multiple PR) | ⬜ | [ ] |
+| P5-0810 | Order of Discharge (multiple PR) | ✅ (P5-ORDER-DISCHARGE) | [ ] |
 | P5-0900 | Petition for Further Administration | ⬜ | [ ] |
 | P5-0901 | Order for Further Administration | ⬜ | [ ] |
 
