@@ -257,6 +257,16 @@ Address values are objects: `{ street, line2, city, state, zip, foreign, foreign
 - Once the app becomes a more complete file-management system, re-integrate the Broward mandatory checklists as an interactive **pre-filing review step** (not drafting-time).
 - **Rule-violation warnings at questionnaire time** — e.g., if beneficiaries include a trust, surface trust-disclosure requirement; if decedent residence is non-FL and petitioner isn't related, flag residency requirement.
 
+**Priority 1d — Guardianship of a Minor forms (NEXT — added 2026-04-29):**
+*New build-out track.* Existing G2/G3 templates cover adult AIPs/wards only. Minor guardianship is a separate FLSSI form family that the app does not yet support. Build via the same builder pattern as the rebuilt adult guardianship templates (`build_guardianship_templates.py`).
+
+- [ ] Catalog the FLSSI minor-guardianship forms in `docs/FORMS_CATALOG_MAP.md` (Petition for Appointment of Guardian of Minor; Order Appointing; Letters; Oath/Acceptance; consent/waiver forms; minor's preference/designation if 14+).
+- [ ] Add a "Guardianship of a minor" path to the matter-creation flow / wizard (sibling to existing guardianship-of-person/property paths). Subject = minor's name; matter-level flags for `minor_age_14_plus`, `parents_consent`, `parents_deceased`, `natural_guardian_designated_in_will`, etc.
+- [ ] Auto-populate: petitioner(s) (parent/relative), minor's name + DOB, parents' names/addresses (or status if deceased), minor's preference if age 14+.
+- [ ] Build templates via `build_guardianship_templates.py` (use existing `_pleading_para`, `_apply_running_header`, signature block, AI cert helpers). Caption format: "IN RE: GUARDIANSHIP OF {minor_name}, A MINOR".
+- [ ] Bond + plan considerations: minor-guardianship requires Initial Plan + Annual Plan/Accounting. Likely fold into existing G3 annual templates with a `is_minor` axis rather than duplicating.
+- [ ] Live-test with Jill/Maribel before marking complete. Maribel drafts; Jill is attorney of record.
+
 **Priority 2 — FLSSI catalog build-out (waiting on David):**
 - David marks `[x]` in SKIP column of `docs/FORMS_CATALOG_MAP.md`; build all unmarked forms via the builder pattern.
 
@@ -303,9 +313,10 @@ The adversary axis is already built into P1-FORMAL-NOTICE and P1-PROOF-OF-SERVIC
    - Generate one each of: P1-CAVEAT (creditor + IP, resident + nonresident), P1-FORMAL-NOTICE (regular + adversary), P1-PROOF-OF-SERVICE-FN (all 3 service types × adversary), P1-0100, P1-0620, P1-0800, P1-NOTICE-CONFIDENTIAL (contemporaneous + after-the-fact)
    - Generate the curator suite (P3-CURATOR-PETITION/ORDER/OATH/LETTERS), P3-OATH-WITNESS (will/codicil × original/copy), P3-PROOF-WILL (will + codicil)
 2. **Live-test the guardianship side.** Phase 7a/7b shipped without a Jill/Maribel test pass. Walk a G3-025 or G3-026 questionnaire end-to-end.
-3. **Start P3-0740 Notice to Creditors rebuild** — small, self-contained legacy template.
-4. **Discharge cluster (full-waiver path)** — P5-PETITION-DISCHARGE-FULL-WAIVER, P5-RECEIPT, P5-REPORT-DIST, P5-ORDER-DISCHARGE smart templates. ~9 FLSSI forms → 5 templates. See queue.
-5. **Or schedule the Priority 1b matter-data interview** if David explicitly asks — next big architectural move.
+3. **Guardianship of a Minor forms (Priority 1d, NEW).** Catalog the FLSSI minor-guardianship form family, add a minor path to the matter-creation flow, build templates via the existing guardianship builder pattern. See Priority 1d for the breakdown.
+4. **Start P3-0740 Notice to Creditors rebuild** — small, self-contained legacy template.
+5. **Discharge cluster (full-waiver path)** — P5-PETITION-DISCHARGE-FULL-WAIVER, P5-RECEIPT, P5-REPORT-DIST, P5-ORDER-DISCHARGE smart templates. ~9 FLSSI forms → 5 templates. See queue.
+6. **Or schedule the Priority 1b matter-data interview** if David explicitly asks — next big architectural move.
 
 ---
 
@@ -345,7 +356,7 @@ The adversary axis is already built into P1-FORMAL-NOTICE and P1-PROOF-OF-SERVIC
 
 **Live-test Phase 8** before doing any more building — that's the biggest open risk. Walk all the new smart templates end-to-end on a real matter.
 
-Then: **P3-0740 Notice to Creditors** rebuild (small, self-contained). Or **Discharge cluster (full-waiver path)** — P5-PETITION-DISCHARGE-FULL-WAIVER + P5-RECEIPT + P5-REPORT-DIST + P5-ORDER-DISCHARGE smart templates. Or any deferred Priority 1a feedback items (#2 names schema change, #6 interest dropdown, #14 self-proved will witnesses, #16 cut-off item). Or the architectural Priority 1b matter-level data interview if David asks.
+Then: **Guardianship of a Minor forms (Priority 1d, new track 2026-04-29)** — catalog FLSSI minor-guardianship forms, add a minor path to the matter-creation flow, build templates via the existing guardianship builder pattern. Or **P3-0740 Notice to Creditors** rebuild (small, self-contained). Or **Discharge cluster (full-waiver path)** — P5-PETITION-DISCHARGE-FULL-WAIVER + P5-RECEIPT + P5-REPORT-DIST + P5-ORDER-DISCHARGE smart templates. Or any deferred Priority 1a feedback items (#2 names schema change, #6 interest dropdown, #14 self-proved will witnesses, #16 cut-off item). Or the architectural Priority 1b matter-level data interview if David asks.
 
 ### Constraints
 
