@@ -1521,8 +1521,10 @@
               "label": "If no, brief explanation (e.g. 'as the AIP has no preneed documents')",
               "type": "text",
               "visible_if": {
-                "field": "has_preneed",
-                "not_equals": true
+                "all": [
+                  { "matter_flag": "is_adult_incapacity", "equals": true },
+                  { "field": "has_preneed", "not_equals": true }
+                ]
               }
             }
           ]
@@ -1719,6 +1721,10 @@
         },
         {
           "title": "Petition Reference (Adult-incapacity only)",
+          "visible_if": {
+            "matter_flag": "is_adult_incapacity",
+            "equals": true
+          },
           "fields": [
             {
               "name": "_incap_order_intro",
@@ -1729,11 +1735,7 @@
             {
               "name": "incapacity_order_date",
               "label": "Date of Order Determining Incapacity",
-              "type": "date",
-              "visible_if": {
-                "matter_flag": "is_adult_incapacity",
-                "equals": true
-              }
+              "type": "date"
             }
           ]
         },
@@ -1759,6 +1761,10 @@
         },
         {
           "title": "Advance Directive (Plenary only)",
+          "visible_if": {
+            "matter_flag": "is_plenary",
+            "equals": true
+          },
           "fields": [
             {
               "name": "_ad_intro",
@@ -1769,11 +1775,7 @@
             {
               "name": "has_advance_directive",
               "label": "Ward executed a valid advance directive prior to incapacity",
-              "type": "checkbox",
-              "visible_if": {
-                "matter_flag": "is_plenary",
-                "equals": true
-              }
+              "type": "checkbox"
             },
             {
               "name": "advance_directive_disposition",

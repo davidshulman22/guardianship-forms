@@ -2211,7 +2211,8 @@ function renderMergedFormFields() {
                 } else {
                     mergedSections.push({
                         title: section.title,
-                        fields: [...newFields]
+                        fields: [...newFields],
+                        visible_if: section.visible_if
                     });
                 }
             }
@@ -2222,6 +2223,7 @@ function renderMergedFormFields() {
     mergedSections.forEach(section => {
         const sectionDiv = document.createElement('div');
         sectionDiv.className = 'form-section';
+        applyVisibleIfAttrs(sectionDiv, section.visible_if, 'form');
 
         const titleH3 = document.createElement('h3');
         titleH3.textContent = section.title;
@@ -2531,11 +2533,17 @@ function collectAddressFieldNames() {
 
 // Tag a field container with visibility metadata. applyConditionalVisibility()
 // reads these after every field change and toggles display.
-// Two sources are supported:
+// Three shapes are supported:
 //   { field: 'other_field', equals: true }       — read currentFormData
 //   { matter_flag: 'is_ancillary', equals: true } — read currentMatter.matterData
+//   { all: [ {...}, {...} ] }                     — AND of the simple shapes above
 function applyVisibleIfAttrs(el, visibleIf, scope) {
     if (!visibleIf) return;
+    if (Array.isArray(visibleIf.all)) {
+        el.dataset.visibleIfAll = JSON.stringify(visibleIf.all);
+        el.dataset.visibleIfScope = scope || 'form';
+        return;
+    }
     if (visibleIf.matter_flag) {
         el.dataset.visibleIfMatterFlag = visibleIf.matter_flag;
     } else if (visibleIf.field) {
@@ -2804,30 +2812,37 @@ function renderRepeatingGroupItem(field, item, index) {
 function applyConditionalVisibility() {
     const container = document.getElementById('formFieldsContainer');
     if (!container) return;
-    container.querySelectorAll('[data-visible-if-field], [data-visible-if-matter-flag]').forEach(el => {
-        let actual;
-        const matterFlag = el.dataset.visibleIfMatterFlag;
-        if (matterFlag) {
-            const md = (currentMatter && currentMatter.matterData) || {};
-            actual = md[matterFlag];
-        } else {
-            const fieldName = el.dataset.visibleIfField;
-            const scope = el.dataset.visibleIfScope || 'form';
-            if (scope === 'row') {
-                const parent = el.dataset.visibleIfParentField;
-                const idx = parseInt(el.dataset.visibleIfRowIndex, 10);
-                const row = (currentFormData[parent] || [])[idx] || {};
-                actual = row[fieldName];
-            } else {
-                actual = currentFormData[fieldName];
+    container.querySelectorAll('[data-visible-if-field], [data-visible-if-matter-flag], [data-visible-if-all]').forEach(el => {
+        const scope = el.dataset.visibleIfScope || 'form';
+        const parent = el.dataset.visibleIfParentField;
+        const idx = parseInt(el.dataset.visibleIfRowIndex, 10);
+        const evalSimple = (cond) => {
+            let actual;
+            if (cond.matter_flag) {
+                const md = (currentMatter && currentMatter.matterData) || {};
+                actual = md[cond.matter_flag];
+            } else if (cond.field) {
+                if (scope === 'row') {
+                    const row = (currentFormData[parent] || [])[idx] || {};
+                    actual = row[cond.field];
+                } else {
+                    actual = currentFormData[cond.field];
+                }
             }
-        }
+            if ('equals' in cond) return actual === cond.equals;
+            if ('not_equals' in cond) return actual !== cond.not_equals;
+            return true;
+        };
         let show = true;
-        if ('visibleIfEquals' in el.dataset) {
-            show = actual === JSON.parse(el.dataset.visibleIfEquals);
-        }
-        if ('visibleIfNotEquals' in el.dataset) {
-            show = actual !== JSON.parse(el.dataset.visibleIfNotEquals);
+        if (el.dataset.visibleIfAll) {
+            show = JSON.parse(el.dataset.visibleIfAll).every(evalSimple);
+        } else {
+            const cond = {};
+            if (el.dataset.visibleIfMatterFlag) cond.matter_flag = el.dataset.visibleIfMatterFlag;
+            if (el.dataset.visibleIfField) cond.field = el.dataset.visibleIfField;
+            if ('visibleIfEquals' in el.dataset) cond.equals = JSON.parse(el.dataset.visibleIfEquals);
+            if ('visibleIfNotEquals' in el.dataset) cond.not_equals = JSON.parse(el.dataset.visibleIfNotEquals);
+            show = evalSimple(cond);
         }
         el.style.display = show ? '' : 'none';
     });
