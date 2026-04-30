@@ -728,6 +728,100 @@
       ]
     },
     {
+      "id": "G3-EMERGENCY-ORDER",
+      "name": "Order Appointing Emergency Temporary Guardian",
+      "template": "templates/G3-EMERGENCY-ORDER.docx",
+      "sections": [
+        {
+          "title": "Proposed Guardian (auto-populated from emergency petition)",
+          "fields": [
+            {
+              "name": "proposed_guardian_name",
+              "label": "Proposed guardian's name",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "title": "Bond + Powers",
+          "fields": [
+            {
+              "name": "_etg_intro",
+              "type": "info",
+              "severity": "info",
+              "content": "Emergency Order is judge-signed. Bond amount + the specific powers granted to the ETG are usually drafted by counsel and approved (or modified) at the hearing."
+            },
+            {
+              "name": "bond_amount",
+              "label": "Bond amount (numeric, no $)",
+              "type": "text",
+              "placeholder": "e.g. 25,000"
+            },
+            {
+              "name": "emergency_powers_duties",
+              "label": "Specific powers and duties granted to the emergency temporary guardian",
+              "type": "textarea",
+              "placeholder": "e.g. to consent to medical treatment, to pay routine expenses, to manage the Ward's checking account..."
+            }
+          ]
+        },
+        {
+          "title": "Advance Directive",
+          "fields": [
+            {
+              "name": "_ad_intro",
+              "type": "info",
+              "severity": "info",
+              "content": "If the Ward executed a health care advance directive (e.g., living will, healthcare surrogate designation under \u00a7765.202) prior to the alleged incapacity, check this box. The Order will recite that the Court is aware of the AD and the ETG cannot exercise health care decisions until further order."
+            },
+            {
+              "name": "has_advance_directive",
+              "label": "Ward executed an advance directive prior to incapacity",
+              "type": "checkbox"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "G3-EMERGENCY-LETTERS",
+      "name": "Letters of Emergency Temporary Guardianship",
+      "template": "templates/G3-EMERGENCY-LETTERS.docx",
+      "sections": [
+        {
+          "title": "Proposed Guardian (auto-populated from emergency petition)",
+          "fields": [
+            {
+              "name": "proposed_guardian_name",
+              "label": "Proposed guardian's name",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "title": "Powers + Health-Care Authority",
+          "fields": [
+            {
+              "name": "_letters_intro",
+              "type": "info",
+              "severity": "info",
+              "content": "Auto-populates from the Emergency Order. Edit only if Letters need different language than the Order."
+            },
+            {
+              "name": "emergency_powers_duties",
+              "label": "Powers and duties (auto-populated from Order)",
+              "type": "textarea"
+            },
+            {
+              "name": "emergency_health_care_authority",
+              "label": "ETG has authority to make health care decisions",
+              "type": "checkbox"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "G3-025",
       "name": "Petition for Appointment of Plenary Guardian of Property",
       "template": "templates/G3-025.docx",

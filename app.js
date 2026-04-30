@@ -1336,12 +1336,12 @@ const wizardFormMatrix_guardianship = {
 
     // Adult-incapacity, with emergency: adds G3-EMERGENCY (today's G3-010, kept separate
     // — different statute §744.3031). Long-term plenary/limited petition still filed.
-    'adult|plenary|person|yes':   { forms: ['G2-010', 'G2-140', 'G3-EMERGENCY', 'G3-PETITION', 'G3-OATH', 'G3-ORDER', 'G3-LETTERS'], broward: ['BW-0010'] },
-    'adult|plenary|property|yes': { forms: ['G2-010', 'G2-140', 'G3-EMERGENCY', 'G3-PETITION', 'G3-OATH', 'G3-ORDER', 'G3-LETTERS'], broward: ['BW-0010'] },
-    'adult|plenary|both|yes':     { forms: ['G2-010', 'G2-140', 'G3-EMERGENCY', 'G3-PETITION', 'G3-OATH', 'G3-ORDER', 'G3-LETTERS'], broward: ['BW-0010'] },
-    'adult|limited|person|yes':   { forms: ['G2-010', 'G2-140', 'G3-EMERGENCY', 'G3-PETITION', 'G3-OATH', 'G3-ORDER', 'G3-LETTERS'], broward: ['BW-0010'] },
-    'adult|limited|property|yes': { forms: ['G2-010', 'G2-140', 'G3-EMERGENCY', 'G3-PETITION', 'G3-OATH', 'G3-ORDER', 'G3-LETTERS'], broward: ['BW-0010'] },
-    'adult|limited|both|yes':     { forms: ['G2-010', 'G2-140', 'G3-EMERGENCY', 'G3-PETITION', 'G3-OATH', 'G3-ORDER', 'G3-LETTERS'], broward: ['BW-0010'] },
+    'adult|plenary|person|yes':   { forms: ['G2-010', 'G2-140', 'G3-EMERGENCY', 'G3-EMERGENCY-ORDER', 'G3-EMERGENCY-LETTERS', 'G3-PETITION', 'G3-OATH', 'G3-ORDER', 'G3-LETTERS'], broward: ['BW-0010'] },
+    'adult|plenary|property|yes': { forms: ['G2-010', 'G2-140', 'G3-EMERGENCY', 'G3-EMERGENCY-ORDER', 'G3-EMERGENCY-LETTERS', 'G3-PETITION', 'G3-OATH', 'G3-ORDER', 'G3-LETTERS'], broward: ['BW-0010'] },
+    'adult|plenary|both|yes':     { forms: ['G2-010', 'G2-140', 'G3-EMERGENCY', 'G3-EMERGENCY-ORDER', 'G3-EMERGENCY-LETTERS', 'G3-PETITION', 'G3-OATH', 'G3-ORDER', 'G3-LETTERS'], broward: ['BW-0010'] },
+    'adult|limited|person|yes':   { forms: ['G2-010', 'G2-140', 'G3-EMERGENCY', 'G3-EMERGENCY-ORDER', 'G3-EMERGENCY-LETTERS', 'G3-PETITION', 'G3-OATH', 'G3-ORDER', 'G3-LETTERS'], broward: ['BW-0010'] },
+    'adult|limited|property|yes': { forms: ['G2-010', 'G2-140', 'G3-EMERGENCY', 'G3-EMERGENCY-ORDER', 'G3-EMERGENCY-LETTERS', 'G3-PETITION', 'G3-OATH', 'G3-ORDER', 'G3-LETTERS'], broward: ['BW-0010'] },
+    'adult|limited|both|yes':     { forms: ['G2-010', 'G2-140', 'G3-EMERGENCY', 'G3-EMERGENCY-ORDER', 'G3-EMERGENCY-LETTERS', 'G3-PETITION', 'G3-OATH', 'G3-ORDER', 'G3-LETTERS'], broward: ['BW-0010'] },
 
     // Minor: NO incapacity proceedings (G2-010 not used). Smart G3-PETITION branches
     // on is_minor + scope. Authority is N/A — minor guardianship is statutorily defined.

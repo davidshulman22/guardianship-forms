@@ -1558,6 +1558,155 @@ def build_g3_120():
     print(f'Wrote {out_path}')
 
 
+# ---------------------------------------------------------------------------
+# G3-EMERGENCY-ORDER  Order Appointing Emergency Temporary Guardian
+# ---------------------------------------------------------------------------
+#
+# Replaces FLSSI G-3.060 (no advance directive) + G-3.060a1 (advance
+# directive). Branches on has_advance_directive. Judge-signed -> no AI cert.
+# ---------------------------------------------------------------------------
+
+def build_g3_emergency_order():
+    doc = Document()
+    _apply_page_setup(doc)
+    _apply_running_header(doc, 'Guardianship of {aip_name} — Emergency')
+
+    _add_guardianship_caption(doc, 'An alleged incapacitated person')
+
+    _add_para(doc, 'ORDER APPOINTING EMERGENCY',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=0)
+    _add_para(doc, 'TEMPORARY GUARDIAN',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=0)
+    _add_para(doc,
+        '{#has_advance_directive}(advance directive){/has_advance_directive}',
+        align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, space_after=18)
+
+    _add_para(doc,
+        'On the petition of {petitioner_name} for appointment of an emergency '
+        'temporary guardian for {aip_name}, an alleged incapacitated person, '
+        'who is represented by counsel in these proceedings, and it appearing '
+        'to the court that there is an imminent danger that the physical or '
+        'mental health or safety of the alleged incapacitated person will be '
+        'seriously impaired or that the property of that person is in danger '
+        'of being wasted, misappropriated or lost unless immediate action is '
+        'taken; and the court having jurisdiction and being fully advised; it is',
+        space_after=12)
+
+    _add_para(doc, 'ADJUDGED as follows:', bold=True, space_after=12)
+
+    _ensure_pleading_numbering(doc)
+
+    _pleading_para(doc,
+        '{proposed_guardian_name} is qualified to serve and is hereby '
+        'appointed as emergency temporary guardian {scope_phrase} of '
+        '{aip_name} (the Ward).')
+
+    _pleading_para(doc,
+        'Upon taking the prescribed oath, filing a designation of resident '
+        'agent and acceptance, and posting bond in the amount of '
+        '${bond_amount} payable to the Governor of the State of Florida and '
+        'all successors in office, conditioned on the faithful performance '
+        'of all duties by the guardian, letters of emergency temporary '
+        'guardianship shall be issued to the emergency temporary guardian '
+        'granting the following powers and duties: {emergency_powers_duties}.')
+
+    _pleading_para(doc,
+        '{^has_advance_directive}The Court is not aware whether the Ward has '
+        'executed any valid advance directive pursuant to Chapter 765, Florida '
+        'Statutes. If any such advance directive exists, the guardian shall '
+        'exercise no authority to make health care decisions until further '
+        'order of this Court.{/has_advance_directive}'
+        '{#has_advance_directive}The Court is aware that the Ward has '
+        'executed an advance directive pursuant to Florida Statutes Chapter '
+        '765, but is unaware if it is valid and effective. The guardian shall '
+        'not exercise authority to make health care decisions until further '
+        'order of this Court.{/has_advance_directive}')
+
+    _pleading_para(doc,
+        'Unless further extended by order of this Court, the authority of '
+        'the emergency temporary guardian will expire ninety (90) days after '
+        'the date of this order, or when a guardian is appointed pursuant to '
+        'Florida Statutes section 744.2005, whichever occurs first.')
+
+    _add_para(doc, '', space_after=18)
+    _add_para(doc, 'ORDERED on this _____ day of __________, 20___.',
+              first_indent=Inches(0.5), space_after=24)
+
+    _add_para(doc, '_______________________________________', align=WD_ALIGN_PARAGRAPH.RIGHT, space_after=0)
+    _add_para(doc, 'Circuit Judge', align=WD_ALIGN_PARAGRAPH.RIGHT, space_after=0)
+
+    # NO AI certification — judge-signed.
+
+    out_path = os.path.join(TEMPLATE_DIR, 'G3-EMERGENCY-ORDER.docx')
+    doc.save(out_path)
+    _inject_numbering_part(out_path)
+    print(f'Wrote {out_path}')
+
+
+# ---------------------------------------------------------------------------
+# G3-EMERGENCY-LETTERS  Letters of Emergency Temporary Guardianship
+# ---------------------------------------------------------------------------
+#
+# Replaces FLSSI G-3.110. Judge-/clerk-signed -> no AI cert.
+# ---------------------------------------------------------------------------
+
+def build_g3_emergency_letters():
+    doc = Document()
+    _apply_page_setup(doc)
+    _apply_running_header(doc, 'Guardianship of {aip_name} — ETG Letters')
+
+    _add_guardianship_caption(doc, 'An alleged incapacitated person')
+
+    _add_para(doc, 'LETTERS OF EMERGENCY',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=0)
+    _add_para(doc, 'TEMPORARY GUARDIANSHIP',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=18)
+
+    _add_para(doc, 'TO ALL WHOM IT MAY CONCERN:', bold=True, space_after=12)
+
+    _add_para(doc,
+        'WHEREAS, {proposed_guardian_name} has been appointed emergency '
+        'temporary guardian {scope_phrase} of {aip_name} (the Ward), and has '
+        'taken the prescribed oath and performed all other acts prerequisite '
+        'to issuance of letters of emergency temporary guardianship of the '
+        'Ward,',
+        space_after=12)
+
+    _add_para(doc,
+        'NOW THEREFORE, I, the undersigned circuit judge, declare '
+        '{proposed_guardian_name} duly qualified under the laws of the State '
+        'of Florida to act as emergency temporary guardian {scope_phrase} of '
+        '{aip_name}, with full power to exercise the following powers and '
+        'duties: {emergency_powers_duties}.',
+        space_after=12)
+
+    _add_para(doc,
+        'The guardian '
+        '{#emergency_health_care_authority}shall{/emergency_health_care_authority}'
+        '{^emergency_health_care_authority}shall not{/emergency_health_care_authority} '
+        'have authority to make health care decisions until further order of '
+        'this Court.',
+        space_after=12)
+
+    _add_para(doc,
+        'The authority of the emergency temporary guardian expires ninety '
+        '(90) days after the date hereof, unless earlier terminated by the '
+        'appointment of a guardian or extended by order of this court.',
+        space_after=24)
+
+    _add_para(doc, 'WITNESS my hand and the seal of this Court, on this _____ day of __________, 20___.',
+              space_after=24)
+
+    _add_para(doc, '_______________________________________', align=WD_ALIGN_PARAGRAPH.RIGHT, space_after=0)
+    _add_para(doc, 'Circuit Judge', align=WD_ALIGN_PARAGRAPH.RIGHT, space_after=0)
+
+    # NO AI certification — judge-signed.
+
+    out_path = os.path.join(TEMPLATE_DIR, 'G3-EMERGENCY-LETTERS.docx')
+    doc.save(out_path)
+    print(f'Wrote {out_path}')
+
+
 if __name__ == '__main__':
     os.makedirs(TEMPLATE_DIR, exist_ok=True)
     build_g2_010()
@@ -1572,3 +1721,6 @@ if __name__ == '__main__':
     build_g3_letters()
     build_g3_vol_petition()
     build_g3_120()
+    # Phase 11 (F): emergency Order + Letters
+    build_g3_emergency_order()
+    build_g3_emergency_letters()
