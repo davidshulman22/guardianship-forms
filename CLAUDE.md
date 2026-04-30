@@ -10,9 +10,13 @@ David Shulman is both the builder and the primary end user. He handles probate m
 
 ## Current State
 
-39 forms in forms.json (5 guardianship, 28 probate FLSSI / general / closing, 6 Broward local — 5 of which are PDF passthrough). Open Estate wizard guides form selection. All templates pass the tag audit.
+45 forms in forms.json (12 guardianship, 28 probate FLSSI / general / closing, 6 Broward local — 5 of which are PDF passthrough). Open Estate wizard + Open Guardianship wizard both guide form selection. All templates pass the tag audit.
 
-**Template rebuild in progress.** 10 templates on the new builder pattern: G2-010, G2-140, G3-010, G3-025, G3-026, P3-PETITION, P3-OATH, P3-ORDER, P3-LETTERS, P1-0900. ~24 legacy probate templates still queued (summary admin, closing, inventory, notice to creditors, BW-0060). The new pattern produces real Word numbering, 1.5 line spacing, no empty spacer paragraphs, and Broward AI certification above the signature block.
+**Template rebuild in progress.** Templates on the new builder pattern:
+- **Guardianship (12):** G2-010, G2-140, G3-010, G3-025, G3-026, plus 7 smart templates added in Phase 10 (G3-PETITION replaces 9 FLSSI forms, G3-EMERGENCY, G3-OATH replaces 2, G3-ORDER replaces 13, G3-LETTERS replaces 14, G3-VOL-PETITION, G3-120). Net: ~40 FLSSI guardianship forms collapsed into 7 smart templates.
+- **Probate (5):** P3-PETITION, P3-OATH, P3-ORDER, P3-LETTERS, P1-0900. ~24 legacy probate templates still queued (summary admin, closing, inventory, notice to creditors, BW-0060).
+
+The pattern produces real Word numbering, 1.5 line spacing, no empty spacer paragraphs, and Broward AI certification above the signature block (judge-signed templates carry no AI cert per the hard rule).
 
 **5 forms delivered as PDF passthrough** (BW-0010 / BW-0020 / BW-0030 / BW-0040 / BW-0050) — clerk's official PDF bundled byte-for-byte instead of generating a .docx.
 
@@ -95,14 +99,24 @@ python3 -m http.server 8765
 
 ## Key Features
 
-### Open Estate Wizard
-The primary entry point for filing. Asks 4 questions:
+### Open Estate Wizard (probate)
+The primary entry point for probate filings. Asks 4 questions:
 1. **Administration**: Formal / Summary
 2. **Will**: Testate / Intestate
 3. **Jurisdiction**: Domiciliary / Ancillary
 4. **County**: Broward / Palm Beach / Miami-Dade / Other
 
-These map to a `wizardFormMatrix` in app.js that selects the exact right set of forms. County = Broward triggers local forms (BW-*) automatically.
+Maps to `wizardFormMatrix` in app.js. County = Broward triggers local forms (BW-*) automatically.
+
+### Open Guardianship Wizard (guardianship)
+Parallel to the probate wizard. Asks 4 questions:
+1. **Capacity**: Adult / Minor / Voluntary (drives which downstream questions show)
+2. **Authority**: Plenary / Limited (Adult only)
+3. **Scope**: Person / Property / Person & Property (Adult + Minor)
+4. **Emergency Temporary?**: Yes / No (Adult only)
+5. **County**
+
+Maps to `wizardFormMatrix_guardianship` (16 keyed combos). Sets matter-level flags read by smart templates: `is_minor`, `is_voluntary`, `is_adult_incapacity`, `is_plenary`, `is_limited`, `scope_person/_property/_both`, `is_emergency_temporary`, plus 6 derived gates (`is_scope_person_only`, `is_scope_property_only`, `show_limited_person_rights`, `show_limited_property_rights_only`, `show_limited_property_section`, `includes_property`). `initWizardForMatter()` dispatches by matter type.
 
 ### Batch Form Generation
 - Select multiple forms (via wizard, bundle presets, or manual checkboxes)
@@ -174,6 +188,17 @@ Bump `seedVersion` in `loadClientsFromStorage()` to force test data refresh.
 - `_add_probate_caption(doc)` — "IN RE: ESTATE OF {decedent_full_name}, Deceased."
 - `_beneficiaries_table(doc)` — 4-col beneficiaries table
 - `_add_probate_signature_block(doc)` — petitioner + attorney block for probate petitions
+
+**Guardianship smart-template presentation tokens** (computed in `prepareTemplateData()` — single-token interpolation instead of nested conditionals):
+- `guardian_kind_caps` / `guardian_kind_lower` — "PLENARY GUARDIAN" / "LIMITED GUARDIAN" / "GUARDIAN OF MINOR" (and lowercase variant)
+- `scope_subtitle` — "(Incapacity - person)" / "(Guardianship of Person and Property)" etc.
+- `scope_phrase` — "of the person" / "of the property" / "of the person and property"
+- `ward_term` / `ward_term_lower` — "Ward" / "ward" (adult) vs "minor" (minor)
+- `delegable_rights_phrase` — plenary: "all delegable rights of the Ward"; limited: "the delegable rights of the Ward identified above"
+- `limited_aspects_phrase` — text varies by scope ("physical health or safety" / "management of the Ward's financial resources" / both)
+- `order_scope_line` / `letters_scope_line` — second line of order/letters title (e.g., "OF PERSON AND PROPERTY OF MINOR")
+- `order_subtitle` — third line of order title (e.g., "(Total incapacity – advance directive)")
+- `letters_kind_caps` — "PLENARY GUARDIANSHIP" / "LIMITED GUARDIANSHIP" / "GUARDIANSHIP OF MINOR"
 
 **Pattern to follow:**
 ```python

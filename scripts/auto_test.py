@@ -60,6 +60,8 @@ JUDGE_SIGNED = [
     "P2-ORDER",
     "P3-CURATOR-ORDER",
     "P3-CURATOR-LETTERS",
+    "G3-ORDER",
+    "G3-LETTERS",
 ]
 
 

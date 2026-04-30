@@ -1523,6 +1523,21 @@ function wizardLoadGuardianshipForms() {
         currentMatter.matterData.scope_person = (s.scope === 'person' || s.scope === 'both');
         currentMatter.matterData.scope_property = (s.scope === 'property' || s.scope === 'both');
         currentMatter.matterData.scope_both = s.scope === 'both';
+        // Exclusive scope flags for questionnaire visibility (visible_if takes
+        // only one matter_flag — these collapse two-axis gates into one).
+        currentMatter.matterData.is_scope_person_only = s.scope === 'person';
+        currentMatter.matterData.is_scope_property_only = s.scope === 'property';
+        // Limited-guardianship section gates (is_limited + scope axis).
+        currentMatter.matterData.show_limited_person_rights =
+            s.authority === 'limited' && (s.scope === 'person' || s.scope === 'both');
+        currentMatter.matterData.show_limited_property_rights_only =
+            s.authority === 'limited' && s.scope === 'property';
+        currentMatter.matterData.show_limited_property_section =
+            s.authority === 'limited' && (s.scope === 'property' || s.scope === 'both');
+        // Property-section gate (any scope that includes property, regardless
+        // of plenary/limited/minor).
+        currentMatter.matterData.includes_property =
+            s.scope === 'property' || s.scope === 'both';
         currentMatter.matterData.is_emergency_temporary = s.emergency === 'yes';
         saveClientsToStorage();
     }
@@ -3280,6 +3295,99 @@ function prepareTemplateData() {
     data.service_type_certified = data.service_type === 'formal_notice_certified';
     data.service_type_first_class = data.service_type === 'formal_notice_first_class';
     data.service_type_in_manner_of = data.service_type === 'in_the_manner_of';
+
+    // Guardianship smart-template presentation tokens. The Open Guardianship
+    // wizard sets matter-level flags (is_minor / is_adult_incapacity /
+    // is_plenary / is_limited / scope_*); these tokens collapse the dozens
+    // of nested conditionals the body text would otherwise need into
+    // single-token interpolations like {guardian_kind_caps}, {scope_phrase}.
+    if (md.is_minor || md.is_adult_incapacity) {
+        const isMinor = md.is_minor === true;
+        const isPlenary = md.is_plenary === true;
+        const isLimited = md.is_limited === true;
+        const scope = md.scope_both ? 'both'
+                    : md.is_scope_person_only ? 'person'
+                    : md.is_scope_property_only ? 'property'
+                    : (md.scope_property ? 'both' : (md.scope_person ? 'person' : ''));
+        // ward / minor terminology
+        data.ward_term = isMinor ? 'minor' : 'Ward';
+        data.ward_term_lower = isMinor ? 'minor' : 'ward';
+        // guardian-kind label (caps + lower)
+        if (isMinor) {
+            data.guardian_kind_caps = 'GUARDIAN OF MINOR';
+            data.guardian_kind_lower = 'guardian';
+        } else if (isPlenary) {
+            data.guardian_kind_caps = 'PLENARY GUARDIAN';
+            data.guardian_kind_lower = 'plenary guardian';
+        } else if (isLimited) {
+            data.guardian_kind_caps = 'LIMITED GUARDIAN';
+            data.guardian_kind_lower = 'limited guardian';
+        }
+        // scope phrase used in body + closing
+        const scopePhraseMap = {
+            'person': 'of the person',
+            'property': 'of the property',
+            'both': 'of the person and property'
+        };
+        data.scope_phrase = scopePhraseMap[scope] || '';
+        // subtitle under the title — varies on capacity track + scope
+        const minorSubtitle = {
+            'person':   '(Guardianship of Person)',
+            'property': '(Guardianship of Property)',
+            'both':     '(Guardianship of Person and Property)'
+        };
+        const incapSubtitle = {
+            'person':   '(Incapacity - person)',
+            'property': '(Incapacity - property)',
+            'both':     '(Incapacity - person and property)'
+        };
+        data.scope_subtitle = isMinor ? (minorSubtitle[scope] || '') : (incapSubtitle[scope] || '');
+        // alternatives-paragraph closing — plenary vs limited differ
+        data.delegable_rights_phrase = isPlenary
+            ? 'all delegable rights of the Ward'
+            : (isLimited ? 'the delegable rights of the Ward identified above' : '');
+        // limited-only "essential requirements" lead-in by scope
+        const limitedAspects = {
+            'person':   'physical health or safety',
+            'property': 'management of the Ward’s financial resources',
+            'both':     'physical health or safety and certain aspects of the management of the Ward’s financial resources'
+        };
+        data.limited_aspects_phrase = limitedAspects[scope] || '';
+        // property-table lead-in — limited petitions say "approximate"; plenary doesn't.
+        data.limited_property_lead = isLimited ? 'approximate ' : 'nature and ';
+        // Order title second line (G3-ORDER) — "OF PERSON [AND PROPERTY] [OF MINOR]"
+        const orderScopeMap = {
+            'person': 'OF PERSON',
+            'property': 'OF PROPERTY',
+            'both': 'OF PERSON AND PROPERTY'
+        };
+        const baseOrderScope = orderScopeMap[scope] || '';
+        data.order_scope_line = isMinor && baseOrderScope ? (baseOrderScope + ' OF MINOR') : baseOrderScope;
+        // Letters second line — same shape, used by G3-LETTERS
+        data.letters_scope_line = data.order_scope_line;
+        // Order subtitle parenthetical (G3-ORDER) — minor has none.
+        if (isMinor) {
+            data.order_subtitle = '';
+        } else if (isPlenary) {
+            data.order_subtitle = data.has_advance_directive
+                ? '(Total incapacity – advance directive)'
+                : '(Total incapacity – no known advance directive)';
+        } else if (isLimited) {
+            data.order_subtitle = '(Limited incapacity – no known advance directive)';
+        } else {
+            data.order_subtitle = '';
+        }
+        // Letters title (G3-LETTERS) — "GUARDIANSHIP" suffix variant.
+        if (isMinor) {
+            data.letters_kind_caps = 'GUARDIANSHIP OF MINOR';
+        } else if (isPlenary) {
+            data.letters_kind_caps = 'PLENARY GUARDIANSHIP';
+        } else if (isLimited) {
+            data.letters_kind_caps = 'LIMITED GUARDIANSHIP';
+        } else {
+            data.letters_kind_caps = 'GUARDIANSHIP';
+        }
+    }
 
     // Proof of Will (P3-PROOF-WILL) derived flags. Two selects drive body
     // language for unavailable-witness reason + affiant's relation to estate.

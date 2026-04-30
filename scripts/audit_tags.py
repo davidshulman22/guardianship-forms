@@ -52,6 +52,22 @@ AUTO_POPULATED = {
     "estate_assets_total", "estate_assets_total_formatted",
     # Venue reason prose composed from venue_reason_type_* checkboxes + other
     "venue_reason",
+    # Guardianship matter-level flags (set by Open Guardianship wizard)
+    "is_minor", "is_voluntary", "is_adult_incapacity",
+    "is_plenary", "is_limited",
+    "scope_person", "scope_property", "scope_both",
+    "is_scope_person_only", "is_scope_property_only",
+    "is_emergency_temporary",
+    "show_limited_person_rights", "show_limited_property_rights_only",
+    "show_limited_property_section", "includes_property",
+    # Guardianship smart-template presentation tokens (prepareTemplateData)
+    "guardian_kind_caps", "guardian_kind_lower",
+    "scope_subtitle", "scope_phrase",
+    "ward_term", "ward_term_lower",
+    "delegable_rights_phrase", "limited_aspects_phrase",
+    "limited_property_lead",
+    "order_scope_line", "order_subtitle",
+    "letters_scope_line", "letters_kind_caps",
 }
 
 TAG_RE = re.compile(r"\{[#/^]?([a-zA-Z0-9_]+)\}")
