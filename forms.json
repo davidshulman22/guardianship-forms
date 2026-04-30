@@ -4414,53 +4414,45 @@
       ]
     },
     {
-      "id": "P5-0400",
-      "name": "Petition for Discharge (single PR)",
-      "template": "templates/P5-0400.docx",
+      "id": "P5-PETITION-DISCHARGE-FULL-WAIVER",
+      "name": "Petition for Discharge (full-waiver path)",
+      "template": "templates/P5-PETITION-DISCHARGE-FULL-WAIVER.docx",
       "sections": [
         {
-          "title": "Case Information",
+          "title": "Letters of Administration",
           "fields": [
             {
-              "name": "pr_name",
-              "label": "Personal representative name",
-              "type": "text"
+              "name": "_letters_intro",
+              "type": "info",
+              "severity": "info",
+              "content": "Date Letters of Administration (or Letters of Ancillary Administration if applicable) were issued to the personal representative."
             },
             {
-              "name": "decedent_full_name",
-              "label": "Decedent full name",
-              "type": "text"
-            },
-            {
-              "name": "decedent_residence",
-              "label": "Decedent residence",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_date",
-              "label": "Date of death",
-              "type": "text"
-            },
-            {
-              "name": "decedent_death_year",
-              "label": "Year of death",
-              "type": "text"
-            },
-            {
-              "name": "letters_date",
-              "label": "Date letters issued",
-              "type": "text"
-            },
-            {
-              "name": "letters_year",
-              "label": "Year letters issued",
-              "type": "text"
+              "name": "letters_issued_date",
+              "label": "Date Letters of Administration were issued",
+              "type": "date"
             }
           ]
         },
         {
-          "title": "Interested Persons",
+          "title": "Estate Tax Return",
           "fields": [
+            {
+              "name": "estate_tax_return_required",
+              "label": "Federal estate tax return (Form 706) was required and filed",
+              "type": "checkbox"
+            }
+          ]
+        },
+        {
+          "title": "Persons with Interest in Proceeding",
+          "fields": [
+            {
+              "name": "_ip_intro",
+              "type": "info",
+              "severity": "info",
+              "content": "List anyone other than the personal representative(s) who has an interest in the discharge proceeding (e.g., residuary beneficiaries who signed waivers)."
+            },
             {
               "name": "interested_persons",
               "label": "Interested persons",
@@ -4474,95 +4466,120 @@
                 {
                   "name": "ip_address",
                   "label": "Address",
-                  "type": "text"
+                  "type": "address"
                 }
               ]
             }
           ]
         },
         {
-          "title": "Signing and Attorney",
+          "title": "Generative AI Disclosure",
           "fields": [
             {
-              "name": "signing_day",
-              "label": "Day",
-              "type": "text"
-            },
-            {
-              "name": "signing_month",
-              "label": "Month",
-              "type": "text"
-            },
-            {
-              "name": "signing_year",
-              "label": "Year",
-              "type": "text"
-            },
-            {
-              "name": "attorney_email",
-              "label": "Attorney email",
-              "type": "text"
-            },
-            {
-              "name": "attorney_email_secondary",
-              "label": "Secondary email",
-              "type": "text"
-            },
-            {
-              "name": "attorney_bar_no",
-              "label": "Florida Bar No.",
-              "type": "text"
-            },
-            {
-              "name": "attorney_phone",
-              "label": "Telephone",
-              "type": "text"
+              "name": "used_ai",
+              "label": "Was generative AI used to draft this document?",
+              "type": "checkbox"
             }
           ]
         }
       ]
     },
     {
-      "id": "P5-0800",
-      "name": "Order of Discharge (single PR)",
-      "template": "templates/P5-0800.docx",
+      "id": "P5-RECEIPT",
+      "name": "Receipt (with optional refunding language)",
+      "template": "templates/P5-RECEIPT.docx",
       "sections": [
         {
-          "title": "Case Information",
+          "title": "Recipient",
           "fields": [
             {
-              "name": "pr_name",
-              "label": "Personal representative name",
+              "name": "receipt_recipient_name",
+              "label": "Recipient's full name",
               "type": "text"
             },
             {
-              "name": "decedent_full_name",
-              "label": "Decedent full name",
+              "name": "receipt_recipient_interest",
+              "label": "Recipient's interest in estate (e.g., 'beneficiary under Article III of will')",
+              "type": "text"
+            },
+            {
+              "name": "receipt_property_received",
+              "label": "Description of property received (e.g., '$10,000 cash and one Rolex watch')",
+              "type": "textarea"
+            }
+          ]
+        },
+        {
+          "title": "Refunding Clause",
+          "fields": [
+            {
+              "name": "_refunding_intro",
+              "type": "info",
+              "severity": "info",
+              "content": "Add the refunding clause if you want recipients to be required to return improperly-distributed property. Standard for distributions made before final accounting; optional otherwise."
+            },
+            {
+              "name": "receipt_includes_refunding",
+              "label": "Include refunding clause (P5-0511 variant)",
+              "type": "checkbox"
+            }
+          ]
+        },
+        {
+          "title": "Generative AI Disclosure",
+          "fields": [
+            {
+              "name": "used_ai",
+              "label": "Was generative AI used to draft this document?",
+              "type": "checkbox"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P5-REPORT-DIST",
+      "name": "Report of Distribution",
+      "template": "templates/P5-REPORT-DIST.docx",
+      "sections": [
+        {
+          "title": "Certificate of Service",
+          "fields": [
+            {
+              "name": "_cos_intro",
+              "type": "info",
+              "severity": "info",
+              "content": "Whom the Report of Distribution is being served on, and how (e.g., 'all interested persons by U.S. mail and email')."
+            },
+            {
+              "name": "cos_served_to",
+              "label": "Served on (whom)",
+              "type": "text"
+            },
+            {
+              "name": "cos_service_method",
+              "label": "Method of service (e.g., 'U.S. mail and email')",
               "type": "text"
             }
           ]
         },
         {
-          "title": "Order",
+          "title": "Generative AI Disclosure",
           "fields": [
             {
-              "name": "order_date",
-              "label": "Order date",
-              "type": "text"
-            },
-            {
-              "name": "order_year",
-              "label": "Order year",
-              "type": "text"
-            },
-            {
-              "name": "judge_name",
-              "label": "Circuit Judge name",
-              "type": "text"
+              "name": "used_ai",
+              "label": "Was generative AI used to draft this document?",
+              "type": "checkbox"
             }
           ]
         }
       ]
+    },
+    {
+      "id": "P5-ORDER-DISCHARGE",
+      "name": "Order of Discharge",
+      "template": "templates/P5-ORDER-DISCHARGE.docx",
+      "sections": []
     },
     {
       "id": "BW-0010",

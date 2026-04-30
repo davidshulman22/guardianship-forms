@@ -62,6 +62,7 @@ JUDGE_SIGNED = [
     "P3-CURATOR-LETTERS",
     "G3-ORDER",
     "G3-LETTERS",
+    "P5-ORDER-DISCHARGE",
 ]
 
 

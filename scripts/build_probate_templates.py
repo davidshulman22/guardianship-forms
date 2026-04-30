@@ -2102,6 +2102,294 @@ def build_p1_0800():
 
 
 # ---------------------------------------------------------------------------
+# Discharge cluster (full-waiver path) — Phase 11 (E)
+# ---------------------------------------------------------------------------
+# Replaces 8 FLSSI forms (P5-0510/0511, P5-0550/0551, P5-0700/0701,
+# P5-0800/0810) with 4 smart templates branching on multiple_prs and
+# receipt_includes_refunding. David never uses the non-full-waiver path
+# (P5-0400/0401/0500/0501/0410/0411/0420 — all dropped).
+# ---------------------------------------------------------------------------
+
+def build_p5_petition_discharge_full_waiver():
+    """Petition for Discharge (full waiver path) — replaces P5-0550 +
+    P5-0551. Branches on multiple_prs for grammar."""
+    doc = Document()
+    _apply_page_setup(doc)
+    _apply_running_header(doc, 'Estate of {decedent_name}')
+    _ensure_pleading_numbering(doc)
+
+    _add_probate_caption(doc)
+
+    _add_para(doc, 'PETITION FOR DISCHARGE',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=0)
+    _add_para(doc,
+        '(full waiver — '
+        '{^multiple_prs}single personal representative{/multiple_prs}'
+        '{#multiple_prs}multiple personal representatives{/multiple_prs})',
+        align=WD_ALIGN_PARAGRAPH.CENTER, space_after=18)
+
+    # Intro — petitioner == PR(s).
+    _add_para(doc,
+        '{petitioner_label}, {pr_names}, as {pr_label} of the above estate, '
+        '{petitioner_verb_alleges}:',
+        space_after=12)
+
+    # 1. Date of death + letters issuance.
+    _pleading_para(doc,
+        'The decedent, {decedent_full_name}, a resident of '
+        '{^is_ancillary}{decedent_domicile} County, Florida{/is_ancillary}'
+        '{#is_ancillary}{decedent_domicile_state}{/is_ancillary}, died on '
+        '{decedent_death_date}, and Letters of '
+        '{#is_ancillary}Ancillary {/is_ancillary}Administration were issued '
+        'to {petitioner_label} on {letters_issued_date}.')
+
+    # 2. Full administration.
+    _pleading_para(doc,
+        '{petitioner_label} {petitioner_verb_has} fully administered this '
+        'estate by making payment, settlement, or other disposition of all '
+        'claims and debts that were presented, and by paying or making '
+        'provision for the payment of all taxes and expenses of administration.')
+
+    # 3. Estate tax.
+    _pleading_para(doc,
+        '{petitioner_label} {petitioner_verb_has} '
+        '{#estate_tax_return_required}filed all required estate tax returns '
+        'with the Internal Revenue Service and {petitioner_verb_has} obtained '
+        'and filed with this court evidence of the satisfaction of this '
+        'estate’s obligations for federal estate tax.{/estate_tax_return_required}'
+        '{^estate_tax_return_required}determined that no federal estate tax '
+        'return was required for this estate.{/estate_tax_return_required}')
+
+    # 4. Other interested persons (table).
+    _pleading_para(doc,
+        'The only persons, other than {petitioner_label}, having an interest '
+        'in this proceeding, and their respective addresses are:',
+        keep_with_next=True)
+    _interested_persons_table(doc)
+
+    # 5. Waivers (lettered list a-i — use level-1 of the pleading numbering).
+    _pleading_para(doc,
+        '{petitioner_label}, pursuant to Florida Statutes section 731.302, '
+        '{petitioner_verb_has} filed herewith waivers and receipts signed by '
+        'all interested persons:',
+        keep_with_next=True)
+
+    waivers = [
+        'acknowledging that they are aware of the right to have a final accounting;',
+        'waiving the filing and service of a final accounting;',
+        'waiving the inclusion in this petition of the amount of compensation paid or to be paid to the personal representative, attorneys, accountants, appraisers or other agents employed by the personal representative and the manner of determining that compensation;',
+        'acknowledging that they have actual knowledge of the amount and manner of determining the compensation of the personal representative, attorneys, accountants, appraisers, or other agents employed by the personal representative, and agreeing to the amount and manner of determining such compensation, and waiving any objections to the payment of such compensation;',
+        'waiving the inclusion in this petition of a plan of distribution;',
+        'waiving service of this petition and all notice thereof;',
+        'waiving all objections to any accounting and to the Petition for Discharge;',
+        'acknowledging receipt of complete distribution of the share of the estate to which they are entitled;',
+        'consenting to the entry of an order discharging {petitioner_label}, as {pr_label}, without notice, hearing or waiting period and without further accounting.',
+    ]
+    for w in waivers:
+        _pleading_para(doc, w, level=1)
+
+    # WHEREFORE
+    indent = Inches(0.5)
+    _add_para(doc,
+        '{petitioner_label} request{^multiple_petitioners}s{/multiple_petitioners} '
+        'that an order be entered discharging {petitioner_label} as {pr_label} '
+        'of this estate and releasing the surety on any bond which '
+        '{petitioner_label} may have posted in this proceeding from any '
+        'liability on it.',
+        first_indent=indent, space_before=12, space_after=12)
+
+    _add_para(doc,
+        'Under penalties of perjury, {petitioner_label} declare'
+        '{^multiple_petitioners}s{/multiple_petitioners} that {petitioner_label} '
+        '{petitioner_verb_has} read the foregoing, and the facts alleged are '
+        'true, to the best of {petitioner_poss} knowledge and belief.',
+        first_indent=indent, space_after=18)
+
+    _add_broward_ai_certification(doc, 'Petition for Discharge')
+    _add_miami_dade_ai_certification(doc, 'Petition for Discharge')
+
+    _add_probate_signature_block(doc)
+
+    out_path = os.path.join(TEMPLATE_DIR, 'P5-PETITION-DISCHARGE-FULL-WAIVER.docx')
+    doc.save(out_path)
+    _inject_numbering_part(out_path)
+    print(f'Wrote {out_path}')
+
+
+def _interested_persons_table(doc):
+    """Two-column bordered table for the discharge petition's
+    'persons having an interest' list. Repeats over `interested_persons[]`."""
+    tbl = _table_with_borders(doc, rows=2, cols=2, col_widths_in=[2.8, 3.7])
+    for cell in tbl.rows[0].cells:
+        _clear_cell(cell)
+    _cell_para(tbl.cell(0, 0), 'NAME', bold=True, space_after=0)
+    _cell_para(tbl.cell(0, 1), 'ADDRESS', bold=True, space_after=0)
+    for cell in tbl.rows[1].cells:
+        _clear_cell(cell)
+    _cell_para(tbl.cell(1, 0), '{#interested_persons}{ip_name}', space_after=0)
+    _cell_para(tbl.cell(1, 1), '{ip_address}{/interested_persons}', space_after=0)
+    return tbl
+
+
+def build_p5_receipt():
+    """Receipt — replaces P5-0510 (basic) + P5-0511 (with refunding
+    language). Branches on receipt_includes_refunding."""
+    doc = Document()
+    _apply_page_setup(doc)
+    _apply_running_header(doc, 'Estate of {decedent_name}')
+
+    _add_probate_caption(doc)
+
+    _add_para(doc, 'RECEIPT',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=0)
+    _add_para(doc,
+        '{#receipt_includes_refunding}(with refunding language){/receipt_includes_refunding}',
+        align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, space_after=18)
+
+    _add_para(doc,
+        'The undersigned, {receipt_recipient_name}, having an interest in '
+        'this estate as {receipt_recipient_interest}, hereby acknowledges '
+        'having received from the {pr_label} of this estate the following:',
+        space_after=12)
+
+    indent = Inches(0.5)
+    _add_para(doc, '{receipt_property_received}',
+              first_indent=indent, space_after=18)
+
+    # Conditional refunding paragraph (P5-0511 variant).
+    _add_para(doc,
+        '{#receipt_includes_refunding}A condition of this distribution is '
+        'the agreement by the undersigned to return to the {pr_label}, upon '
+        'demand, any property improperly received and its income since '
+        'distribution or, if the undersigned does not have the property, to '
+        'return to the {pr_label} the value of the property at the date of '
+        'disposition and its income and gain received. The undersigned shall '
+        'have no obligation to return the property unless it was improperly '
+        'distributed.{/receipt_includes_refunding}',
+        space_after=18)
+
+    _add_broward_ai_certification(doc, 'Receipt')
+    _add_miami_dade_ai_certification(doc, 'Receipt')
+
+    _add_para(doc, 'Signed on this _____ day of __________, 20___.',
+              first_indent=indent, space_after=24)
+    _add_para(doc, '_______________________________________', space_after=0)
+    _add_para(doc, '{receipt_recipient_name}', space_after=0)
+
+    out_path = os.path.join(TEMPLATE_DIR, 'P5-RECEIPT.docx')
+    doc.save(out_path)
+    print(f'Wrote {out_path}')
+
+
+def build_p5_report_dist():
+    """Report of Distribution — replaces P5-0700 + P5-0701. Branches on
+    multiple_prs."""
+    doc = Document()
+    _apply_page_setup(doc)
+    _apply_running_header(doc, 'Estate of {decedent_name}')
+    _ensure_pleading_numbering(doc)
+
+    _add_probate_caption(doc)
+
+    _add_para(doc, 'REPORT OF DISTRIBUTION',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=0)
+    _add_para(doc,
+        '({^multiple_prs}single personal representative{/multiple_prs}'
+        '{#multiple_prs}multiple personal representatives{/multiple_prs})',
+        align=WD_ALIGN_PARAGRAPH.CENTER, space_after=18)
+
+    _add_para(doc,
+        '{petitioner_label}, {pr_names}, {petitioner_verb_alleges}:',
+        space_after=12)
+
+    _pleading_para(doc,
+        '{petitioner_label}, as the {pr_label} of the above estate, file'
+        '{^multiple_petitioners}s{/multiple_petitioners} herewith all '
+        'remaining receipts necessary to show that the estate has been '
+        'distributed in accordance with the proposed plan of distribution '
+        'set forth in the Petition for Discharge.')
+
+    _pleading_para(doc,
+        'The claims of all creditors have been paid or otherwise disposed of.')
+
+    indent = Inches(0.5)
+    _add_para(doc,
+        '{petitioner_label} request{^multiple_petitioners}s{/multiple_petitioners} '
+        'that an order be entered discharging {petitioner_label} as '
+        '{pr_label} of this estate, and releasing the surety on '
+        '{petitioner_poss} bond, if any, from further liability thereon.',
+        first_indent=indent, space_before=12, space_after=12)
+
+    _add_para(doc,
+        'Under penalties of perjury, {petitioner_label} declare'
+        '{^multiple_petitioners}s{/multiple_petitioners} that {petitioner_label} '
+        '{petitioner_verb_has} read the foregoing, and the facts alleged are '
+        'true, to the best of {petitioner_poss} knowledge and belief.',
+        first_indent=indent, space_after=18)
+
+    _add_broward_ai_certification(doc, 'Report of Distribution')
+    _add_miami_dade_ai_certification(doc, 'Report of Distribution')
+
+    _add_probate_signature_block(doc)
+
+    # Certificate of Service (FLSSI P5-0700/0701 includes one).
+    _add_para(doc, 'CERTIFICATE OF SERVICE',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_before=18, space_after=12)
+    _add_para(doc,
+        'I CERTIFY that a copy of the foregoing Report of Distribution has '
+        'been furnished to {cos_served_to} by {cos_service_method} on this '
+        '_____ day of __________, 20___.',
+        first_indent=indent, space_after=24)
+    _add_para(doc, '_______________________________________', space_after=0)
+    _add_para(doc, '{attorney_name}, Attorney for {petitioner_label}', space_after=0)
+
+    out_path = os.path.join(TEMPLATE_DIR, 'P5-REPORT-DIST.docx')
+    doc.save(out_path)
+    _inject_numbering_part(out_path)
+    print(f'Wrote {out_path}')
+
+
+def build_p5_order_discharge():
+    """Order of Discharge — replaces P5-0800 + P5-0810. Branches on
+    multiple_prs. Judge-signed → NO AI certification."""
+    doc = Document()
+    _apply_page_setup(doc)
+    _apply_running_header(doc, 'Estate of {decedent_name}')
+
+    _add_probate_caption(doc)
+
+    _add_para(doc, 'ORDER OF DISCHARGE',
+              align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, space_after=0)
+    _add_para(doc,
+        '({^multiple_prs}single personal representative{/multiple_prs}'
+        '{#multiple_prs}multiple personal representatives{/multiple_prs})',
+        align=WD_ALIGN_PARAGRAPH.CENTER, space_after=18)
+
+    _add_para(doc,
+        'On the Petition for Discharge of {pr_names}, as {pr_label} of the '
+        'estate of {decedent_full_name}, deceased, the court finding that '
+        'the estate has been fully administered and properly distributed, '
+        'that claims of creditors have been paid or otherwise disposed of '
+        'and that the {pr_label} should be discharged, it therefore is',
+        space_after=18)
+
+    _add_para(doc,
+        'ADJUDGED that the {pr_label} '
+        '{^multiple_prs}is{/multiple_prs}{#multiple_prs}are{/multiple_prs} '
+        'discharged, and the surety on the {pr_label}’s bond, if any, is '
+        'released from further liability.',
+        first_indent=Inches(0.5), space_after=18)
+
+    _add_order_signature_block(doc)
+
+    # NO AI certification — judge-signed. Hard rule.
+
+    out_path = os.path.join(TEMPLATE_DIR, 'P5-ORDER-DISCHARGE.docx')
+    doc.save(out_path)
+    print(f'Wrote {out_path}')
+
+
+# ---------------------------------------------------------------------------
 # P3-0740  Notice to Creditors (formal administration)
 # ---------------------------------------------------------------------------
 
@@ -2442,3 +2730,8 @@ if __name__ == '__main__':
     build_p3_0740()
     build_p3_0900()
     build_bw_0060()
+    # Phase 11 discharge cluster (item E)
+    build_p5_petition_discharge_full_waiver()
+    build_p5_receipt()
+    build_p5_report_dist()
+    build_p5_order_discharge()
