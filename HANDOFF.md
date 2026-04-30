@@ -2,6 +2,10 @@
 **Last updated:** 2026-04-29 (end of day)
 **Status:** Phases 1–9 all merged + pushed to `main` and live. 38 forms, 38 active templates. Phase 8 + 7a/7b live-tested by Cowork on 2026-04-29 — 41/50 PASS, 5 real bugs found, all 5 fixed same day in commits `7fcc787` (BUG-3 + AI cert refactor) and `1d9ec4f` (BUG-1, BUG-4, BUG-5). Auto-test harness (`scripts/auto_test.py`) added in `7ed3c0a` — 19 PASS / 0 FAIL on current main, runs without browser/Cowork. Tag audit passes.
 
+**Priority shift 2026-04-29 evening:** Guardianship parity push is now Priority 1. Probate work (formerly Priority 1) demoted to Priority 2. Goal: bring the guardianship side to the same level of polish and form coverage as probate, with Jill and Maribel as live users. See Section 6 + the deck at `~/Desktop/GS Court Forms — for Jill & Maribel.pdf`.
+
+**Phase 10 IN-FLIGHT (uncommitted on this worktree as of save):** Open Guardianship wizard built and verified end-to-end. FLSSI guardianship source mounted. Smart-template plan locked. **Smart templates not built yet — resume there.** Worktree is `.claude/worktrees/happy-mahavira-8b3119`. See Section 5 (Phase 10) and Section 8 for the resume path.
+
 ---
 
 # 0. Where things stand
@@ -145,6 +149,27 @@ Address values are objects: `{ street, line2, city, state, zip, foreign, foreign
 
 # 5. Work Completed 2026-04-23 → 2026-04-29
 
+**Phase 10 IN-FLIGHT (2026-04-29 evening) — Guardianship parity push, Part 1 (uncommitted on this worktree):**
+*Worktree:* `.claude/worktrees/happy-mahavira-8b3119`. Local-only — not pushed; not on `main`. Resume here, don't re-do.
+
+- **Open Guardianship wizard built and verified** — parallel to Open Estate wizard. HTML in `index.html` (id `openGuardianshipWizard`), state + matrix + handlers in `app.js`. Matrix has 16 keyed combos (12 adult-incapacity × emergency-y/n, 3 minor, 1 voluntary). Conditional gating works: capacity drives which follow-up questions show; capacity change resets dependent state to avoid stale picks. Verified end-to-end via `preview_eval` — adult/plenary/both/yes/Broward → 8 forms; minor/both/Broward → 6 forms (no G2-010); voluntary/Broward → 7 forms (incl. G3-VOL-PETITION + G3-120). Setup wired in `setupEventListeners` next to `setupWizard()`. `initWizardForMatter` now dispatches by matter type — calls `initGuardianshipWizardForMatter()` for guardianship matters.
+- **Matter-level flags propagated by wizard:** `is_minor`, `is_voluntary`, `is_adult_incapacity`, `is_plenary`, `is_limited`, `scope_person`, `scope_property`, `scope_both`, `is_emergency_temporary`. These are the axes the smart templates (not yet built) will branch on.
+- **FLSSI guardianship source library mounted:** copied 184 source DOCX from `../../FODGARWD2025/Converted DOCX/` into `reference/FLSSI-2025-GUARDIANSHIP/`. The Index of Guardianship Forms 2025 is alongside (lists every G-* form with rule + statutory references). This is the source of truth for body-text accuracy when building guardianship templates — same role as `reference/FLSSI-2025/` on the probate side.
+- **Jill added to admin allow-list** in [supabase-setup.sql](supabase-setup.sql) so deck slide 5 becomes accurate. **Still requires running the migration in Supabase SQL editor** — see Section 8 for the SQL snippet. The deck has already been sent to Jill and Maribel; the slide says she's on the list; the trigger function needs to actually agree.
+- **Smart-template plan locked in (per FLSSI 2025 index):**
+
+  | New Template | Replaces | Branches on |
+  |---|---|---|
+  | `G3-PETITION` | G-3.020/021/022 (minor) + G-3.023/024/025 (plenary) + G-3.026/027/028 (limited) — 9 forms | `is_minor`, `is_plenary`, `scope_person`/`scope_property`/`scope_both` |
+  | `G3-VOL-PETITION` | G-3.035 (kept separate — different statute) | — |
+  | `G3-EMERGENCY` | G-3.010 (rename today's `G3-010`) | — |
+  | `G3-OATH` | G-3.076 + G-3.078 | `is_emergency` |
+  | `G3-LETTERS` | G-3.100-109 + G-3.110 + G-3.111-113 + G-3.115 — 14 forms | `is_minor`, `is_plenary`, `scope`, `has_advance_directive`, `is_voluntary`, `is_emergency` |
+  | `G3-ORDER` | G-3.060-075 — 13 forms | same axes as Letters |
+
+  Net: ~40 FLSSI forms collapse into 6 smart templates — same compression ratio as probate Phase 8.
+- **NOTHING ELSE BUILT YET.** Wizard's "Load Forms" button references templates that don't exist in `forms.json` and have no `.docx` template. Clicking Load Forms in the current state will populate `selectedFormIds` with phantom IDs. **Resume by writing the G3-PETITION builder first** — see Section 8.
+
 **Phase 9 (2026-04-29) — Cowork live-test pass + bug-fix sweep + auto-tester:**
 - Cowork (Chrome MCP, JS console) ran 8 cohorts / ~50 tests against `main` per `TESTING_PLAN.md`. Results in `TEST_RESULTS.md`: 41 PASS, 5 real bugs.
 - **AI cert refactor (commit `7fcc787`)** — replaces auto-render-when-county-matches with explicit per-form opt-in. New `used_ai` checkbox in a "Generative AI Disclosure" section at the bottom of every form that can carry a cert (default OFF). Templates wrap cert in `{#used_ai}{#county_is_*}...{/}{/}`. Adds Miami-Dade AO 26-04 cert with verbatim text (BUG-3). **Hard rule (per David, 2026-04-29):** nothing signed by a judge ever carries the AI cert — verified by `auto_test.py` against P3-ORDER, P3-LETTERS, P2-ORDER, P3-CURATOR-ORDER, P3-CURATOR-LETTERS.
@@ -210,7 +235,26 @@ Address values are objects: `{ street, line2, city, state, zip, foreign, foreign
 
 # 6. Remaining Work
 
-**Priority 1 — Probate template rebuild (in progress):**
+**Priority 1 — Guardianship parity push (catch up to probate, get J/M buy-in):**
+*Active focus as of 2026-04-29 evening.* The probate side absorbed most of 2026-04 development; guardianship has been frozen at 5 forms (open-incapacity-guardianship-of-an-adult only) since early April. Now bringing guardianship to the same level of polish and form coverage, with Jill and Maribel as the live users driving what gets built.
+
+- [ ] **Open Guardianship wizard** (parallel to Open Estate wizard). Proposed 4 questions (per `~/Desktop/GS Court Forms — for Jill & Maribel.pdf` slide 8):
+  1. **Type of guardianship** — Person & property / Person only / Property only
+  2. **Capacity** — Adult (incapacity) / Minor / Voluntary
+  3. **Emergency temporary guardian?** — Yes / No
+  4. **County** — Broward / Palm Beach / Miami-Dade / Other
+
+  Maps to `wizardFormMatrix` keys → today's 5 G-forms (G2-010, G2-140, G3-010, G3-025, G3-026) plus future Letters/Oath. County=Broward triggers Broward locals (same as probate side). Sets matter-level flags (`is_emergency_temporary`, `is_minor`, `is_voluntary`) the questionnaire reads to gate downstream fields. Small lift — `wizardFormMatrix` and the wizard UI already support the pattern; this is a guardianship branch, not new infrastructure.
+
+- [ ] **Guardianship of minor forms.** Today's 5 built G-forms all assume adult-incapacity. The minor track is a different FLSSI subset — no exam committee, different petition structure (G-3.0902-style), guardian-of-the-person-of-minor and guardian-of-the-property-of-minor variants, no §744.331 hearing on capacity. Wizard's `Capacity = Minor` branch loads these instead of the incapacity path. Identify the right FLSSI minor forms from the catalog and build via `build_guardianship_templates.py`.
+
+- [ ] **Live-test the existing 5 G-forms with Jill and Maribel.** Phase 7a/7b shipped without a J/M pass. The deck `~/Desktop/GS Court Forms — for Jill & Maribel.pdf` is the onboarding artifact — fix slide 5 (admin allow-list claim — Jill is not currently on it) and slide 8 (guardianship wizard mockup vs. reality) before sending. Walk a G3-025 or G3-026 questionnaire end-to-end with them. Goal: buy-in + a list of the next 5–10 G-forms they want built.
+
+- [ ] **Capture the next 5–10 G-forms from J/M feedback.** Per deck slide 15, ask which sections they live in (Section II Incapacity / Section IV Administration / Section VI Termination) and which specific form numbers they reach for most. Build that batch first via `build_guardianship_templates.py`.
+
+- [ ] **Annual administration forms (FLSSI Section IV).** Likely the biggest section Maribel uses — Initial Plan (G-4.010/.015), Annual Plan (G-4.019/.020), Annual Accounting (G-4.025), Verified Inventory (G-4.060), Attorney Fee Petition (G-4.150), Guardian Compensation Petition (G-4.155). ~50 FLSSI forms in this section; smart-template axes (person vs. property guardianship, plenary vs. limited) once patterns emerge.
+
+**Priority 2 — Probate template rebuild (in progress, deprioritized 2026-04-29 in favor of guardianship parity):**
 - [x] Formal admin opening — 4 smart templates (P3-PETITION/OATH/ORDER/LETTERS)
 - [x] P1-0900 Notice of Designation
 - [x] BW-0010 Criminal History affidavit (PDF passthrough)
@@ -232,14 +276,14 @@ Address values are objects: `{ street, line2, city, state, zip, foreign, foreign
 - [ ] **Discharge (full-waiver path only):** P5-0550/0551 → P5-PETITION-DISCHARGE-FULL-WAIVER smart; P5-0510/0511 → P5-RECEIPT smart; P5-0700/0701 → P5-REPORT-DIST smart; P5-0800/0810 → P5-ORDER-DISCHARGE smart. David never uses non-full-waiver path (P5-0400/0401/0500/0501/0300/0340/0410/0411/0420 — all dropped).
 - [ ] BW-0060 Affidavit of Heirs (last remaining BW legacy .docx)
 
-**Priority 1a — Live-test follow-ups deferred from 2026-04-28 testing:**
+**Priority 2a — Probate live-test follow-ups deferred from 2026-04-28 testing:**
 - [ ] **#2** Decedent / Ward / AIP names broken into Last / First / Middle (schema change — affects matter modal + auto-populate + multiple template fields)
 - [ ] **#6** "Interest in estate" as a `select` dropdown with "Other" option (the select type now exists, just needs the data + an "other" free-text path)
 - [ ] **#14** Self-proved will: does the petition need to capture witness names? Verify against FLSSI 2.0103 / template content
 - [ ] **#16** David started a 16th feedback item but it was cut off — confirm what he intended
 - [x] **Universal caption fix (all templates).** ✅ Shipped Phase 7e (2026-04-28 evening) — see Section 5.
 
-**Priority 1b — Matter-level data interview (architectural, in progress on `matter-interview` fork):**
+**Priority 2b — Matter-level data interview (architectural, in progress on `matter-interview` fork):**
 *Active work.* Local-only branch in sibling worktree `../Forms Project Interview/`. Plan of record: that worktree's `docs/MATTER_INTERVIEW_PLAN.md` (entity model: role-based people with tagged roles, single `people[]` and `assets[]` arrays on `matter.matterData`). Will not auto-merge — cherry-pick or merge when proven. Constraint: every field optional, no required inputs ever (per memory).
 
 - Lift decedent / assets / beneficiaries up from per-form `formData` to `matter.matterData`. Today's wizard propagation of `multiple_petitioners` / `multiple_prs` is a small step in this direction.
@@ -253,27 +297,27 @@ Address values are objects: `{ street, line2, city, state, zip, foreign, foreign
 - **Don't start without explicit go-ahead from David.** Plan the schema migration first.
 - Prerequisite for the file-management-system direction.
 
-**Priority 1c — Checklist re-integration (deferred from Phase 5):**
+**Priority 2c — Checklist re-integration (deferred from Phase 5):**
 - Once the app becomes a more complete file-management system, re-integrate the Broward mandatory checklists as an interactive **pre-filing review step** (not drafting-time).
 - **Rule-violation warnings at questionnaire time** — e.g., if beneficiaries include a trust, surface trust-disclosure requirement; if decedent residence is non-FL and petitioner isn't related, flag residency requirement.
 
-**Priority 2 — FLSSI catalog build-out (waiting on David):**
+**Priority 3 — FLSSI catalog build-out (waiting on David):**
 - David marks `[x]` in SKIP column of `docs/FORMS_CATALOG_MAP.md`; build all unmarked forms via the builder pattern.
 
-**Priority 3 — Import bug testing:**
+**Priority 4 — Import bug testing:**
 - End-to-end test: Claude import → wizard → generate → download.
 
-**Priority 4 — Claude direct document generation (v2):**
+**Priority 5 — Claude direct document generation (v2):**
 - "Draft the petition" in chat → .docx output, no browser interaction.
 
-**Priority 5 — Quick Add Matter:**
+**Priority 6 — Quick Add Matter:**
 - Onboard existing mid-stream matters without the opening wizard.
 
-**Priority 6 — Ancillary Broward checklists** (PDFs in `reference/` — Discharge, Disposition, Formal-Ancillary, Homestead, Instructions, Sell-Real-Property, Summary-Ancillary). Same passthrough pattern when forms are wired up.
+**Priority 7 — Ancillary Broward checklists** (PDFs in `reference/` — Discharge, Disposition, Formal-Ancillary, Homestead, Instructions, Sell-Real-Property, Summary-Ancillary). Same passthrough pattern when forms are wired up.
 
-**Priority 7 — Case management / file management system (long-term).** See `docs/CASE_MANAGEMENT_SYSTEM_PLAN.md`.
+**Priority 8 — Case management / file management system (long-term).** See `docs/CASE_MANAGEMENT_SYSTEM_PLAN.md`.
 
-**Priority 8 — Adversary-flavored forms (deprioritized per David 2026-04-28):**
+**Priority 9 — Adversary-flavored forms (deprioritized per David 2026-04-28):**
 The adversary axis is already built into P1-FORMAL-NOTICE and P1-PROOF-OF-SERVICE-FN, so those work for adversary use today. These remaining adversary-only forms are last in the queue:
 - [ ] **P1-0531** Notice of Hearing Adversary — fold into P1-0530 with adversary axis (same pattern as P1-FORMAL-NOTICE)
 - [ ] **P4-0600** Declaration that Proceeding is Adversary
@@ -284,7 +328,7 @@ The adversary axis is already built into P1-FORMAL-NOTICE and P1-PROOF-OF-SERVIC
 
 # 7. Known Issues / Risks
 
-- **4 legacy templates** still on 2-column FLSSI layout: P3-0740, P3-0900, P5-0400, P5-0800, BW-0060. Rebuild queue (Priority 1). Phase 8a-8e collapsed all other legacy P2 + many P3 forms into smart templates.
+- **4 legacy templates** still on 2-column FLSSI layout: P3-0740, P3-0900, P5-0400, P5-0800, BW-0060. Rebuild queue (Priority 2). Phase 8a-8e collapsed all other legacy P2 + many P3 forms into smart templates.
 - **Legacy Supabase rows** with old field names (`will_year`, `signing_month`, `bond_required`, `will_status_*`, `notary_online`, `cl_*`, `scl_*`) remain in the database. Not a failure mode — they're just unused. Fresh matters won't have them.
 - **`resident_agent_address`** still a free-text input (the name field is now validated). Auto-populates from firm address; user can override. Acceptable for now.
 - **Address parser** handles `"street[, line2], city, ST zip"` (with `\n` or `,` separators) and falls back to free-text mode for anything else. Foreign / unstructured addresses go through the toggle.
@@ -295,17 +339,38 @@ The adversary axis is already built into P1-FORMAL-NOTICE and P1-PROOF-OF-SERVIC
 
 # 8. Next Best Action
 
-1. **Live-test Phase 8 work.** All of Phase 8 (a/b/c/d/e) shipped without a live-test pass. Walk through end-to-end:
-   - Open a probate matter via the wizard (testate, single/multi petitioner, dom/ancillary)
-   - Fill out P3-PETITION → P3-OATH → P3-ORDER → P3-LETTERS → P1-0900
-   - Toggle `has_codicil` and verify codicil text renders / doesn't render appropriately on the petition + order + letters
-   - Open a summary admin matter via the wizard, fill out P2-PETITION → P2-ORDER → P2-0355
-   - Generate one each of: P1-CAVEAT (creditor + IP, resident + nonresident), P1-FORMAL-NOTICE (regular + adversary), P1-PROOF-OF-SERVICE-FN (all 3 service types × adversary), P1-0100, P1-0620, P1-0800, P1-NOTICE-CONFIDENTIAL (contemporaneous + after-the-fact)
-   - Generate the curator suite (P3-CURATOR-PETITION/ORDER/OATH/LETTERS), P3-OATH-WITNESS (will/codicil × original/copy), P3-PROOF-WILL (will + codicil)
-2. **Live-test the guardianship side.** Phase 7a/7b shipped without a Jill/Maribel test pass. Walk a G3-025 or G3-026 questionnaire end-to-end.
-3. **Start P3-0740 Notice to Creditors rebuild** — small, self-contained legacy template.
-4. **Discharge cluster (full-waiver path)** — P5-PETITION-DISCHARGE-FULL-WAIVER, P5-RECEIPT, P5-REPORT-DIST, P5-ORDER-DISCHARGE smart templates. ~9 FLSSI forms → 5 templates. See queue.
-5. **Or schedule the Priority 1b matter-data interview** if David explicitly asks — next big architectural move.
+**Resume sequence for the Phase 10 guardianship parity push (in-flight on worktree `.claude/worktrees/happy-mahavira-8b3119`):**
+
+1. **Run the Jill admin migration in Supabase SQL editor** (deck slide 5 promised this; she may have already signed in). The `supabase-setup.sql` file already has the change checked in on this worktree, but the live database needs the trigger function refreshed:
+   ```sql
+   CREATE OR REPLACE FUNCTION handle_new_user()
+   RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER AS $$
+   DECLARE
+     admin_emails text[] := ARRAY[
+       'david@ginsbergshulman.com',
+       'jill@ginsbergshulman.com',
+       'maribel@ginsbergshulman.com'
+     ];
+     assigned_role text;
+   BEGIN
+     assigned_role := CASE WHEN lower(NEW.email) = ANY(admin_emails) THEN 'admin' ELSE 'standard' END;
+     INSERT INTO user_profiles (id, email, role) VALUES (NEW.id, NEW.email, assigned_role) ON CONFLICT (id) DO NOTHING;
+     RETURN NEW;
+   END; $$;
+   -- Promote Jill if she's already signed in:
+   UPDATE user_profiles SET role = 'admin' WHERE email = 'jill@ginsbergshulman.com';
+   ```
+2. **Build the G3-PETITION smart template** — the unblocking template for everything else. Reference: `reference/FLSSI-2025-GUARDIANSHIP/G3-020`/`021`/`022`/`023`/`024`/`025`/`026`/`027`/`028` (9 source DOCX). Pattern: extend `scripts/build_guardianship_templates.py` with a new `build_g3_petition()` function. Branches via docxtemplater conditionals on `is_minor`, `is_plenary`/`is_limited`, `scope_person`/`scope_property`/`scope_both`. Statutory citations differ between minor (744.3021/744.342) and adult-incapacity (744.331/744.3215/744.334), so the legal-basis paragraph is conditional. Body text from FLSSI source is the ground truth.
+3. **Build G3-OATH** (G-3.076 + G-3.078 — small, mostly boilerplate; `is_emergency` flag picks the §744.3031(6) version).
+4. **Build G3-LETTERS** (14 FLSSI variants → 1 smart template).
+5. **Build G3-ORDER** (13 FLSSI variants → 1 smart template).
+6. **Rename today's G3-010 to G3-EMERGENCY** in `forms.json` and the templates dir; keep the petition behavior, just align with the wizard's expected ID.
+7. **Build G3-VOL-PETITION + G3-120** for the voluntary path.
+8. **Update `forms.json`** — add new form IDs (G3-PETITION, G3-OATH, G3-ORDER, G3-LETTERS, G3-EMERGENCY, G3-VOL-PETITION, G3-120). Retire today's G3-025 and G3-026 entries (covered by G3-PETITION). Update Maggie Torres seed matters' bundles.
+9. **Run `python3 scripts/audit_tags.py`** + `python3 scripts/auto_test.py` — both must pass.
+10. **End-to-end test in browser** — open Maggie Torres' Robert Torres guardianship matter; the new wizard should appear; pick Adult/Plenary/Both/No-emergency/Broward; click Load Forms; fill questionnaire; generate; inspect the .docx output for each of the 6 forms.
+11. **Then live-test with Jill and Maribel** using the deck. Capture the next 5–10 G-forms they want built (per deck slide 15). Probably Section IV annual administration is highest-value.
+12. **Probate items (Priority 2) wait their turn after this push.** When guardianship reaches parity: live-test Phase 8 probate work (P3-PETITION/OATH/ORDER/LETTERS, P2 summary admin, curator suite, etc. — see commit log + Section 6 Priority 2 for the full queue), then P3-0740 Notice to Creditors, then the Discharge cluster (full-waiver path). The Priority 2b matter-level data interview is the next big architectural move when David explicitly asks for it.
 
 ---
 
@@ -323,7 +388,7 @@ The adversary axis is already built into P1-FORMAL-NOTICE and P1-PROOF-OF-SERVIC
 
 ### Branch state
 
-`main` is current. The `phase1-2-questionnaire-cleanup` branch is merged and retained for git history. A `matter-interview` branch exists in a sibling worktree (`../Forms Project Interview/`) — local-only, never pushed, exploring the Priority 1b matter-level data interview; will not auto-merge. See that worktree's `docs/MATTER_INTERVIEW_PLAN.md` for its plan. Start of session: `git pull`. New work: branch from `main` if it's a multi-day feature, or commit straight to `main` if it's a small surgical fix.
+`main` is current. The `phase1-2-questionnaire-cleanup` branch is merged and retained for git history. A `matter-interview` branch exists in a sibling worktree (`../Forms Project Interview/`) — local-only, never pushed, exploring the Priority 2b matter-level data interview; will not auto-merge. See that worktree's `docs/MATTER_INTERVIEW_PLAN.md` for its plan. Start of session: `git pull`. New work: branch from `main` if it's a multi-day feature, or commit straight to `main` if it's a small surgical fix.
 
 ### What's deployed (Phases 1–8e, all merged to `main` 2026-04-28)
 
@@ -343,9 +408,9 @@ The adversary axis is already built into P1-FORMAL-NOTICE and P1-PROOF-OF-SERVIC
 
 ### What's next
 
-**Live-test Phase 8** before doing any more building — that's the biggest open risk. Walk all the new smart templates end-to-end on a real matter.
+**Guardianship parity push (Priority 1)** is the active focus as of 2026-04-29 evening. Build the Open Guardianship wizard, add the guardianship-of-minor forms, live-test with Jill and Maribel using the deck `~/Desktop/GS Court Forms — for Jill & Maribel.pdf`, then expand based on which sections (II/IV/VI) they live in.
 
-Then: **P3-0740 Notice to Creditors** rebuild (small, self-contained). Or **Discharge cluster (full-waiver path)** — P5-PETITION-DISCHARGE-FULL-WAIVER + P5-RECEIPT + P5-REPORT-DIST + P5-ORDER-DISCHARGE smart templates. Or any deferred Priority 1a feedback items (#2 names schema change, #6 interest dropdown, #14 self-proved will witnesses, #16 cut-off item). Or the architectural Priority 1b matter-level data interview if David asks.
+Probate items (Priority 2) are still in the queue but not the top: live-test Phase 8 work, then **P3-0740 Notice to Creditors** or the **Discharge cluster (full-waiver path)** — P5-PETITION-DISCHARGE-FULL-WAIVER + P5-RECEIPT + P5-REPORT-DIST + P5-ORDER-DISCHARGE smart templates. Deferred Priority 2a feedback items (#2 names schema change, #6 interest dropdown, #14 self-proved will witnesses, #16 cut-off item) and the architectural Priority 2b matter-level data interview wait their turn.
 
 ### Constraints
 

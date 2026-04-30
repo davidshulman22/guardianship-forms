@@ -197,6 +197,66 @@
                             <div id="wizFormList" class="wizard-form-list"></div>
                         </div>
 
+                        <!-- Open Guardianship Wizard -->
+                        <div id="openGuardianshipWizard" class="panel-card wizard-card collapsible" style="display:none;">
+                            <div class="wizard-header">
+                                <h3 id="gWizardTitle">Open Guardianship</h3>
+                                <p class="wizard-subtitle" id="gWizardSubtitle">Answer these questions to load the correct forms</p>
+                            </div>
+                            <div class="wizard-questions">
+                                <div class="wizard-row">
+                                    <div class="wizard-question">
+                                        <label>Capacity</label>
+                                        <div class="wizard-toggle" id="gWizCapacity">
+                                            <button type="button" class="wiz-btn" data-value="adult">Adult (incapacity)</button>
+                                            <button type="button" class="wiz-btn" data-value="minor">Minor</button>
+                                            <button type="button" class="wiz-btn" data-value="voluntary">Voluntary</button>
+                                        </div>
+                                    </div>
+                                    <div class="wizard-question" id="gWizAuthorityGroup">
+                                        <label>Authority</label>
+                                        <div class="wizard-toggle" id="gWizAuthority">
+                                            <button type="button" class="wiz-btn" data-value="plenary">Plenary</button>
+                                            <button type="button" class="wiz-btn" data-value="limited">Limited</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="wizard-row">
+                                    <div class="wizard-question" id="gWizScopeGroup">
+                                        <label>Scope</label>
+                                        <div class="wizard-toggle" id="gWizScope">
+                                            <button type="button" class="wiz-btn" data-value="person">Person</button>
+                                            <button type="button" class="wiz-btn" data-value="property">Property</button>
+                                            <button type="button" class="wiz-btn" data-value="both">Person &amp; Property</button>
+                                        </div>
+                                    </div>
+                                    <div class="wizard-question" id="gWizEmergencyGroup">
+                                        <label>Emergency Temporary Guardian?</label>
+                                        <div class="wizard-toggle" id="gWizEmergency">
+                                            <button type="button" class="wiz-btn" data-value="no">No</button>
+                                            <button type="button" class="wiz-btn" data-value="yes">Yes</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="wizard-row">
+                                    <div class="wizard-question">
+                                        <label>County</label>
+                                        <select id="gWizCounty" class="wiz-select">
+                                            <option value="">Select county...</option>
+                                            <option value="Broward">Broward</option>
+                                            <option value="Palm Beach">Palm Beach</option>
+                                            <option value="Miami-Dade">Miami-Dade</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div class="wizard-question wizard-action">
+                                        <button type="button" id="gWizLoadFormsBtn" class="btn btn-primary" disabled>Load Forms</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="gWizFormList" class="wizard-form-list"></div>
+                        </div>
+
                         <!-- Estate Administration -->
                         <div id="adminSection" class="panel-card section-card collapsible" style="display:none;">
                             <div class="section-header">

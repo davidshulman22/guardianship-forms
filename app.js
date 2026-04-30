@@ -693,8 +693,10 @@ function setupEventListeners() {
     // Generate
     document.getElementById('generateDocBtn').addEventListener('click', generateDocuments);
 
-    // Open Estate Wizard
+    // Open Estate Wizard (probate)
     setupWizard();
+    // Open Guardianship Wizard
+    setupGuardianshipWizard();
 
     // Collapsible lifecycle sections (Open Estate / Estate Admin / Close Estate)
     setupCollapsibleSections();
@@ -1313,6 +1315,328 @@ function wizardLoadForms() {
     showNotification(allForms.length + ' forms loaded', 'success');
 }
 
+// ============================================
+// OPEN GUARDIANSHIP WIZARD
+// ============================================
+// Mirrors the Open Estate wizard pattern. The smart templates
+// (G3-PETITION/OATH/ORDER/LETTERS) branch internally on
+// is_minor / is_voluntary / is_plenary / is_limited / scope_*
+// flags propagated to matter.matterData by wizardLoadGuardianshipForms.
+
+const wizardFormMatrix_guardianship = {
+    // Adult-incapacity, no emergency: full opening packet (incl. G2-010 Petition to
+    // Determine Incapacity + G2-140 Notice of Designation). Smart G3-PETITION branches
+    // on plenary/limited × person/property/both.
+    'adult|plenary|person|no':   { forms: ['G2-010', 'G2-140', 'G3-PETITION', 'G3-OATH', 'G3-ORDER', 'G3-LETTERS'], broward: ['BW-0010'] },
+    'adult|plenary|property|no': { forms: ['G2-010', 'G2-140', 'G3-PETITION', 'G3-OATH', 'G3-ORDER', 'G3-LETTERS'], broward: ['BW-0010'] },
+    'adult|plenary|both|no':     { forms: ['G2-010', 'G2-140', 'G3-PETITION', 'G3-OATH', 'G3-ORDER', 'G3-LETTERS'], broward: ['BW-0010'] },
+    'adult|limited|person|no':   { forms: ['G2-010', 'G2-140', 'G3-PETITION', 'G3-OATH', 'G3-ORDER', 'G3-LETTERS'], broward: ['BW-0010'] },
+    'adult|limited|property|no': { forms: ['G2-010', 'G2-140', 'G3-PETITION', 'G3-OATH', 'G3-ORDER', 'G3-LETTERS'], broward: ['BW-0010'] },
+    'adult|limited|both|no':     { forms: ['G2-010', 'G2-140', 'G3-PETITION', 'G3-OATH', 'G3-ORDER', 'G3-LETTERS'], broward: ['BW-0010'] },
+
+    // Adult-incapacity, with emergency: adds G3-EMERGENCY (today's G3-010, kept separate
+    // — different statute §744.3031). Long-term plenary/limited petition still filed.
+    'adult|plenary|person|yes':   { forms: ['G2-010', 'G2-140', 'G3-EMERGENCY', 'G3-PETITION', 'G3-OATH', 'G3-ORDER', 'G3-LETTERS'], broward: ['BW-0010'] },
+    'adult|plenary|property|yes': { forms: ['G2-010', 'G2-140', 'G3-EMERGENCY', 'G3-PETITION', 'G3-OATH', 'G3-ORDER', 'G3-LETTERS'], broward: ['BW-0010'] },
+    'adult|plenary|both|yes':     { forms: ['G2-010', 'G2-140', 'G3-EMERGENCY', 'G3-PETITION', 'G3-OATH', 'G3-ORDER', 'G3-LETTERS'], broward: ['BW-0010'] },
+    'adult|limited|person|yes':   { forms: ['G2-010', 'G2-140', 'G3-EMERGENCY', 'G3-PETITION', 'G3-OATH', 'G3-ORDER', 'G3-LETTERS'], broward: ['BW-0010'] },
+    'adult|limited|property|yes': { forms: ['G2-010', 'G2-140', 'G3-EMERGENCY', 'G3-PETITION', 'G3-OATH', 'G3-ORDER', 'G3-LETTERS'], broward: ['BW-0010'] },
+    'adult|limited|both|yes':     { forms: ['G2-010', 'G2-140', 'G3-EMERGENCY', 'G3-PETITION', 'G3-OATH', 'G3-ORDER', 'G3-LETTERS'], broward: ['BW-0010'] },
+
+    // Minor: NO incapacity proceedings (G2-010 not used). Smart G3-PETITION branches
+    // on is_minor + scope. Authority is N/A — minor guardianship is statutorily defined.
+    'minor|na|person|na':   { forms: ['G2-140', 'G3-PETITION', 'G3-OATH', 'G3-ORDER', 'G3-LETTERS'], broward: ['BW-0010'] },
+    'minor|na|property|na': { forms: ['G2-140', 'G3-PETITION', 'G3-OATH', 'G3-ORDER', 'G3-LETTERS'], broward: ['BW-0010'] },
+    'minor|na|both|na':     { forms: ['G2-140', 'G3-PETITION', 'G3-OATH', 'G3-ORDER', 'G3-LETTERS'], broward: ['BW-0010'] },
+
+    // Voluntary: §744.341, property only by definition. Different petition (G3-VOL-PETITION,
+    // separate template). Includes G3-120 Physician's Certificate (required by statute).
+    'voluntary|na|na|na': { forms: ['G2-140', 'G3-VOL-PETITION', 'G3-OATH', 'G3-ORDER', 'G3-LETTERS', 'G3-120'], broward: ['BW-0010'] }
+};
+
+let wizardState_guardianship = {
+    capacity: null,    // 'adult' | 'minor' | 'voluntary'
+    authority: null,   // 'plenary' | 'limited' | (null for non-adult)
+    scope: null,       // 'person' | 'property' | 'both' | (null for voluntary)
+    emergency: null,   // 'yes' | 'no' | (null for non-adult)
+    county: null
+};
+
+function setupGuardianshipWizard() {
+    ['gWizCapacity', 'gWizAuthority', 'gWizScope', 'gWizEmergency'].forEach(groupId => {
+        const group = document.getElementById(groupId);
+        if (!group) return;
+        group.querySelectorAll('.wiz-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const wasActive = btn.classList.contains('active');
+                group.querySelectorAll('.wiz-btn').forEach(b => b.classList.remove('active'));
+                if (!wasActive) btn.classList.add('active');
+                const val = wasActive ? null : btn.dataset.value;
+
+                if (groupId === 'gWizCapacity') {
+                    wizardState_guardianship.capacity = val;
+                    // Reset dependent fields when capacity changes — prior selections may
+                    // become invalid (e.g. authority is N/A for minor, scope is N/A for voluntary).
+                    wizardState_guardianship.authority = null;
+                    wizardState_guardianship.scope = null;
+                    wizardState_guardianship.emergency = null;
+                    ['gWizAuthority', 'gWizScope', 'gWizEmergency'].forEach(g => {
+                        document.querySelectorAll('#' + g + ' .wiz-btn').forEach(b => b.classList.remove('active'));
+                    });
+                } else if (groupId === 'gWizAuthority') {
+                    wizardState_guardianship.authority = val;
+                } else if (groupId === 'gWizScope') {
+                    wizardState_guardianship.scope = val;
+                } else if (groupId === 'gWizEmergency') {
+                    wizardState_guardianship.emergency = val;
+                }
+                updateGuardianshipWizardUI();
+            });
+        });
+    });
+
+    const countySel = document.getElementById('gWizCounty');
+    if (countySel) {
+        countySel.addEventListener('change', (e) => {
+            wizardState_guardianship.county = e.target.value || null;
+            updateGuardianshipWizardUI();
+        });
+    }
+
+    const loadBtn = document.getElementById('gWizLoadFormsBtn');
+    if (loadBtn) loadBtn.addEventListener('click', wizardLoadGuardianshipForms);
+}
+
+function updateGuardianshipWizardUI() {
+    const s = wizardState_guardianship;
+
+    // Authority: shown only for adult (incapacity); minor/voluntary use statutory defaults.
+    const authGroup = document.getElementById('gWizAuthorityGroup');
+    if (authGroup) authGroup.style.display = (s.capacity === 'adult') ? '' : 'none';
+
+    // Scope: shown for adult + minor. Voluntary is property-only by §744.341.
+    const scopeGroup = document.getElementById('gWizScopeGroup');
+    if (scopeGroup) scopeGroup.style.display = (s.capacity === 'voluntary') ? 'none' : '';
+
+    // Emergency: only meaningful for adult-incapacity (§744.3031).
+    const emerGroup = document.getElementById('gWizEmergencyGroup');
+    if (emerGroup) emerGroup.style.display = (s.capacity === 'adult') ? '' : 'none';
+
+    // Determine readiness: required fields depend on capacity.
+    let ready = false;
+    if (s.capacity === 'adult') {
+        ready = s.authority && s.scope && s.emergency && s.county;
+    } else if (s.capacity === 'minor') {
+        ready = s.scope && s.county;
+    } else if (s.capacity === 'voluntary') {
+        ready = s.county;
+    }
+
+    const btn = document.getElementById('gWizLoadFormsBtn');
+    if (btn) btn.disabled = !ready;
+
+    if (ready) {
+        previewGuardianshipWizardForms();
+    } else {
+        const listEl = document.getElementById('gWizFormList');
+        if (listEl) listEl.classList.remove('visible');
+    }
+}
+
+function guardianshipWizardKey(state) {
+    const s = state;
+    if (s.capacity === 'minor') return 'minor|na|' + s.scope + '|na';
+    if (s.capacity === 'voluntary') return 'voluntary|na|na|na';
+    if (s.capacity === 'adult') return ['adult', s.authority, s.scope, s.emergency].join('|');
+    return null;
+}
+
+function previewGuardianshipWizardForms() {
+    const key = guardianshipWizardKey(wizardState_guardianship);
+    const entry = key && wizardFormMatrix_guardianship[key];
+    const listEl = document.getElementById('gWizFormList');
+    if (!listEl) return;
+
+    if (!entry) {
+        listEl.innerHTML = '<p class="wizard-note">This combination is not yet available.</p>';
+        listEl.classList.add('visible');
+        const btn = document.getElementById('gWizLoadFormsBtn');
+        if (btn) btn.disabled = true;
+        return;
+    }
+
+    let allForms = [...entry.forms];
+    let localForms = [];
+    if (wizardState_guardianship.county === 'Broward' && entry.broward) {
+        localForms = entry.broward;
+        allForms = allForms.concat(localForms);
+    }
+
+    let html = '<div class="wizard-form-list-title">Forms to generate</div><div class="wizard-form-tags">';
+    allForms.forEach(formId => {
+        const form = formsConfig ? formsConfig.forms.find(f => f.id === formId) : null;
+        const name = form ? form.name : formId;
+        const isLocal = localForms.includes(formId);
+        html += `<span class="wizard-form-tag${isLocal ? ' local' : ''}" title="${name}">${formId}</span>`;
+    });
+    html += '</div>';
+
+    if (wizardState_guardianship.capacity === 'adult') {
+        html += '<p class="wizard-note">Examining-committee paperwork (G-2.040, G-2.051) follows the Order Appointing Examining Committee — file these forms first to open the case.</p>';
+    } else if (wizardState_guardianship.capacity === 'minor') {
+        html += '<p class="wizard-note">Minor guardianship: no incapacity proceedings required. Application for Appointment as Guardian (G-3.055) is filed separately by the proposed guardian.</p>';
+    } else if (wizardState_guardianship.capacity === 'voluntary') {
+        html += '<p class="wizard-note">Voluntary guardianship under §744.341. Physician\'s Certificate (G-3.120) must accompany the petition.</p>';
+    }
+
+    listEl.innerHTML = html;
+    listEl.classList.add('visible');
+}
+
+function wizardLoadGuardianshipForms() {
+    const key = guardianshipWizardKey(wizardState_guardianship);
+    const entry = key && wizardFormMatrix_guardianship[key];
+    if (!entry) return;
+
+    let allForms = [...entry.forms];
+    if (wizardState_guardianship.county === 'Broward' && entry.broward) {
+        allForms = allForms.concat(entry.broward);
+    }
+
+    if (currentMatter) {
+        const s = wizardState_guardianship;
+        currentMatter.wizardSelections = {
+            capacity: s.capacity,
+            authority: s.authority,
+            scope: s.scope,
+            emergency: s.emergency,
+            county: s.county
+        };
+        // Propagate flags to matter.matterData so smart templates and questionnaire
+        // visibility rules (visible_if matter_flag) pick them up.
+        if (!currentMatter.matterData) currentMatter.matterData = {};
+        currentMatter.matterData.is_minor = s.capacity === 'minor';
+        currentMatter.matterData.is_voluntary = s.capacity === 'voluntary';
+        currentMatter.matterData.is_adult_incapacity = s.capacity === 'adult';
+        currentMatter.matterData.is_plenary = s.authority === 'plenary';
+        currentMatter.matterData.is_limited = s.authority === 'limited';
+        currentMatter.matterData.scope_person = (s.scope === 'person' || s.scope === 'both');
+        currentMatter.matterData.scope_property = (s.scope === 'property' || s.scope === 'both');
+        currentMatter.matterData.scope_both = s.scope === 'both';
+        currentMatter.matterData.is_emergency_temporary = s.emergency === 'yes';
+        saveClientsToStorage();
+    }
+
+    populateFormSections();
+
+    selectedFormIds = allForms;
+    currentFormId = selectedFormIds[0];
+    syncCheckboxes();
+    updateBundleButtons();
+
+    currentFormData = {};
+    selectedFormIds.forEach(formId => {
+        if (currentMatter && currentMatter.formData && currentMatter.formData[formId]) {
+            const saved = currentMatter.formData[formId];
+            Object.keys(saved).forEach(k => {
+                const val = saved[k];
+                if (val !== '' && val !== null && val !== undefined && val !== false) {
+                    currentFormData[k] = val;
+                }
+            });
+        }
+    });
+
+    renderMergedFormFields();
+
+    setTimeout(() => {
+        document.getElementById('formFieldsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+
+    showNotification(allForms.length + ' forms loaded', 'success');
+}
+
+function initGuardianshipWizardForMatter() {
+    const saved = currentMatter && currentMatter.wizardSelections;
+    // Only restore if the saved selections look like guardianship shape
+    // (probate matters carry adminType/willType, which we ignore here).
+    const looksLikeGuardianship = saved && (saved.capacity !== undefined);
+
+    wizardState_guardianship = {
+        capacity: looksLikeGuardianship ? saved.capacity : null,
+        authority: looksLikeGuardianship ? saved.authority : null,
+        scope: looksLikeGuardianship ? saved.scope : null,
+        emergency: looksLikeGuardianship ? saved.emergency : null,
+        county: looksLikeGuardianship ? saved.county : (currentMatter ? currentMatter.county || null : null)
+    };
+
+    const stateMap = {
+        gWizCapacity: wizardState_guardianship.capacity,
+        gWizAuthority: wizardState_guardianship.authority,
+        gWizScope: wizardState_guardianship.scope,
+        gWizEmergency: wizardState_guardianship.emergency
+    };
+    Object.keys(stateMap).forEach(groupId => {
+        const group = document.getElementById(groupId);
+        if (!group) return;
+        group.querySelectorAll('.wiz-btn').forEach(b => {
+            b.classList.remove('active');
+            if (stateMap[groupId] && b.dataset.value === stateMap[groupId]) {
+                b.classList.add('active');
+            }
+        });
+    });
+
+    const countySelect = document.getElementById('gWizCounty');
+    if (countySelect && currentMatter) {
+        const county = wizardState_guardianship.county || currentMatter.county || '';
+        const option = Array.from(countySelect.options).find(o => o.value.toLowerCase() === county.toLowerCase());
+        if (option) {
+            countySelect.value = option.value;
+            wizardState_guardianship.county = option.value;
+        } else if (county) {
+            const newOpt = document.createElement('option');
+            newOpt.value = county;
+            newOpt.textContent = county;
+            countySelect.insertBefore(newOpt, countySelect.lastElementChild);
+            countySelect.value = county;
+            wizardState_guardianship.county = county;
+        }
+    }
+
+    // Recompute conditional visibility + button-enable
+    updateGuardianshipWizardUI();
+
+    // Hide any stale form preview
+    const listEl = document.getElementById('gWizFormList');
+    if (listEl) listEl.classList.remove('visible');
+
+    // Update header
+    const titleEl = document.getElementById('gWizardTitle');
+    const subtitleEl = document.getElementById('gWizardSubtitle');
+    if (looksLikeGuardianship && saved.capacity) {
+        if (titleEl) titleEl.textContent = 'Open Guardianship';
+        if (subtitleEl) subtitleEl.textContent = 'Change selections below if needed';
+        // Auto-load forms so user doesn't have to click again
+        const ready = (
+            (wizardState_guardianship.capacity === 'adult' &&
+             wizardState_guardianship.authority &&
+             wizardState_guardianship.scope &&
+             wizardState_guardianship.emergency &&
+             wizardState_guardianship.county) ||
+            (wizardState_guardianship.capacity === 'minor' &&
+             wizardState_guardianship.scope &&
+             wizardState_guardianship.county) ||
+            (wizardState_guardianship.capacity === 'voluntary' &&
+             wizardState_guardianship.county)
+        );
+        if (ready) setTimeout(() => wizardLoadGuardianshipForms(), 50);
+    } else {
+        if (titleEl) titleEl.textContent = 'Open Guardianship';
+        if (subtitleEl) subtitleEl.textContent = 'Answer these questions to load the correct forms';
+    }
+}
+
 function initWizardForMatter() {
     // Check if this matter already has wizard selections saved
     // If not, but it has imported data (_shared formData), infer selections
@@ -1388,11 +1712,17 @@ function initWizardForMatter() {
     const btn = document.getElementById('wizLoadFormsBtn');
     if (btn) btn.disabled = true;
 
-    // Only show wizard for probate matters
-    const wizardEl = document.getElementById('openEstateWizard');
-    if (wizardEl) {
-        wizardEl.style.display = (currentMatter && currentMatter.type === 'probate') ? '' : 'none';
-    }
+    // Show the wizard that matches the matter type — Open Estate for probate,
+    // Open Guardianship for guardianship. Both are inline panel cards; only one
+    // is ever visible at a time.
+    const probateWizardEl = document.getElementById('openEstateWizard');
+    const gWizardEl = document.getElementById('openGuardianshipWizard');
+    const isProbate = currentMatter && currentMatter.type === 'probate';
+    const isGuardianship = currentMatter && currentMatter.type === 'guardianship';
+    if (probateWizardEl) probateWizardEl.style.display = isProbate ? '' : 'none';
+    if (gWizardEl) gWizardEl.style.display = isGuardianship ? '' : 'none';
+
+    if (isGuardianship) initGuardianshipWizardForMatter();
 
     // Update wizard header based on whether this is a new or existing estate
     const titleEl = document.getElementById('wizardTitle');

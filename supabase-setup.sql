@@ -47,6 +47,7 @@ AS $$
 DECLARE
   admin_emails text[] := ARRAY[
     'david@ginsbergshulman.com',
+    'jill@ginsbergshulman.com',
     'maribel@ginsbergshulman.com'
   ];
   assigned_role text;
